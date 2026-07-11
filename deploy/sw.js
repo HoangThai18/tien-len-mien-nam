@@ -1,4 +1,4 @@
-const CACHE = 'tienlen-v6-ui';
+const CACHE = 'tienlen-v7-install-landscape';
 const ASSETS = [
   './', './index.html', './styles.css', './manifest.webmanifest', './icon-192.png', './icon-512.png',
   './js/config.js', './js/engine.js', './js/state.js', './js/game.js', './js/ui.js', './js/social.js',

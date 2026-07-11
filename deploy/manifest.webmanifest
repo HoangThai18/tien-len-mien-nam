@@ -7,6 +7,7 @@
   "scope": "./",
   "display": "standalone",
   "orientation": "landscape",
+  "prefer_related_applications": false,
   "background_color": "#083d31",
   "theme_color": "#0b6b46",
   "categories": ["games", "entertainment"],

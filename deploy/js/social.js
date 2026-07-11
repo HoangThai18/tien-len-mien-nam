@@ -259,7 +259,46 @@ $('btnLeave').onclick=()=>{
   if(confirm('Thoát ván hiện tại?')) leaveToMenu();
 };
 
-boot();   // đăng nhập trước, rồi mới vào menu
+/* ---------- Cài PWA + ưu tiên màn hình ngang ---------- */
+let deferredInstallPrompt=null;
+const installBtn=$('installAppBtn');
+const isStandalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+const isMobileScreen=()=>matchMedia('(max-width: 900px)').matches&&('ontouchstart' in window||navigator.maxTouchPoints>0);
+function refreshInstallButton(){
+  if(!installBtn) return;
+  installBtn.classList.toggle('show',!isStandalone()&&(!!deferredInstallPrompt||isMobileScreen()));
+}
+async function installApp(){
+  if(isStandalone()){ refreshInstallButton(); toast('Ứng dụng đã được cài ✓'); return; }
+  if(deferredInstallPrompt){
+    const p=deferredInstallPrompt; deferredInstallPrompt=null;
+    p.prompt();
+    try{ await p.userChoice; }catch(e){}
+    refreshInstallButton();
+    return;
+  }
+  const ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  toast(ios?'Nhấn Chia sẻ rồi chọn “Thêm vào Màn hình chính”':'Mở menu trình duyệt ⋮ rồi chọn “Cài đặt ứng dụng”');
+}
+function requestLandscape(){
+  if(!isMobileScreen()||!isStandalone()||!screen.orientation||!screen.orientation.lock) return;
+  screen.orientation.lock('landscape').catch(()=>{});
+}
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault(); deferredInstallPrompt=e; refreshInstallButton();
+});
+window.addEventListener('appinstalled',()=>{
+  deferredInstallPrompt=null; refreshInstallButton(); toast('Đã cài Tiến Lên ✓');
+});
+if(installBtn) installBtn.onclick=installApp;
+$('rotateContinue').onclick=()=>document.body.classList.add('allow-portrait');
+document.addEventListener('click',e=>{
+  if(e.target.closest('#mSolo,#mHost,#mJoin,#btnPlay')) requestLandscape();
+});
+matchMedia('(display-mode: standalone)').addEventListener?.('change',refreshInstallButton);
+refreshInstallButton();
 
 // PWA: cho phep cai nhu app + chay offline (bo qua em neu mo file truc tiep)
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+
+boot();   // đăng nhập trước, rồi mới vào menu

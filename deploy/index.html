@@ -52,6 +52,7 @@
 <div class="flash" id="flash"><b id="flashText">CHẶT!</b></div>
 
 <div class="coin-pill coin-top" id="coinBar" style="display:none"><span class="ic" aria-hidden="true">🪙</span><b id="coinVal">--</b></div>
+<button class="install-fab" id="installAppBtn" type="button" aria-label="Cài Tiến Lên thành ứng dụng">📲 <span>Cài app</span></button>
 <button class="chat-fab" id="chatFab" aria-label="Mở trò chuyện">💬<span class="badge" id="chatBadge"></span></button>
 <div class="chat-panel" id="chatPanel">
   <div class="chat-head"><span>💬 Trò chuyện</span><button class="chat-x" id="chatClose" aria-label="Đóng trò chuyện">✕</button></div>
@@ -63,6 +64,15 @@
   </div>
 </div>
 <div class="overlay" id="overlay"><div class="card-panel" id="panel"></div></div>
+
+<div class="rotate-guard" id="rotateGuard" role="dialog" aria-modal="true" aria-labelledby="rotateTitle">
+  <div class="rotate-card">
+    <div class="rotate-phone" aria-hidden="true">📱</div>
+    <h2 id="rotateTitle">Xoay ngang để chơi</h2>
+    <p>Tiến Lên được tối ưu cho màn hình ngang để thấy đủ bàn, bài và nút điều khiển.</p>
+    <button class="btn ghost sm" id="rotateContinue" type="button">Vẫn chơi dọc</button>
+  </div>
+</div>
 
 <!-- Firebase compat SDK (cdnjs) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js"></script>
