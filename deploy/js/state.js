@@ -11,14 +11,17 @@ function freshState(names,opts){
   if(threeSpade&&!deal.includes(threeSpade)) deal[deal.length-1]=threeSpade;
   deal.forEach((c,i)=>hands[activeSeats[i%activeSeats.length]].push(c));
   hands.forEach(h=>h.sort((a,b)=>a.rank-b.rank||a.suit-b.suit));
-  const turn=hands.findIndex(h=>h.some(c=>c.rank===3&&c.suit===0));
+  const threeSpadeTurn=hands.findIndex(h=>h.some(c=>c.rank===3&&c.suit===0));
+  const previousWinner=Number.isInteger(opts.openingSeat)&&activeSeats.includes(opts.openingSeat)
+    ? opts.openingSeat : null;
+  const turn=previousWinner===null?threeSpadeTurn:previousWinner;
   return {
     hands, names, activeSeats,
     classes:opts.classes||['captain','mage','guardian','trickster'],
     turn, lastPlayer:turn,
     current:null, lastPlayedCards:[], lastPlayedBy:-1,
     passed:[false,false,false,false],
-    finished:[], firstPlay:true,
+    finished:[], firstPlay:previousWinner===null,
     status:'playing',
     bet:opts.bet||0, gameId:opts.gameId||null,   // tiền đánh ăn
     coins:[0,0,0,0], settle:null,                // xu hiển thị + kết quả tính tiền

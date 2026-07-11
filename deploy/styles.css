@@ -28,7 +28,7 @@
     padding:max(8px,env(safe-area-inset-top)) 10px max(8px,env(safe-area-inset-bottom));}
 
   .seats{position:relative; flex:1; min-height:0;}
-  .seat{position:absolute; display:flex; flex-direction:column; align-items:center; gap:5px; width:118px;}
+  .seat{position:absolute; z-index:4; display:flex; flex-direction:column; align-items:center; gap:5px; width:118px;}
   .seat.top{top:2px; left:50%; transform:translateX(-50%);}
   .seat.left{left:0; top:38%;}
   .seat.right{right:0; top:38%;}
@@ -77,7 +77,7 @@
   @keyframes pop{from{opacity:0; transform:translate(-50%,-90%) scale(.7);}to{opacity:1; transform:translate(-50%,-100%) scale(1);}}
 
   /* bàn gỗ ở giữa */
-  .table-center{position:absolute; top:50%; left:50%; transform:translate(-50%,-46%);
+  .table-center{position:absolute; z-index:2; top:50%; left:50%; transform:translate(-50%,-46%);
     width:min(84%,320px); display:flex; flex-direction:column; align-items:center; gap:8px;}
   .table-center::before{content:''; position:absolute; top:50%; left:50%;
     transform:translate(-50%,-50%); width:118%; height:130px; border-radius:50%;
@@ -382,7 +382,11 @@
     border:3px solid var(--brown); outline:2px solid var(--brown-d);
     border-radius:16px; padding:8px; color:var(--ink); max-width:min(92vw,260px);
     box-shadow:0 6px 0 var(--brown-d), 0 16px 30px rgba(0,0,0,.4);
-    animation:pop .18s ease both;}
+    animation:throwPop .18s ease both;}
+  @keyframes throwPop{
+    from{opacity:0; transform:translateX(-50%) scale(.82);}
+    to{opacity:1; transform:translateX(-50%) scale(1);}
+  }
   .throw-pop-title{font-size:11px; font-weight:900; color:var(--orange-3); text-align:center;
     margin:0 0 6px; letter-spacing:.3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .throw-pop-grid{display:grid; grid-template-columns:repeat(5,1fr); gap:5px;}

@@ -33,10 +33,10 @@ function onPass(){
   const res=applyPass(S,myIdx);
   if(res.ok) postApply();
 }
-function onHint(){
-  if(!myTurn()) return;
+function suggestedMove(){
+  if(!myTurn()) return null;
   const moves=legalMoves(S.hands[myIdx],S.current);
-  if(!moves.length){ toast(S.current?'Không có bài để đè — bỏ lượt đi':'Hết nước'); return; }
+  if(!moves.length) return null;
   const nb=moves.filter(x=>!isBomb(x.m));
   let pick;
   if(S.firstPlay){
@@ -45,6 +45,18 @@ function onHint(){
   }else{
     pick=(nb.length?nb:moves).sort((a,b)=>a.m.top-b.m.top)[0];
   }
+  return pick;
+}
+function moveHintLabel(pick){
+  const names={single:'lá',pair:'đôi',triple:'sám',four:'tứ quý',straight:'sảnh',seqpair:'đôi thông'};
+  const cards=pick.cards.slice().sort((a,b)=>a.rank-b.rank||a.suit-b.suit);
+  const top=cards[cards.length-1];
+  return `${names[pick.m.type]||'bộ'} ${rlabel(top.rank)}${cards.length===1?SUITS[top.suit]:''}`;
+}
+function onHint(){
+  if(!myTurn()) return;
+  const pick=suggestedMove();
+  if(!pick){ toast(S.current?'Không có bài để đè — bỏ lượt đi':'Hết nước'); return; }
   selected=new Set(pick.cards.map(cid));
   syncSelection();
 }
@@ -164,6 +176,7 @@ function renderHand(){
 }
 function renderControls(){
   const mt=myTurn();
+  const hint=mt?suggestedMove():null;
   const classId=seatClass(myIdx), cls=CHARACTER_CLASSES[classId];
   $('myHero').innerHTML=`<img src="${cls.asset}" alt=""><span><b>${esc(S.names[myIdx])}</b><small>${cls.name}</small></span>`;
   $('myHero').style.setProperty('--class-accent',cls.accent);
@@ -172,6 +185,11 @@ function renderControls(){
   $('btnPass').disabled=!mt||!S.current;
   $('btnHint').disabled=!mt;
   $('btnBomb').disabled=!mt||!legalMoves(S.hands[myIdx],S.current).some(x=>isBomb(x.m));
+  if(mt){
+    $('roundNote').textContent=hint
+      ? `Gợi ý: ${moveHintLabel(hint)}`
+      : (S.current?'Không có bài chặn · nên bỏ lượt':'Chọn một bộ bài để mở');
+  }
   updatePlayLabel();
 }
 function esc(s){ return String(s||'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c])); }
@@ -402,6 +420,7 @@ function showResult(){
   if(!S || S.status!=='over') return;   // timer 700ms có thể bắn trễ khi ván mới đã bắt đầu
   closeThrowPicker();
   const st=S.settle;
+  const openingSeat=st&&Number.isInteger(st.winner)?st.winner:null;
   const list=st?st.rows:S.finished.map((p,i)=>({seat:p,cardsLeft:0,delta:0}));
   const rows=list.map((r,idx)=>{
     const you=r.seat===myIdx?'you':'';
@@ -431,8 +450,8 @@ function showResult(){
   $('overlay').style.display='flex';
   const a=$('rAgain');
   if(a) a.onclick=()=>{
-    if(mode==='host'){ hostStartGame(roomPlayers); }
-    else startSolo(myName);
+    if(mode==='host'){ hostStartGame(roomPlayers,openingSeat); }
+    else startSolo(myName,openingSeat);
   };
   $('rMenu').onclick=leaveToMenu;
 }

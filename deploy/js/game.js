@@ -330,7 +330,7 @@ async function createRoom(name,maxPlayers){
     pushState();
   });
 }
-function hostStartGame(players){
+function hostStartGame(players,openingSeat){
   players=players||roomPlayers||{};
   const activeSeats=roomSeatOrder(roomMaxPlayers);
   const names=['Ghế trống','Ghế trống','Ghế trống','Ghế trống'];
@@ -342,7 +342,7 @@ function hostStartGame(players){
     classes[seat]=CHARACTER_CLASSES[p.classId]?p.classId:(seat===0?myClass:'guardian');
     coins[seat]=p.coins||0;
   });
-  S=freshState(names,{bet:gameBet, gameId:newGameId(), classes, activeSeats});
+  S=freshState(names,{bet:gameBet, gameId:newGameId(), classes, activeSeats, openingSeat});
   S.coins=coins;
   settledGameId=null;
   selected.clear();
@@ -517,19 +517,23 @@ function guestSend(kind,ids){
 }
 
 /* ---------- SOLO ---------- */
-function startSolo(name){
+function startSolo(name,openingSeat){
   mode='solo'; myIdx=0; myName=name||myName||'Bạn';
   S=freshState([myName,'An','Bình','Cường'],{
     bet:gameBet,
     gameId:newGameId(),
     classes:[myClass,'mage','guardian','trickster'],
+    openingSeat,
   });
   S.coins=[ (profile?profile.coins||0:0), botCoins[1], botCoins[2], botCoins[3] ];
   settledGameId=null;
   clearTimeout(throwBackTimer);   // huỷ cú "ném lại" còn treo từ ván trước
   selected.clear();
   hideOverlay(); render();
-  toast(S.turn===0?'Bạn có 3♠ — mở bài đi!':`${S.names[S.turn]} có 3♠, đi trước`);
+  const winnerOpens=Number.isInteger(openingSeat);
+  toast(winnerOpens
+    ? (S.turn===0?'Bạn TỚI ván trước — đi trước!':`${S.names[S.turn]} TỚI ván trước — đi trước`)
+    : (S.turn===0?'Bạn có 3♠ — mở bài đi!':`${S.names[S.turn]} có 3♠, đi trước`));
   driveBots();
   throwHint();
 }

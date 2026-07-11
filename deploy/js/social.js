@@ -227,7 +227,8 @@ function positionPicker(pop,anchorEl){
   let x=r.left+r.width/2, y=r.bottom+8;
   x=Math.max(8+pw/2,Math.min(innerWidth-8-pw/2,x));
   if(y+ph>innerHeight-8) y=r.top-ph-8;
-  pop.style.left=x+'px'; pop.style.top=Math.max(8,y)+'px';
+  y=Math.max(8,Math.min(Math.max(8,innerHeight-ph-8),y));
+  pop.style.left=x+'px'; pop.style.top=y+'px';
 }
 function outsidePickerClose(e){ if(pickerEl&&!pickerEl.contains(e.target)) closeThrowPicker(); }
 function closeThrowPicker(){
