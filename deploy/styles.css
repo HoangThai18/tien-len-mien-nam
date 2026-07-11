@@ -435,16 +435,23 @@
     .actions .btn{padding:11px 18px; font-size:14px; min-width:108px;}
     /* ghế đối thủ sát mép, gọn lại */
     .avatar{width:44px; height:44px; font-size:22px;}
-    .seat{width:100px;}
-    .seat.left{left:2px; top:26%;}
-    .seat.right{right:2px; top:26%;}
-    .seat.top{top:0;}
-    .nm{font-size:11px; padding:2px 8px;}
-    .mini{height:20px;}
-    .mini i{width:14px; height:20px;}
-    /* bàn giữa thấp hơn */
-    .table-center{transform:translate(-50%,-56%);}
-    .table-center::before{height:102px; border-width:5px;}
+    .seat{width:96px; gap:3px;}
+    .nm{font-size:11px; padding:2px 8px; max-width:96px;}
+    .coin-pill{font-size:9px; padding:0 6px;}
+    .mini{display:none;}                       /* bỏ quạt bài trang trí — nhường chỗ cho bàn */
+    .seat.left{left:2px; top:30%;}
+    .seat.right{right:2px; top:30%;}
+    /* ghế trên cùng xếp NGANG cho thấp, không đè lên bàn/chồng bài */
+    .seat.top{top:2px; flex-direction:row; flex-wrap:wrap; width:auto; max-width:210px;
+      align-items:center; justify-content:center; gap:2px 6px;}
+    .seat.top .nm{order:2;}
+    .seat.top .coin-pill{order:3;}
+    /* bàn giữa hạ xuống để chồng bài & "vừa đánh" nằm gọn dưới ghế trên */
+    .table-center{transform:translate(-50%,-30%); width:min(70%,300px);}
+    .table-center::before{height:104px; border-width:5px;}
+    .pile{min-height:62px;}
+    .played-by{font-size:11px; min-height:14px;}
+    .round-note{min-height:12px;}
     .chat-fab{width:40px; height:40px; font-size:18px;}
     .toast{top:7%;}
     .flash b{font-size:48px;}

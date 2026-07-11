@@ -291,6 +291,7 @@ function showMenu(){
       ${isAdmin()?'<button class="btn block ghost" id="mAdmin">🛠️ Quản lý (admin)</button>':''}
     </div>
     <p class="sub" style="margin:16px 0 0; font-size:11px">Đặt mệnh giá mỗi ván · ai TỚI trước ăn cả pot 🪙</p>
+    <button class="linkish" id="mAccount">⚙️ Chỉnh sửa tài khoản</button>
     <button class="linkish" id="mBackGames">← Đổi loại bài</button>
     <button class="linkish" id="mSignOut">Đăng xuất${profile&&profile.email?` (${esc(profile.email)})`:''}</button>`;
   $('overlay').style.display='flex';
@@ -305,8 +306,41 @@ function showMenu(){
   $('mHost').onclick=()=>{ syncName(nm()); showOnlineSetup(()=>createRoom(myName,roomMaxPlayers)); };
   $('mJoin').onclick=()=>{ syncName(nm()); showJoin(myName); };
   if($('mAdmin')) $('mAdmin').onclick=showAdminPanel;
+  $('mAccount').onclick=showAccount;
   $('mBackGames').onclick=showGameSelect;
   $('mSignOut').onclick=signOut;
+}
+// Chỉnh sửa tài khoản đã đăng nhập: đổi tên hiển thị (lưu Firebase), xem email/xu/thống kê
+function showAccount(){
+  const name=(profile&&profile.name)?profile.name:(myName||'');
+  const email=(profile&&profile.email)?profile.email:'';
+  const coins=(profile&&profile.coins!=null)?fmtCoin(profile.coins):'--';
+  const wins=(profile&&profile.wins!=null)?profile.wins:0;
+  const games=(profile&&profile.games!=null)?profile.games:0;
+  $('panel').innerHTML=`
+    <div class="logo">Tài khoản</div>
+    <h1 style="font-size:24px">Chỉnh sửa tài khoản</h1>
+    <p class="sub" style="margin-bottom:10px">${email?`Đăng nhập: <b>${esc(email)}</b>`:'Đang đăng nhập'}</p>
+    <div class="rank-row you"><div class="pos">🪙</div>
+      <div class="who">Số xu<span class="sub" style="display:block;margin:0;font-weight:600">Thắng ${wins} · Đã chơi ${games} ván</span></div>
+      <div class="hl">${coins}</div></div>
+    <div class="class-title" style="margin-top:12px">Tên hiển thị</div>
+    <input class="field" id="acName" maxlength="12" placeholder="Tên của bạn" value="${esc(name)}">
+    <div class="field-err" id="acMsg"></div>
+    <div class="menu-gap"><button class="btn block" id="acSave">💾 Lưu tên</button></div>
+    <button class="linkish" id="acBack">← Về menu</button>`;
+  $('overlay').style.display='flex';
+  const msg=$('acMsg');
+  const doSave=async()=>{
+    const btn=$('acSave'); btn.disabled=true; msg.textContent='';
+    const res=await saveProfileName($('acName').value);
+    btn.disabled=false;
+    if(res.ok){ msg.style.color='var(--grass-2)'; msg.textContent='Đã lưu tên ✓'; toast('Đã lưu tên tài khoản ✓'); }
+    else{ msg.style.color='var(--red)'; msg.textContent=res.err||'Không lưu được'; }
+  };
+  $('acSave').onclick=doSave;
+  $('acName').onkeydown=e=>{ if(e.key==='Enter') doSave(); };
+  $('acBack').onclick=showMenu;
 }
 function showAdminPanel(){
   $('panel').innerHTML=`
