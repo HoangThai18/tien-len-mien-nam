@@ -180,10 +180,12 @@
   @keyframes fall{to{transform:translateY(110vh) rotate(720deg);}}
 
   .overlay{position:fixed; inset:0; background:rgba(9,46,28,.72); backdrop-filter:blur(5px);
-    display:flex; align-items:center; justify-content:center; z-index:50; padding:24px; overflow:auto;}
+    display:flex; align-items:flex-start; justify-content:center; z-index:50; padding:24px; overflow:auto;}
+  /* margin:auto giữ panel ở giữa khi vừa màn, nhưng khi panel cao hơn màn (điện thoại
+     nằm ngang) thì tự căn từ trên xuống để cuộn thấy đủ đầu/cuối — tránh lỗi flex center bị cắt. */
   .card-panel{background:linear-gradient(180deg,#fffdf5,var(--cream));
     border:4px solid var(--brown); outline:4px solid var(--brown-d);
-    border-radius:26px; padding:26px 22px; color:var(--ink);
+    border-radius:26px; padding:26px 22px; color:var(--ink); margin:auto;
     width:100%; max-width:380px; box-shadow:0 10px 0 var(--brown-d), 0 26px 60px rgba(0,0,0,.45);
     text-align:center; position:relative;}
   .card-panel::before{content:'♠ ♥ ♣ ♦'; position:absolute; top:-17px; left:50%;
@@ -338,6 +340,8 @@
     body.allow-portrait .field{padding:11px 12px; margin:4px 0;}
     body.allow-portrait .menu-gap{gap:8px; margin-top:6px;}
     body.allow-portrait .btn.block{padding:12px;}
+    body.allow-portrait .game-card{margin:7px 0; padding:10px 12px;}
+    body.allow-portrait .g-icon{width:52px; height:48px;}
   }
 
   /* ---------- Chip mệnh giá cược ---------- */
@@ -444,7 +448,7 @@
     .chat-fab{width:40px; height:40px; font-size:18px;}
     .toast{top:7%;}
     .flash b{font-size:48px;}
-    .overlay{padding:12px;}
+    .overlay{padding:12px max(12px,env(safe-area-inset-right)) 12px max(12px,env(safe-area-inset-left));}
     .card-panel{max-width:430px; padding:16px 20px;}
     .card-panel::before{top:-15px; font-size:10px;}
     h1{font-size:24px; margin:2px 0;}
@@ -463,6 +467,11 @@
     .install-help-actions{margin-top:10px;}
     .coin-pill{font-size:10px; padding:0 6px;}
     .bet-chip{padding:6px 11px; font-size:12px;}
+    .game-list{margin:6px 0 2px;}
+    .game-card{margin:6px 0; padding:9px 12px; gap:10px; border-radius:15px;}
+    .g-icon{width:50px; height:46px;}
+    .mini-card{width:22px; height:32px;}
+    .g-name{font-size:14px;} .g-desc{font-size:10.5px;}
     .throw-pop{padding:6px; max-width:min(88vw,230px);}
     .throw-pop-title{font-size:10px; margin-bottom:4px;}
     .throw-btn{width:34px; height:34px; font-size:19px; border-radius:10px;}
@@ -528,6 +537,42 @@
   .class-card span{display:block; margin-top:4px; font-size:9px; line-height:1.05; font-weight:900; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .class-card.sel{transform:translateY(-3px); border-color:var(--class-accent); box-shadow:0 4px 0 var(--class-accent),0 0 0 3px color-mix(in srgb,var(--class-accent) 20%,transparent);}
   .class-card:focus-visible{outline:3px solid var(--orange-2); outline-offset:2px;}
+
+  /* ---------- Sảnh chọn loại bài ---------- */
+  .game-list{display:flex; flex-direction:column; gap:0; margin:10px 0 4px;}
+  .game-card{position:relative; display:flex; align-items:center; gap:12px; width:100%;
+    text-align:left; margin:9px 0; padding:12px 14px; cursor:pointer; color:var(--ink);
+    background:linear-gradient(180deg,#fff,#fffaf0);
+    border:3px solid color-mix(in srgb,var(--game-accent,#26a269) 42%,var(--line));
+    border-radius:18px; box-shadow:0 4px 0 color-mix(in srgb,var(--game-accent,#26a269) 60%,#c9b79a);
+    transition:transform .12s, box-shadow .12s, filter .12s;}
+  .game-card:active{transform:translateY(3px); box-shadow:0 1px 0 color-mix(in srgb,var(--game-accent,#26a269) 60%,#c9b79a);}
+  .game-card:focus-visible{outline:3px solid var(--orange-2); outline-offset:2px;}
+  @media(hover:hover){ .game-card:not(.locked):hover{filter:brightness(1.02); transform:translateY(-1px);} }
+  .g-icon{position:relative; flex:0 0 auto; width:60px; height:56px;}
+  .mini-card{position:absolute; top:50%; left:50%; width:27px; height:39px; border-radius:6px;
+    background:linear-gradient(180deg,#fff,#fdf6e6); color:var(--ink); font-weight:900; line-height:1;
+    border:2px solid #fff; outline:1.5px solid rgba(0,0,0,.12);
+    box-shadow:0 2px 4px rgba(0,0,0,.25);
+    transform:translate(-50%,-50%) translateX(var(--tx,0)) rotate(var(--rot,0));}
+  .mini-card.red{color:var(--red);}
+  .mini-card b{position:absolute; top:2px; left:3px; font-size:10px;}
+  .mini-card span{position:absolute; bottom:1px; right:3px; font-size:11px;}
+  .g-body{flex:1; min-width:0; display:flex; flex-direction:column; gap:3px;}
+  .g-name{font-size:16px; font-weight:900; color:var(--brown-d);
+    font-family:'Baloo 2','Nunito',sans-serif; letter-spacing:.2px;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .g-desc{font-size:11.5px; color:#7d6a52; font-weight:700; line-height:1.35;}
+  .g-go{flex:0 0 auto; font-size:15px; font-weight:900; color:var(--game-accent,#26a269);}
+  .game-badge{position:absolute; top:-9px; right:14px; font-size:10px; font-weight:900;
+    padding:2px 9px; border-radius:999px; border:2px solid var(--brown-d);
+    font-family:'Baloo 2','Nunito',sans-serif; box-shadow:0 2px 0 rgba(0,0,0,.18);}
+  .game-badge.hot{background:linear-gradient(180deg,#ffe08a,var(--orange-2)); color:#5c3200;}
+  .game-badge.soon{background:#efe6d6; color:#8a7860; border-color:#c9b79a; box-shadow:0 2px 0 rgba(0,0,0,.08);}
+  .game-card.locked{cursor:default; filter:grayscale(.4); opacity:.72;
+    background:#f6f1e7; border-color:var(--line); box-shadow:0 4px 0 rgba(0,0,0,.07);}
+  .game-card.locked:active{transform:none; box-shadow:0 4px 0 rgba(0,0,0,.07);}
+  .game-card.locked .g-go{color:#b6a488;}
 
   .item-dock{padding:5px 8px; border-radius:18px; background:rgba(8,54,36,.5);
     border:2px solid rgba(255,255,255,.2); box-shadow:inset 0 1px 0 rgba(255,255,255,.12);}

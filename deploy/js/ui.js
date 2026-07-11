@@ -227,6 +227,46 @@ function confetti(){
 /* =========================================================================
    MÀN HÌNH
    ========================================================================= */
+// Sảnh chọn loại bài — màn đầu tiên sau khi đăng nhập
+function showGameSelect(){
+  const cards=GAME_TYPES.map(g=>{
+    const locked=!g.ready;
+    const pips=g.pips.map((c,i)=>{
+      const off=i-(g.pips.length-1)/2;
+      return `<span class="mini-card ${c.red?'red':''}" style="--tx:${(off*11).toFixed(1)}px; --rot:${(off*14).toFixed(1)}deg">`
+        +`<b>${c.r}</b><span>${c.s}</span></span>`;
+    }).join('');
+    const badge=g.ready
+      ? `<span class="game-badge hot">${esc(g.tag)}</span>`
+      : `<span class="game-badge soon">🔒 ${esc(g.tag)}</span>`;
+    return `<button class="game-card ${locked?'locked':''}" data-game="${g.id}" style="--game-accent:${g.accent}"
+        aria-label="${esc(g.name)}${locked?' — sắp ra mắt':''}"${locked?' aria-disabled="true"':''}>
+      <span class="g-icon" aria-hidden="true">${pips}</span>
+      <span class="g-body">
+        <span class="g-name">${esc(g.name)}</span>
+        <span class="g-desc">${esc(g.desc)}</span>
+      </span>
+      ${badge}
+      <span class="g-go" aria-hidden="true">${g.ready?'▶':''}</span>
+    </button>`;
+  }).join('');
+  $('panel').innerHTML=`
+    <div class="logo">Sảnh bài</div>
+    <h1 style="font-size:30px">Chọn loại bài</h1>
+    <p class="sub">Chọn trò muốn chơi · <span class="hl">Tiến Lên</span> đang mở, các trò khác sắp ra mắt.</p>
+    <div class="game-list">${cards}</div>
+    <button class="linkish" id="gsSignOut">Đăng xuất${profile&&profile.email?` (${esc(profile.email)})`:''}</button>`;
+  $('overlay').style.display='flex';
+  renderCoinBar();
+  document.querySelectorAll('.game-card').forEach(btn=>btn.onclick=()=>{
+    const g=GAME_TYPES.find(x=>x.id===btn.dataset.game);
+    if(!g) return;
+    if(!g.ready){ toast(`${g.name} đang phát triển — sắp ra mắt! 🔜`); return; }
+    gameType=g.id;
+    showMenu();
+  });
+  $('gsSignOut').onclick=signOut;
+}
 function showMenu(){
   const classCards=Object.entries(CHARACTER_CLASSES).map(([id,c])=>`
     <button class="class-card ${id===myClass?'sel':''}" data-class="${id}" style="--class-accent:${c.accent}" aria-label="Chọn ${c.name}">
@@ -251,6 +291,7 @@ function showMenu(){
       ${isAdmin()?'<button class="btn block ghost" id="mAdmin">🛠️ Quản lý (admin)</button>':''}
     </div>
     <p class="sub" style="margin:16px 0 0; font-size:11px">Đặt mệnh giá mỗi ván · ai TỚI trước ăn cả pot 🪙</p>
+    <button class="linkish" id="mBackGames">← Đổi loại bài</button>
     <button class="linkish" id="mSignOut">Đăng xuất${profile&&profile.email?` (${esc(profile.email)})`:''}</button>`;
   $('overlay').style.display='flex';
   renderCoinBar();
@@ -264,6 +305,7 @@ function showMenu(){
   $('mHost').onclick=()=>{ syncName(nm()); showOnlineSetup(()=>createRoom(myName,roomMaxPlayers)); };
   $('mJoin').onclick=()=>{ syncName(nm()); showJoin(myName); };
   if($('mAdmin')) $('mAdmin').onclick=showAdminPanel;
+  $('mBackGames').onclick=showGameSelect;
   $('mSignOut').onclick=signOut;
 }
 function showAdminPanel(){
@@ -512,5 +554,5 @@ function cleanupRoom(){
 }
 function leaveToMenu(){
   cleanupRoom();
-  render(); showMenu();
+  render(); showGameSelect();
 }

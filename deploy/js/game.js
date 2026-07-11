@@ -9,6 +9,7 @@ let sortByRank=true;
 let botTimer=null, botToken=0;
 let myName='Bạn';
 let myClass=localStorage.getItem('tienlen-character')||'captain';
+let gameType='tienlen';   // loại bài đang chọn ở sảnh (chỉ 'tienlen' chơi được)
 
 const CHARACTER_CLASSES={
   captain:{name:'Đội trưởng',asset:'assets/characters/captain.webp',accent:'#26a269'},
@@ -20,6 +21,19 @@ const BOT_INFO={
   1:{name:'An',emoji:'🐱',classId:'mage'},
   3:{name:'Cường',emoji:'🦊',classId:'trickster'},
 };
+// Sảnh chọn loại bài. Chỉ 'tienlen' đã chơi được; còn lại hiện thẻ "Sắp ra mắt".
+// pips = vài lá minh hoạ vẽ thành hình quạt nhỏ trên thẻ.
+const GAME_TYPES=[
+  {id:'tienlen', name:'Tiến Lên Miền Nam', accent:'#26a269', ready:true,
+   tag:'Đang mở', desc:'Đánh hết bài trước là Tới · đếm lá ăn xu.',
+   pips:[{r:'3',s:'♠'},{r:'A',s:'♥',red:true},{r:'2',s:'♦',red:true}]},
+  {id:'bacay', name:'Ba Cây', accent:'#e0663a', ready:false,
+   tag:'Sắp ra mắt', desc:'Bài cào 3 lá · cộng nút, ai to hơn ăn.',
+   pips:[{r:'9',s:'♣'},{r:'K',s:'♦',red:true},{r:'8',s:'♠'}]},
+  {id:'xidach', name:'Xì Dách', accent:'#3f7fd0', ready:false,
+   tag:'Sắp ra mắt', desc:'Blackjack kiểu Việt · rút gần 21 nút nhất.',
+   pips:[{r:'A',s:'♠'},{r:'10',s:'♥',red:true}]},
+];
 // câu thoại vui của bot — chọn theo S.ver nên host & guest thấy giống nhau
 const QUIPS=['Hihi chặn nè!','Đỡ được không? 😏','Bài đẹp ghê ta~','Ăn miếng này!','Tới công chuyện!',
   'Ai sợ chưa? 😆','Nhẹ nhàng thôi mà','Bài này khét đó','Đừng giận nha 🤭','Xin lỗi trước nè!'];
@@ -275,7 +289,7 @@ function boot(){
         profile=snap.val(); if(profile&&profile.name) myName=profile.name;
       }catch(e){ console.error(e); }
       attachProfile(user.uid);
-      showMenu();
+      showGameSelect();
     }else{
       if(mode!=='solo'||S){ cleanupRoom(); render(); }   // đăng xuất giữa chừng -> dọn phòng
       detachProfile(); profile=null; renderCoinBar();
