@@ -1,4 +1,4 @@
-const CACHE = 'tienlen-v12-winner-hints';
+const CACHE = 'tienlen-v13-auto-update';
 const ASSETS = [
   './', './index.html', './styles.css', './manifest.webmanifest', './icon-192.png', './icon-512.png',
   './js/config.js', './js/engine.js', './js/state.js', './js/game.js', './js/ui.js', './js/social.js',
@@ -21,13 +21,28 @@ self.addEventListener('activate', e => {
       .then(() => self.clients.claim())
   );
 });
-// Chỉ cache file tĩnh (cùng origin + cdnjs). KHÔNG đụng vào Firebase realtime.
+// File của game ưu tiên mạng để app cài trên điện thoại luôn nhận bản mới;
+// khi mất mạng mới dùng cache. CDN ít đổi nên vẫn ưu tiên cache.
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   const u = new URL(e.request.url);
   const cacheable = u.origin === location.origin || u.hostname === 'cdnjs.cloudflare.com'
     || u.hostname === 'fonts.googleapis.com' || u.hostname === 'fonts.gstatic.com';
   if (!cacheable) return;
+  if (u.origin === location.origin) {
+    e.respondWith(
+      fetch(e.request).then(res => {
+        if (res.ok) {
+          const copy = res.clone();
+          caches.open(CACHE).then(c => c.put(e.request, copy));
+        }
+        return res;
+      }).catch(() => caches.match(e.request).then(hit =>
+        hit || (e.request.mode === 'navigate' ? caches.match('./index.html') : undefined)
+      ))
+    );
+    return;
+  }
   e.respondWith(
     caches.match(e.request).then(hit =>
       hit || fetch(e.request).then(res => {

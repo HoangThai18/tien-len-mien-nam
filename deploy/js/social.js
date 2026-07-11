@@ -324,7 +324,26 @@ document.addEventListener('click',e=>{
 matchMedia('(display-mode: standalone)').addEventListener?.('change',refreshInstallButton);
 refreshInstallButton();
 
-// PWA: cho phep cai nhu app + chay offline (bo qua em neu mo file truc tiep)
-if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+// PWA: luôn kiểm tra bản mới khi mở/lật lại app; service worker mới sẽ tự nhận quyền
+// và tải lại đúng một lần. updateViaCache:none tránh Android giữ sw.js cũ quá lâu.
+if('serviceWorker' in navigator){
+  let swReloading=false;
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{
+    if(swReloading) return;
+    swReloading=true;
+    sessionStorage.setItem('tienlen-just-updated','1');
+    location.reload();
+  });
+  navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(reg=>{
+    reg.update().catch(()=>{});
+    document.addEventListener('visibilitychange',()=>{
+      if(document.visibilityState==='visible') reg.update().catch(()=>{});
+    });
+  }).catch(()=>{});
+}
+if(sessionStorage.getItem('tienlen-just-updated')){
+  sessionStorage.removeItem('tienlen-just-updated');
+  setTimeout(()=>toast('Đã cập nhật bản mới ✓'),900);
+}
 
 boot();   // đăng nhập trước, rồi mới vào menu
