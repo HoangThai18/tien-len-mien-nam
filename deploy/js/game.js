@@ -45,7 +45,7 @@ const seatAvatar=p=>{
 
 /* ---------- Firebase ---------- */
 let db=null, auth=null, roomCode=null, roomRef=null;
-let unsubState=null, unsubActions=null, unsubGuest=null, unsubRoom=null;
+let unsubState=null, unsubActions=null, unsubGuest=null, unsubRoom=null, unsubPresence=null;
 // Tài khoản + ví (cloud): nguồn sự thật của tiền ở users/<uid>
 let profile=null, unsubProfile=null, settledGameId=null;
 let gameBet=10, soloGameCounter=0, throwHintShown=false;
@@ -73,6 +73,7 @@ function detachAll(){
   if(unsubActions){unsubActions.off(); unsubActions=null;}
   if(unsubGuest){unsubGuest.off(); unsubGuest=null;}
   if(unsubRoom){unsubRoom.off(); unsubRoom=null;}
+  if(unsubPresence){unsubPresence.off(); unsubPresence=null;}
   if(typeof unsubChat!=='undefined'&&unsubChat){unsubChat.off(); unsubChat=null;}
   if(typeof unsubThrows!=='undefined'&&unsubThrows){unsubThrows.off(); unsubThrows=null;}
 }
@@ -282,8 +283,15 @@ async function createRoom(name){
   roomCode=makeCode();
   roomRef=db.ref('rooms/'+roomCode);
   try{
-    await roomRef.set({created:Date.now(), hostName:myName, hostClass:myClass, bet:gameBet, state:null});
-    roomRef.onDisconnect().remove();
+    await roomRef.set({created:Date.now(), hostName:myName, hostClass:myClass, hostOnline:true, bet:gameBet, state:null});
+    // Trên điện thoại, đổi app để gửi mã có thể ngắt socket vài giây. Giữ phòng lại và chỉ đánh dấu offline.
+    const hostRoom=roomRef;
+    unsubPresence=db.ref('.info/connected');
+    unsubPresence.on('value',snap=>{
+      if(!snap.val()||mode!=='host'||roomRef!==hostRoom) return;
+      hostRoom.update({hostOnline:true,hostDisconnectedAt:null}).catch(()=>{});
+      hostRoom.onDisconnect().update({hostOnline:false,hostDisconnectedAt:firebase.database.ServerValue.TIMESTAMP}).catch(()=>{});
+    });
   }catch(e){
     toast('Không kết nối được Firebase — kiểm tra config & rules'); console.error(e);
     mode='solo'; return;
@@ -364,19 +372,60 @@ function announceTurn(){
 }
 
 /* ---------- GUEST ---------- */
+function setJoinError(message){
+  const el=$('joinMsg');
+  if(el) el.textContent=message||'';
+  if(message) toast(message);
+}
 async function joinRoom(code,name){
   if(!initFirebase()){ showFirebaseSetup(); return; }
   code=(code||'').trim().toUpperCase();
-  if(code.length!==5){ toast('Mã phòng gồm 5 ký tự'); return; }
+  if(code.length!==5){ setJoinError('Mã phòng gồm đúng 5 ký tự'); return; }
+  const joinBtn=$('jGo');
+  if(joinBtn) joinBtn.disabled=true;
+  setJoinError('Đang tìm phòng '+code+'…');
   myName=name||'Khách'; 
   const ref=db.ref('rooms/'+code);
-  const snap=await ref.get().catch(()=>null);
-  if(!snap||!snap.exists()){ toast('Không tìm thấy phòng '+code); return; }
-  const room=snap.val();
-  if(room.guest&&room.guest.name){ toast('Phòng đã đủ người'); return; }
+  let snap;
+  try{ snap=await ref.get(); }
+  catch(e){ console.error(e); setJoinError('Không đọc được phòng — kiểm tra mạng rồi thử lại'); if(joinBtn) joinBtn.disabled=false; return; }
+  if(!snap.exists()){
+    setJoinError('Không tìm thấy phòng '+code+'. Nhờ chủ phòng tạo mã mới.');
+    if(joinBtn) joinBtn.disabled=false;
+    return;
+  }
+  const room=snap.val()||{};
+  if(room.created&&Date.now()-room.created>2*60*60*1000){
+    setJoinError('Mã phòng đã hết hạn — nhờ chủ phòng tạo mã mới');
+    if(joinBtn) joinBtn.disabled=false;
+    return;
+  }
+  if(room.hostOnline===false){
+    setJoinError('Chủ phòng đang mất kết nối — chờ chủ phòng mở lại game');
+    if(joinBtn) joinBtn.disabled=false;
+    return;
+  }
+  if(room.guest&&room.guest.name&&room.guest.online!==false){
+    setJoinError('Phòng đã đủ người');
+    if(joinBtn) joinBtn.disabled=false;
+    return;
+  }
   mode='guest'; myIdx=2; roomCode=code; roomRef=ref;
-  await ref.child('guest').set({name:myName, classId:myClass, joined:Date.now(), coins:(profile?profile.coins||0:0)});
-  ref.child('guest').onDisconnect().remove();
+  const guestRef=ref.child('guest');
+  try{
+    await guestRef.set({name:myName, classId:myClass, joined:Date.now(), online:true, coins:(profile?profile.coins||0:0)});
+  }catch(e){
+    console.error(e); mode='solo'; myIdx=0; roomCode=null; roomRef=null;
+    setJoinError('Không thể vào phòng — kiểm tra quyền Firebase');
+    if(joinBtn) joinBtn.disabled=false;
+    return;
+  }
+  unsubPresence=db.ref('.info/connected');
+  unsubPresence.on('value',connected=>{
+    if(!connected.val()||mode!=='guest'||roomRef!==ref) return;
+    guestRef.update({online:true,disconnectedAt:null}).catch(()=>{});
+    guestRef.onDisconnect().update({online:false,disconnectedAt:firebase.database.ServerValue.TIMESTAMP}).catch(()=>{});
+  });
   showWaiting(true);
   listenChat(); listenThrows(); updateChatUI();
   unsubState=ref.child('state');

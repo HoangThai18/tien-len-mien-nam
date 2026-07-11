@@ -351,6 +351,8 @@
   /* ---------- Lỗi form đăng nhập ---------- */
   .field-err{min-height:16px; margin:4px 0 2px; text-align:center; color:var(--red);
     font-size:12px; font-weight:800;}
+  .join-msg{min-height:34px; margin:6px 0 0; padding:0 4px; line-height:1.35;}
+  .field.code{user-select:text; -webkit-user-select:text; touch-action:auto; caret-color:var(--orange-3);}
   .field.pw{letter-spacing:2px;}
 
   /* ---------- Bảng admin (quản lý xu) ---------- */

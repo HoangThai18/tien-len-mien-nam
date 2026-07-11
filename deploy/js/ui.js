@@ -315,13 +315,21 @@ function showJoin(name){
     <div class="logo">Vào phòng</div>
     <h1 style="font-size:24px">Nhập mã phòng</h1>
     <p class="sub">Hỏi chủ phòng mã 5 ký tự rồi nhập vào đây.</p>
-    <input class="field code" id="inCode" maxlength="5" placeholder="ABCDE" autocapitalize="characters" autocomplete="off">
+    <input class="field code" id="inCode" type="text" inputmode="text" maxlength="5" pattern="[A-Za-z0-9]{5}"
+      placeholder="ABCDE" autocapitalize="characters" autocomplete="off" enterkeyhint="go" spellcheck="false">
+    <p class="field-err join-msg" id="joinMsg" aria-live="polite"></p>
     <div class="menu-gap">
       <button class="btn block" id="jGo">Vào phòng</button>
     </div>
     <button class="linkish" id="jBack">← Quay lại</button>`;
   $('overlay').style.display='flex';
   $('inCode').focus();
+  $('inCode').oninput=e=>{
+    const pos=e.target.selectionStart;
+    e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,5);
+    try{ e.target.setSelectionRange(Math.min(pos,e.target.value.length),Math.min(pos,e.target.value.length)); }catch(err){}
+    $('joinMsg').textContent='';
+  };
   $('jGo').onclick=()=>joinRoom($('inCode').value,name);
   $('inCode').onkeydown=e=>{ if(e.key==='Enter') $('jGo').click(); };
   $('jBack').onclick=showMenu;
@@ -423,8 +431,14 @@ function cleanupRoom(){
   clearTimeout(botTimer); botToken++;
   detachAll();
   if(roomRef){
-    if(mode==='host') roomRef.remove().catch(()=>{});
-    if(mode==='guest') roomRef.child('guest').remove().catch(()=>{});
+    if(mode==='host'){
+      roomRef.onDisconnect().cancel().catch(()=>{});
+      roomRef.remove().catch(()=>{});
+    }
+    if(mode==='guest'){
+      roomRef.child('guest').onDisconnect().cancel().catch(()=>{});
+      roomRef.child('guest').remove().catch(()=>{});
+    }
   }
   roomRef=null; roomCode=null; S=null; selected.clear(); mode='solo'; myIdx=0;
   settledGameId=null;
