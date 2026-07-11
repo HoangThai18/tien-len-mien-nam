@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0b6b46">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Tiến Lên">
+<title>Tiến Lên Miền Nam — Online</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<span class="float-deco" aria-hidden="true" style="left:6%;  top:14%; animation-delay:0s">🍀</span>
+<span class="float-deco" aria-hidden="true" style="left:88%; top:10%; animation-delay:2s">🦋</span>
+<span class="float-deco" aria-hidden="true" style="left:12%; top:62%; animation-delay:4s; font-size:18px">🌼</span>
+<span class="float-deco" aria-hidden="true" style="left:82%; top:58%; animation-delay:1s; font-size:18px">🍄</span>
+<span class="float-deco" aria-hidden="true" style="left:48%; top:20%; animation-delay:3s; font-size:16px">✨</span>
+<div id="app">
+  <div class="seats" id="seats">
+    <div id="seatNodes"></div>
+    <div class="table-center">
+      <div class="round-note" id="roundNote"></div>
+      <div class="pile" id="pile"></div>
+      <div class="played-by" id="playedBy"></div>
+    </div>
+  </div>
+  <div class="me">
+    <div class="my-hero" id="myHero" aria-live="polite"></div>
+    <div class="actions">
+      <button class="btn ghost action-with-icon" id="btnPass"><img src="assets/items/pass.webp" alt="">Bỏ lượt</button>
+      <button class="btn" id="btnPlay">Đánh</button>
+    </div>
+    <div class="hand-wrap"><div class="hand" id="hand"></div></div>
+    <div class="tools item-dock" aria-label="Vật phẩm hỗ trợ">
+      <button class="item-btn" id="btnSort" data-tip="Xếp bài" aria-label="Xếp bài"><img src="assets/items/luck.webp" alt=""></button>
+      <button class="item-btn" id="btnHint" data-tip="Gợi ý" aria-label="Gợi ý nước đi"><img src="assets/items/hint.webp" alt=""></button>
+      <button class="item-btn" id="btnBomb" data-tip="Bộ chặt" aria-label="Chọn bộ chặt"><img src="assets/items/bomb.webp" alt=""></button>
+      <span id="handCount"></span>
+      <button class="btn ghost sm" id="btnLeave" style="margin-left:4px">Thoát</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="flash" id="flash"><b id="flashText">CHẶT!</b></div>
+
+<div class="coin-pill coin-top" id="coinBar" style="display:none"><span class="ic" aria-hidden="true">🪙</span><b id="coinVal">--</b></div>
+<button class="chat-fab" id="chatFab" aria-label="Mở trò chuyện">💬<span class="badge" id="chatBadge"></span></button>
+<div class="chat-panel" id="chatPanel">
+  <div class="chat-head"><span>💬 Trò chuyện</span><button class="chat-x" id="chatClose" aria-label="Đóng trò chuyện">✕</button></div>
+  <div class="chat-log" id="chatLog"></div>
+  <div class="chips" id="chatChips"></div>
+  <div class="chat-input">
+    <input id="chatText" maxlength="100" placeholder="Nhắn gì đó…" autocomplete="off">
+    <button class="btn sm" id="chatSend">Gửi</button>
+  </div>
+</div>
+<div class="overlay" id="overlay"><div class="card-panel" id="panel"></div></div>
+
+<!-- Firebase compat SDK (cdnjs) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-auth-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-database-compat.min.js"></script>
+
+<script src="js/config.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/state.js"></script>
+<script src="js/game.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/social.js"></script>
+</body>
+</html>

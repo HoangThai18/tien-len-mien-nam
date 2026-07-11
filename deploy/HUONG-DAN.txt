@@ -1,0 +1,108 @@
+═══════════════════════════════════════════════════════
+  TIẾN LÊN MIỀN NAM — HƯỚNG DẪN ĐƯA LÊN MẠNG & CÀI VÀO MÁY
+═══════════════════════════════════════════════════════
+
+Gói này gồm:
+  index.html            ← game (đăng nhập, ví xu/đánh ăn, chat, ném đồ trêu, online)
+  manifest.webmanifest  ← để Android cài như app thật, tự khoá màn ngang
+  sw.js                 ← để game chạy offline sau lần mở đầu
+  icon-192.png / icon-512.png ← icon app
+
+──────────────────────────────────────────
+BƯỚC 0 — CẤU HÌNH FIREBASE (bắt buộc, 1 lần)
+──────────────────────────────────────────
+Game giờ có ĐĂNG NHẬP + VÍ XU nên phải bật thêm Authentication.
+
+0a) CONFIG: mở index.html, tìm khối FIREBASE_CONFIG gần đầu file, dán config
+    project của bạn (bản gói này đã điền sẵn 1 config mẫu — muốn dùng project
+    riêng thì thay lại).
+    Chưa có project? console.firebase.google.com → Add project
+      → Project settings ⚙ → Your apps → </> Web → chép firebaseConfig
+
+0b) BẬT ĐĂNG NHẬP: Build → Authentication → Get started
+      → tab "Sign-in method" → bật "Email/Password" → Save.
+
+0c) REALTIME DATABASE: Build → Realtime Database → Create
+      (chọn asia-southeast1). Vào tab "Rules", DÁN đúng đoạn dưới rồi Publish
+      (khác "test mode" cũ — bộ luật này gắn với đăng nhập, KHÔNG hết hạn 30 ngày):
+
+      {
+        "rules": {
+          "rooms": { "$code": { ".read": "auth != null", ".write": "auth != null" } },
+          "users": {
+            ".read": "auth.token.email === 'Phanthai18072001@gmail.com'",
+            "$uid": {
+              ".read": "auth != null",
+              ".write": "auth != null && (auth.uid === $uid || auth.token.email === 'Phanthai18072001@gmail.com')",
+              "coins": { ".validate": "newData.isNumber()" },
+              "wins":  { ".validate": "newData.isNumber()" },
+              "games": { ".validate": "newData.isNumber()" } } }
+        }
+      }
+
+    → Người thường chỉ sửa ví CỦA MÌNH; tài khoản ADMIN (email khai ở trên) được
+      xem danh sách + cộng/đặt xu cho mọi người. Phòng chơi thì ai đăng nhập cũng vào.
+
+0d) ADMIN (tuỳ chọn — để "cho tiền" & quản lý): mở deploy/js/config.js, sửa
+    ADMIN_EMAILS = ["email-admin-cua-ban@gmail.com"] cho KHỚP email ở phần Rules
+    trên (mặc định đang để Phanthai18072001@gmail.com). Đăng nhập bằng email đó →
+    ở menu hiện nút "🛠️ Quản lý" để tìm tài khoản và cộng/đặt xu.
+    (Chỉ hiện nút là chưa đủ — Rules mới là thứ cho phép ghi ví người khác.)
+    Mỗi tài khoản tạo mới được tặng sẵn 1.000.000 🪙.
+
+──────────────────────────────────────────
+BƯỚC 1 — ĐƯA LÊN MẠNG (miễn phí, ~1 phút)
+──────────────────────────────────────────
+Cách dễ nhất: vào  app.netlify.com/drop
+  → kéo thả NGUYÊN THƯ MỤC này (hoặc file zip) vào trang
+  → nhận link dạng https://ten-gi-do.netlify.app
+(Đăng ký tài khoản free nếu muốn giữ link vĩnh viễn + tự đặt tên link.)
+
+Cách khác: GitHub Pages, Cloudflare Pages, Vercel — đều được,
+miễn là cả 5 file nằm cùng thư mục gốc.
+
+──────────────────────────────────────────
+BƯỚC 2 — CÀI VÀO ĐIỆN THOẠI (cả 2 máy)
+──────────────────────────────────────────
+ANDROID (Chrome):
+  Mở link → menu ⋮ → "Cài đặt ứng dụng" (hoặc "Thêm vào Màn hình chính")
+  → có icon riêng, mở full màn hình, TỰ XOAY NGANG.
+
+iPHONE (bắt buộc dùng Safari):
+  Mở link → nút Chia sẻ (ô vuông mũi tên) → "Thêm vào MH chính"
+  → có icon riêng, mở full màn hình.
+
+──────────────────────────────────────────
+BƯỚC 3 — CHƠI CHUNG
+──────────────────────────────────────────
+  Máy 1: mở app → "Tạo phòng online" → đọc mã 5 ký tự cho bạn
+  Máy 2: mở app → "Vào phòng bằng mã" → nhập mã
+  → Ván tự chia. iPhone với Android chơi chung vô tư
+    vì cả 2 cùng nối vào Firebase, không liên quan hệ điều hành.
+
+──────────────────────────────────────────
+TUỲ CHỌN — MUỐN FILE .APK THẬT ĐỂ GỬI QUA ZALO?
+──────────────────────────────────────────
+Sau khi có link ở Bước 1:
+  → vào  pwabuilder.com  → dán link → Package for stores → Android
+  → tải gói về, trong đó có file .apk cài trực tiếp
+    (điện thoại sẽ hỏi "cho phép cài từ nguồn không xác định" → đồng ý).
+iPhone thì không có đường tương tự nếu không có tài khoản
+Apple Developer 99$/năm — dùng cách "Thêm vào MH chính" ở Bước 2 là đẹp nhất.
+
+──────────────────────────────────────────
+LƯU Ý
+──────────────────────────────────────────
+• Phải ĐĂNG NHẬP mới chơi được (kể cả chơi với máy) — lần đầu cần có MẠNG.
+  Đăng nhập 1 lần rồi thì mở lại offline vẫn vào chơi solo được (ví hiện "—"
+  khi mất mạng, xu sẽ ghi lại khi có mạng).
+• KHÔNG mở bằng cách nhấp đúp file index.html (file://) nữa — đăng nhập
+  Firebase cần chạy trên link web/PWA đã cài. Hãy dùng bản đã đưa lên mạng
+  ở BƯỚC 1, hoặc bản đã "Thêm vào MH chính".
+• Bộ luật Rules ở BƯỚC 0c gắn với đăng nhập nên KHÔNG hết hạn 30 ngày như
+  "test mode" cũ. Muốn chống gian lận xu triệt để cần Cloud Functions (nâng cao).
+• Tiền đánh ăn kiểu "đếm lá": ai TỚI (hết bài) trước là kết ván ngay, người
+  còn bài trả (số lá còn lại × mệnh giá) cho người thắng.
+• Sửa game xong muốn cập nhật: kéo thả lại thư mục vào Netlify,
+  link giữ nguyên. Trên điện thoại đóng hẳn app mở lại là nhận bản mới
+  (sw.js bản mới sẽ tự thay cache).
