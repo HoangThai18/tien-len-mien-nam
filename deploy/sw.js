@@ -1,10 +1,18 @@
-const CACHE = 'tienlen-v17-account-landscape';
+const CACHE = 'tienlen-v26-water-dragon';
 const ASSETS = [
   './', './index.html', './styles.css', './manifest.webmanifest', './icon-192.png', './icon-512.png',
-  './js/config.js', './js/engine.js', './js/state.js', './js/game.js', './js/ui.js', './js/social.js',
+  './js/config.js', './js/engine.js', './js/state.js', './js/game.js', './js/ui.js', './js/daorong.js', './js/social.js',
   './assets/characters/captain.webp', './assets/characters/mage.webp',
   './assets/characters/guardian.webp', './assets/characters/trickster.webp',
   './assets/items/luck.webp', './assets/items/hint.webp', './assets/items/bomb.webp', './assets/items/pass.webp',
+  './assets/dragons/fire.png', './assets/dragons/dark.png', './assets/dragons/water.png',
+  './assets/dragon-island/island.webp',
+  './assets/dragon-island/items/shop.webp', './assets/dragon-island/items/quest.webp',
+  './assets/dragon-island/items/breed.webp', './assets/dragon-island/items/food.webp',
+  './assets/dragon-island/items/arena.webp', './assets/dragon-island/items/codex.webp',
+  './assets/dragon-island/items/egg.webp', './assets/dragon-island/items/gem.webp',
+  './assets/dragon-island/items/gold.webp', './assets/dragon-island/items/rock.webp',
+  './assets/dragon-island/items/star.webp', './assets/dragon-island/items/gift.webp',
   'https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-auth-compat.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-database-compat.min.js',

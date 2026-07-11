@@ -27,6 +27,8 @@ const GAME_TYPES=[
   {id:'tienlen', name:'Tiến Lên Miền Nam', accent:'#26a269', ready:true,
    tag:'Đang mở', desc:'Đánh hết bài trước là Tới · đếm lá ăn xu.',
    pips:[{r:'3',s:'♠'},{r:'A',s:'♥',red:true},{r:'2',s:'♦',red:true}]},
+  {id:'daorong', name:'Đảo Rồng', accent:'#2f8fce', ready:true, icon:'🐉',
+   tag:'Mới', desc:'Nuôi rồng trên đảo · rồng sinh vàng, chạm để thu. Lưu theo tài khoản.'},
   {id:'bacay', name:'Ba Cây', accent:'#e0663a', ready:false,
    tag:'Sắp ra mắt', desc:'Bài cào 3 lá · cộng nút, ai to hơn ăn.',
    pips:[{r:'9',s:'♣'},{r:'K',s:'♦',red:true},{r:'8',s:'♠'}]},
@@ -309,10 +311,15 @@ function boot(){
         await ensureProfile(user);
         const snap=await db.ref('users/'+user.uid).get();   // nạp 1 lần để menu có sẵn tên/xu
         profile=snap.val(); if(profile&&profile.name) myName=profile.name;
-      }catch(e){ console.error(e); }
+      }catch(e){ console.error(e);
+        // Không đọc/ghi được users/<uid> gần như luôn là do Rules Firebase chưa mở mục "users"
+        toast('⚠️ Không lưu được tên/xu — kiểm tra Rules Firebase (mục "users"). Xem HUONG-DAN.txt mục 0c'); }
       attachProfile(user.uid);
-      showGameSelect();
+      let resume=null; try{ resume=localStorage.getItem('lastGame'); }catch(_){}
+      if(resume==='daorong' && typeof showDragonIsland==='function') showDragonIsland();  // reload -> vào lại đảo
+      else showGameSelect();
     }else{
+      if(typeof drActive!=='undefined'&&drActive) leaveDragonIsland(true);   // đang ở đảo -> thoát
       if(mode!=='solo'||S){ cleanupRoom(); render(); }   // đăng xuất giữa chừng -> dọn phòng
       detachProfile(); profile=null; renderCoinBar();
       showLogin();

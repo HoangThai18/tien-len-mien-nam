@@ -231,11 +231,13 @@ function confetti(){
 function showGameSelect(){
   const cards=GAME_TYPES.map(g=>{
     const locked=!g.ready;
-    const pips=g.pips.map((c,i)=>{
-      const off=i-(g.pips.length-1)/2;
-      return `<span class="mini-card ${c.red?'red':''}" style="--tx:${(off*11).toFixed(1)}px; --rot:${(off*14).toFixed(1)}deg">`
-        +`<b>${c.r}</b><span>${c.s}</span></span>`;
-    }).join('');
+    const pips=g.icon
+      ? `<span class="g-emoji">${g.icon}</span>`
+      : g.pips.map((c,i)=>{
+          const off=i-(g.pips.length-1)/2;
+          return `<span class="mini-card ${c.red?'red':''}" style="--tx:${(off*11).toFixed(1)}px; --rot:${(off*14).toFixed(1)}deg">`
+            +`<b>${c.r}</b><span>${c.s}</span></span>`;
+        }).join('');
     const badge=g.ready
       ? `<span class="game-badge hot">${esc(g.tag)}</span>`
       : `<span class="game-badge soon">🔒 ${esc(g.tag)}</span>`;
@@ -253,7 +255,7 @@ function showGameSelect(){
   $('panel').innerHTML=`
     <div class="logo">Sảnh bài</div>
     <h1 style="font-size:30px">Chọn loại bài</h1>
-    <p class="sub">Chọn trò muốn chơi · <span class="hl">Tiến Lên</span> đang mở, các trò khác sắp ra mắt.</p>
+    <p class="sub">Chọn trò muốn chơi · <span class="hl">Tiến Lên</span> &amp; <span class="hl">Đảo Rồng</span> đang mở, thêm trò sắp ra mắt.</p>
     <div class="game-list">${cards}</div>
     <button class="linkish" id="gsSignOut">Đăng xuất${profile&&profile.email?` (${esc(profile.email)})`:''}</button>`;
   $('overlay').style.display='flex';
@@ -263,6 +265,7 @@ function showGameSelect(){
     if(!g) return;
     if(!g.ready){ toast(`${g.name} đang phát triển — sắp ra mắt! 🔜`); return; }
     gameType=g.id;
+    if(g.id==='daorong'){ showDragonIsland(); return; }
     showMenu();
   });
   $('gsSignOut').onclick=signOut;
