@@ -307,6 +307,21 @@
   @media (orientation:portrait) and (max-width:900px){
     .rotate-guard{display:flex;}
     body.allow-portrait .rotate-guard{display:none;}
+    /* Khi người chơi vẫn chọn màn dọc, panel cao phải bắt đầu từ trên để cuộn đủ hai đầu. */
+    body.allow-portrait .overlay{align-items:flex-start; justify-content:center; overflow-y:auto;
+      padding:max(40px,env(safe-area-inset-top)) 12px max(40px,env(safe-area-inset-bottom));}
+    body.allow-portrait .card-panel{max-width:430px; margin:0 auto; padding:20px 14px;}
+    body.allow-portrait .menu-fan{height:54px; margin:0 0 3px;}
+    body.allow-portrait .menu-fan .card{width:38px; height:54px;}
+    body.allow-portrait h1{font-size:27px; margin:3px 0 1px;}
+    body.allow-portrait .sub{font-size:12px; margin-bottom:12px;}
+    body.allow-portrait .class-title{margin:-4px 0 6px;}
+    body.allow-portrait .class-picker{gap:5px; margin-bottom:7px;}
+    body.allow-portrait .class-card{padding:3px 2px 4px; border-radius:12px;}
+    body.allow-portrait .class-card span{font-size:8px;}
+    body.allow-portrait .field{padding:11px 12px; margin:4px 0;}
+    body.allow-portrait .menu-gap{gap:8px; margin-top:6px;}
+    body.allow-portrait .btn.block{padding:12px;}
   }
 
   /* ---------- Chip mệnh giá cược ---------- */
