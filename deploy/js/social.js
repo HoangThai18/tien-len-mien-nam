@@ -262,6 +262,7 @@ $('btnLeave').onclick=()=>{
 /* ---------- Cài PWA + ưu tiên màn hình ngang ---------- */
 let deferredInstallPrompt=null;
 const installBtn=$('installAppBtn');
+const installHelp=$('installHelp');
 const isStandalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
 const isMobileScreen=()=>matchMedia('(max-width: 900px)').matches&&('ontouchstart' in window||navigator.maxTouchPoints>0);
 function refreshInstallButton(){
@@ -273,12 +274,33 @@ async function installApp(){
   if(deferredInstallPrompt){
     const p=deferredInstallPrompt; deferredInstallPrompt=null;
     p.prompt();
-    try{ await p.userChoice; }catch(e){}
+    try{
+      const choice=await p.userChoice;
+      if(!choice||choice.outcome!=='accepted') showInstallHelp();
+    }catch(e){ showInstallHelp(); }
     refreshInstallButton();
     return;
   }
+  showInstallHelp();
+}
+function showInstallHelp(){
   const ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
-  toast(ios?'Nhấn Chia sẻ rồi chọn “Thêm vào Màn hình chính”':'Mở menu trình duyệt ⋮ rồi chọn “Cài đặt ứng dụng”');
+  const text=$('installHelpText');
+  if(text) text.innerHTML=ios
+    ? '<p>1. Mở trang này bằng <b>Safari</b>.</p><p>2. Nhấn nút <b>Chia sẻ</b> rồi chọn <b>Thêm vào Màn hình chính</b>.</p>'
+    : '<p>Nếu đang mở từ Facebook, Zalo hoặc Messenger: nhấn <b>⋮ → Mở bằng Chrome/Samsung Internet</b>.</p><p>Sau đó nhấn lại <b>Cài app</b>, hoặc chọn <b>⋮ → Cài đặt ứng dụng / Thêm vào màn hình chờ</b>.</p>';
+  if(installHelp){ installHelp.classList.add('show'); installHelp.setAttribute('aria-hidden','false'); }
+}
+function closeInstallHelp(){
+  if(installHelp){ installHelp.classList.remove('show'); installHelp.setAttribute('aria-hidden','true'); }
+}
+async function copyAppLink(){
+  const url=location.origin+location.pathname;
+  const btn=$('copyAppLink');
+  try{
+    await navigator.clipboard.writeText(url);
+    if(btn){ btn.textContent='Đã sao chép ✓'; setTimeout(()=>btn.textContent='Sao chép đường dẫn',1800); }
+  }catch(e){ prompt('Sao chép đường dẫn này:',url); }
 }
 function requestLandscape(){
   if(!isMobileScreen()||!isStandalone()||!screen.orientation||!screen.orientation.lock) return;
@@ -291,6 +313,9 @@ window.addEventListener('appinstalled',()=>{
   deferredInstallPrompt=null; refreshInstallButton(); toast('Đã cài Tiến Lên ✓');
 });
 if(installBtn) installBtn.onclick=installApp;
+$('closeInstallHelp').onclick=closeInstallHelp;
+$('copyAppLink').onclick=copyAppLink;
+if(installHelp) installHelp.onclick=e=>{ if(e.target===installHelp) closeInstallHelp(); };
 $('rotateContinue').onclick=()=>document.body.classList.add('allow-portrait');
 document.addEventListener('click',e=>{
   if(e.target.closest('#mSolo,#mHost,#mJoin,#btnPlay')) requestLandscape();
