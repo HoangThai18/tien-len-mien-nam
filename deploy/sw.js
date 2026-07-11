@@ -1,11 +1,14 @@
-const CACHE = 'tienlen-v26-water-dragon';
+const CACHE = 'tienlen-v32-dragon-walk-cycles';
 const ASSETS = [
   './', './index.html', './styles.css', './manifest.webmanifest', './icon-192.png', './icon-512.png',
   './js/config.js', './js/engine.js', './js/state.js', './js/game.js', './js/ui.js', './js/daorong.js', './js/social.js',
   './assets/characters/captain.webp', './assets/characters/mage.webp',
   './assets/characters/guardian.webp', './assets/characters/trickster.webp',
   './assets/items/luck.webp', './assets/items/hint.webp', './assets/items/bomb.webp', './assets/items/pass.webp',
-  './assets/dragons/fire.png', './assets/dragons/dark.png', './assets/dragons/water.png',
+  './assets/dragons/fire.png', './assets/dragons/water.png', './assets/dragons/plant.png',
+  './assets/dragons/earth.png', './assets/dragons/electric.png', './assets/dragons/ice.png',
+  './assets/dragons/lava.png', './assets/dragons/steam.png', './assets/dragons/swamp.png',
+  './assets/dragons/storm.png', './assets/dragons/dark.png', './assets/dragons/light.png',
   './assets/dragon-island/island.webp',
   './assets/dragon-island/items/shop.webp', './assets/dragon-island/items/quest.webp',
   './assets/dragon-island/items/breed.webp', './assets/dragon-island/items/food.webp',
