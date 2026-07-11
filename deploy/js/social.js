@@ -330,6 +330,9 @@ if('serviceWorker' in navigator){
   let swReloading=false;
   navigator.serviceWorker.addEventListener('controllerchange',()=>{
     if(swReloading) return;
+    // Không tải lại giữa lúc đang chờ/chơi phòng online vì sẽ làm mất listener của host.
+    // Worker mới đã nắm quyền; lần rời phòng hoặc mở app sau sẽ dùng ngay bản mới.
+    if(roomRef){ toast('Có bản cập nhật · sẽ áp dụng sau khi rời phòng'); return; }
     swReloading=true;
     sessionStorage.setItem('tienlen-just-updated','1');
     location.reload();

@@ -43,7 +43,7 @@ const seatAvatar=p=>{
 
 /* ---------- Firebase ---------- */
 let db=null, auth=null, roomCode=null, roomRef=null;
-let unsubState=null, unsubActions=null, unsubGuest=null, unsubRoom=null, unsubPresence=null;
+let unsubState=null, unsubActions=null, unsubGuest=null, unsubLegacyGuest=null, unsubRoom=null, unsubPresence=null;
 // Tài khoản + ví (cloud): nguồn sự thật của tiền ở users/<uid>
 let profile=null, unsubProfile=null, settledGameId=null;
 let gameBet=10, roomMaxPlayers=2, roomPlayers={}, soloGameCounter=0, throwHintShown=false;
@@ -79,6 +79,7 @@ function detachAll(){
   if(unsubState){unsubState.off(); unsubState=null;}
   if(unsubActions){unsubActions.off(); unsubActions=null;}
   if(unsubGuest){unsubGuest.off(); unsubGuest=null;}
+  if(unsubLegacyGuest){unsubLegacyGuest.off(); unsubLegacyGuest=null;}
   if(unsubRoom){unsubRoom.off(); unsubRoom=null;}
   if(unsubPresence){unsubPresence.off(); unsubPresence=null;}
   if(typeof unsubChat!=='undefined'&&unsubChat){unsubChat.off(); unsubChat=null;}
@@ -287,13 +288,14 @@ function boot(){
 async function createRoom(name,maxPlayers){
   if(!initFirebase()){ showFirebaseSetup(); return; }
   myName=name||myName||'Chủ phòng'; mode='host'; myIdx=0;
+  S=null; selected.clear();
   roomMaxPlayers=[2,3,4].includes(+maxPlayers)?+maxPlayers:2;
   const hostPlayer={uid:auth.currentUser.uid,name:myName,classId:myClass,coins:(profile?profile.coins||0:0),online:true,joined:Date.now()};
   roomPlayers={0:hostPlayer};
   roomCode=makeCode();
   roomRef=db.ref('rooms/'+roomCode);
   try{
-    await roomRef.set({created:Date.now(), maxPlayers:roomMaxPlayers, hostName:myName, hostClass:myClass,
+    await roomRef.set({created:Date.now(), protocol:2, maxPlayers:roomMaxPlayers, hostName:myName, hostClass:myClass,
       hostOnline:true, bet:gameBet, players:roomPlayers, state:null});
     // Trên điện thoại, đổi app để gửi mã có thể ngắt socket vài giây. Giữ phòng lại và chỉ đánh dấu offline.
     const hostRoom=roomRef;
@@ -329,6 +331,24 @@ async function createRoom(name,maxPlayers){
     });
     pushState();
   });
+  // Tương thích app cache cũ: bản trước ghi khách 2 người ở rooms/<code>/guest.
+  // Chuyển khách đó sang players/2 để host mới vẫn tự chia bài, không quay chờ mãi.
+  if(roomMaxPlayers===2){
+    unsubLegacyGuest=roomRef.child('guest');
+    unsubLegacyGuest.on('value',snap=>{
+      const g=snap.val();
+      if(!g||!g.name||mode!=='host') return;
+      const legacyUid='legacy-'+String(g.joined||'guest');
+      const mapped={uid:legacyUid,name:String(g.name).slice(0,12),
+        classId:CHARACTER_CLASSES[g.classId]?g.classId:'guardian',
+        coins:typeof g.coins==='number'?g.coins:0, online:g.online!==false,
+        joined:g.joined||Date.now(), legacy:true};
+      roomRef.child('players/2').transaction(current=>{
+        if(current&&current.uid&&current.uid!==legacyUid) return current;
+        return mapped;
+      }).catch(e=>{ console.error(e); toast('Không đồng bộ được người chơi thứ 2'); });
+    });
+  }
 }
 function hostStartGame(players,openingSeat){
   players=players||roomPlayers||{};
