@@ -62,7 +62,7 @@ Cách khác: GitHub Pages, Cloudflare Pages, Vercel — đều được,
 miễn là cả 5 file nằm cùng thư mục gốc.
 
 ──────────────────────────────────────────
-BƯỚC 2 — CÀI VÀO ĐIỆN THOẠI (cả 2 máy)
+BƯỚC 2 — CÀI VÀO ĐIỆN THOẠI (các máy tham gia)
 ──────────────────────────────────────────
 ANDROID (Chrome):
   Mở link → menu ⋮ → "Cài đặt ứng dụng" (hoặc "Thêm vào Màn hình chính")
@@ -75,7 +75,8 @@ iPHONE (bắt buộc dùng Safari):
 ──────────────────────────────────────────
 BƯỚC 3 — CHƠI CHUNG
 ──────────────────────────────────────────
-  Máy 1: mở app → "Tạo phòng online" → đọc mã 5 ký tự cho bạn
+  Máy chủ: mở app → "Tạo phòng online" → chọn giới hạn 2/3/4 người → đọc mã 5 ký tự cho bạn bè
+  Phòng online chỉ dùng người thật, không tự thêm máy; đủ số người đã chọn mới chia bài.
   Máy 2: mở app → "Vào phòng bằng mã" → nhập mã
   → Ván tự chia. iPhone với Android chơi chung vô tư
     vì cả 2 cùng nối vào Firebase, không liên quan hệ điều hành.

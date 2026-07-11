@@ -60,6 +60,8 @@
     color:var(--red); font-size:9px; font-weight:900; padding:2px 7px; border-radius:10px;
     border:2px solid var(--red); opacity:0; transition:.2s; transform:rotate(8deg);}
   .seat.passed .pass-tag{opacity:1;}
+  .seat.empty{opacity:.58; pointer-events:none;}
+  .empty-avatar{font-size:28px; color:rgba(58,42,26,.5); border-style:dashed; box-shadow:none;}
   .place-badge{position:absolute; inset:-3px; display:flex; align-items:center; justify-content:center;
     font-size:22px; background:rgba(255,255,255,.72); border-radius:50%;}
   .net-dot{position:absolute; bottom:-1px; right:-1px; width:13px; height:13px; border-radius:50%;
@@ -347,6 +349,12 @@
   .bet-chip:active{transform:translateY(2px); box-shadow:0 1px 0 var(--brown-d);}
   .bet-chip.sel{background:linear-gradient(180deg,#ffe08a,var(--orange-2));
     outline:3px solid var(--orange-2); outline-offset:1px;}
+
+  .waiting-players{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; margin:10px 0 4px;}
+  .waiting-player{display:flex; align-items:center; gap:7px; min-width:0; padding:8px 10px;
+    border:2px solid var(--line); border-radius:12px; background:#fff; color:#8a7860; text-align:left;}
+  .waiting-player.online{border-color:#69bd83; color:#225f39; background:#effbf3;}
+  .waiting-player b{font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
 
   /* ---------- Lỗi form đăng nhập ---------- */
   .field-err{min-height:16px; margin:4px 0 2px; text-align:center; color:var(--red);

@@ -5,11 +5,15 @@ function freshState(names,opts){
   opts=opts||{};
   const d=newDeck();
   const hands=[[],[],[],[]];
-  d.forEach((c,i)=>hands[i%4].push(c));
+  const activeSeats=(opts.activeSeats&&opts.activeSeats.length?opts.activeSeats:[0,1,2,3]).slice();
+  const deal=d.slice(0,activeSeats.length*13); // mỗi người luôn 13 lá; phần dư không dùng ở bàn 2/3 người
+  const threeSpade=d.find(c=>c.rank===3&&c.suit===0);
+  if(threeSpade&&!deal.includes(threeSpade)) deal[deal.length-1]=threeSpade;
+  deal.forEach((c,i)=>hands[activeSeats[i%activeSeats.length]].push(c));
   hands.forEach(h=>h.sort((a,b)=>a.rank-b.rank||a.suit-b.suit));
   const turn=hands.findIndex(h=>h.some(c=>c.rank===3&&c.suit===0));
   return {
-    hands, names,
+    hands, names, activeSeats,
     classes:opts.classes||['captain','mage','guardian','trickster'],
     turn, lastPlayer:turn,
     current:null, lastPlayedCards:[], lastPlayedBy:-1,
@@ -22,9 +26,14 @@ function freshState(names,opts){
   };
 }
 function nextActive(S,from){
-  let i=from;
-  do{ i=(i+1)%4; }while(S.finished.includes(i));
-  return i;
+  const active=S.activeSeats||[0,1,2,3];
+  let at=active.indexOf(from);
+  for(let n=0;n<active.length;n++){
+    at=(at+1)%active.length;
+    const seat=active[at];
+    if(!S.finished.includes(seat)) return seat;
+  }
+  return from;
 }
 // Trả về {ok, err} — mutate S
 function applyPlay(S,p,cards){
@@ -60,7 +69,7 @@ function applyPlay(S,p,cards){
 // Kết ván khi người đầu tiên hết bài: người còn bài trả (số lá × mệnh giá), người TỚI ăn cả pot
 function settleGame(S,winner){
   const bet=S.bet||0;
-  const losers=[0,1,2,3].filter(i=>i!==winner)
+  const losers=(S.activeSeats||[0,1,2,3]).filter(i=>i!==winner)
     .sort((a,b)=> S.hands[a].length - S.hands[b].length || a-b);   // ít lá hơn xếp trên
   let pot=0;
   const rows=[{seat:winner,cardsLeft:0,delta:0}];
@@ -84,7 +93,7 @@ function applyPass(S,p){
   if(!S.current) return {ok:false,err:'Đang mở bài, phải đánh'};
   S.passed[p]=true;
   S.fx=null; S.note=`${S.names[p]} bỏ lượt`;
-  const stillIn=[0,1,2,3].filter(i=>!S.finished.includes(i));
+  const stillIn=(S.activeSeats||[0,1,2,3]).filter(i=>!S.finished.includes(i));
   const allPassed=stillIn.filter(i=>i!==S.lastPlayer).every(i=>S.passed[i]);
   if(allPassed){
     S.current=null; S.lastPlayedCards=[]; S.lastPlayedBy=-1;

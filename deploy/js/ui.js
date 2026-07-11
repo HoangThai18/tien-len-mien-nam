@@ -104,9 +104,17 @@ function renderSeats(){
   let html='';
   for(let rel=1;rel<=3;rel++){
     const p=(myIdx+rel)%4;
+    const active=(S.activeSeats||[0,1,2,3]).includes(p);
+    if(!active){
+      html+=`<div class="seat empty ${relPos[rel]}">
+        <div class="avatar empty-avatar" aria-label="Ghế trống">＋</div>
+        <div class="nm"><b>Ghế trống</b></div>
+      </div>`;
+      continue;
+    }
     const finRank=S.finished.indexOf(p);
     const badge=finRank>=0?`<div class="place-badge">${['🥇','🥈','🥉','🎈'][finRank]}</div>`:'';
-    const humanDot=(mode!=='solo'&&!BOT_SEATS.includes(p)&&p!==myIdx)?'<span class="net-dot"></span>':'';
+    const humanDot=(mode!=='solo'&&p!==myIdx)?'<span class="net-dot"></span>':'';
     const say=(quip&&S.lastPlayedBy===p)?`<div class="bubble">${quip}</div>`:'';
     const n=S.hands[p].length;
     let mini=''; const show=Math.min(n,7);
@@ -235,7 +243,7 @@ function showMenu(){
   });
   const nm=()=>$('inName').value.trim()||null;
   $('mSolo').onclick=()=>{ syncName(nm()); showBetSetup(()=>startSolo(myName)); };
-  $('mHost').onclick=()=>{ syncName(nm()); showBetSetup(()=>createRoom(myName)); };
+  $('mHost').onclick=()=>{ syncName(nm()); showOnlineSetup(()=>createRoom(myName,roomMaxPlayers)); };
   $('mJoin').onclick=()=>{ syncName(nm()); showJoin(myName); };
   if($('mAdmin')) $('mAdmin').onclick=showAdminPanel;
   $('mSignOut').onclick=signOut;
@@ -310,6 +318,32 @@ function showBetSetup(next){
   $('betGo').onclick=()=>{ gameBet=Math.max(0,Math.floor(+$('inBet').value||0)); next(); };
   $('betBack').onclick=showMenu;
 }
+function showOnlineSetup(next){
+  const countButtons=[2,3,4].map(n=>`<button class="bet-chip${n===roomMaxPlayers?' sel':''}" data-count="${n}">${n} người</button>`).join('');
+  const chips=BET_PRESETS.map(v=>`<button class="bet-chip${v===gameBet?' sel':''}" data-v="${v}">${v} 🪙/lá</button>`).join('');
+  $('panel').innerHTML=`
+    <div class="logo">Phòng online</div>
+    <h1 style="font-size:24px">Chọn số người</h1>
+    <p class="sub">Chỉ người thật · không thêm máy · đủ người mới chia bài.</p>
+    <div class="class-title">Giới hạn phòng</div>
+    <div class="bet-chips room-counts">${countButtons}</div>
+    <div class="class-title" style="margin-top:14px">Mệnh giá mỗi lá</div>
+    <div class="bet-chips bet-values">${chips}</div>
+    <input class="field" id="inBet" type="number" min="0" inputmode="numeric" value="${gameBet}">
+    <div class="menu-gap"><button class="btn block" id="onlineGo">Tạo phòng 🌐</button></div>
+    <button class="linkish" id="onlineBack">← Quay lại</button>`;
+  $('overlay').style.display='flex';
+  document.querySelectorAll('.room-counts .bet-chip').forEach(c=>c.onclick=()=>{
+    roomMaxPlayers=+c.dataset.count;
+    document.querySelectorAll('.room-counts .bet-chip').forEach(x=>x.classList.toggle('sel',x===c));
+  });
+  document.querySelectorAll('.bet-values .bet-chip').forEach(c=>c.onclick=()=>{
+    $('inBet').value=c.dataset.v;
+    document.querySelectorAll('.bet-values .bet-chip').forEach(x=>x.classList.toggle('sel',x===c));
+  });
+  $('onlineGo').onclick=()=>{ gameBet=Math.max(0,Math.floor(+$('inBet').value||0)); next(); };
+  $('onlineBack').onclick=showMenu;
+}
 function showJoin(name){
   $('panel').innerHTML=`
     <div class="logo">Vào phòng</div>
@@ -334,12 +368,19 @@ function showJoin(name){
   $('inCode').onkeydown=e=>{ if(e.key==='Enter') $('jGo').click(); };
   $('jBack').onclick=showMenu;
 }
-function showWaiting(asGuest=false){
+function showWaiting(asGuest=false,players=roomPlayers,maxPlayers=roomMaxPlayers){
+  const seats=roomSeatOrder(maxPlayers);
+  const joined=seats.filter(seat=>{ const p=roomPlayer(players,seat); return p&&p.name&&p.online!==false; });
+  const playerRows=seats.map(seat=>{
+    const p=roomPlayer(players,seat);
+    return `<div class="waiting-player ${p&&p.online!==false?'online':''}"><span>${p?'🟢':'⚪'}</span><b>${esc(p&&p.name?p.name:'Đang chờ…')}</b></div>`;
+  }).join('');
   $('panel').innerHTML= asGuest ? `
     <div class="logo">Online</div>
     <h1 style="font-size:24px">Đã vào phòng ${roomCode}</h1>
     <div class="spinner"></div>
-    <p class="sub">Chờ chủ phòng chia bài…</p>
+    <p class="sub">Đã có ${joined.length}/${maxPlayers} người · chờ đủ người để chia bài.</p>
+    <div class="waiting-players">${playerRows}</div>
     <button class="linkish" id="wLeave">Thoát phòng</button>`
   : `
     <div class="logo">Phòng của bạn</div>
@@ -349,7 +390,8 @@ function showWaiting(asGuest=false){
       <button class="btn block ghost sm" id="wCopy">📋 Chép mã phòng</button>
     </div>
     <div class="spinner"></div>
-    <p class="sub">Ván sẽ tự bắt đầu khi bạn của bạn vào phòng…</p>
+    <p class="sub">Đã có ${joined.length}/${maxPlayers} người · không có máy.</p>
+    <div class="waiting-players">${playerRows}</div>
     <button class="linkish" id="wLeave">Huỷ phòng</button>`;
   $('overlay').style.display='flex';
   const c=$('wCopy');
@@ -389,7 +431,7 @@ function showResult(){
   $('overlay').style.display='flex';
   const a=$('rAgain');
   if(a) a.onclick=()=>{
-    if(mode==='host'){ hostStartGame(S.names[2],S.classes&&S.classes[2]); }
+    if(mode==='host'){ hostStartGame(roomPlayers); }
     else startSolo(myName);
   };
   $('rMenu').onclick=leaveToMenu;
@@ -436,11 +478,12 @@ function cleanupRoom(){
       roomRef.remove().catch(()=>{});
     }
     if(mode==='guest'){
-      roomRef.child('guest').onDisconnect().cancel().catch(()=>{});
-      roomRef.child('guest').remove().catch(()=>{});
+      roomRef.child('players/'+myIdx).onDisconnect().cancel().catch(()=>{});
+      roomRef.child('players/'+myIdx).remove().catch(()=>{});
     }
   }
   roomRef=null; roomCode=null; S=null; selected.clear(); mode='solo'; myIdx=0;
+  roomPlayers={}; roomMaxPlayers=2;
   settledGameId=null;
   chatMsgs=[]; chatUnread=0; setChatBadge(); toggleChat(false); updateChatUI();
   closeThrowPicker();

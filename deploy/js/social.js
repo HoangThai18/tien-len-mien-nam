@@ -239,7 +239,7 @@ function onSeatTap(e){
   const rel=seatEl.classList.contains('left')?1:seatEl.classList.contains('top')?2:seatEl.classList.contains('right')?3:0;
   if(!rel) return;
   const p=(myIdx+rel)%4;
-  if(p===myIdx) return;
+  if(p===myIdx||!S||(S.activeSeats&&!S.activeSeats.includes(p))) return;
   showThrowPicker(p,seatEl.querySelector('.avatar'));
 }
 

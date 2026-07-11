@@ -1,7 +1,7 @@
 {
   "name": "Tiến Lên Miền Nam",
   "short_name": "Tiến Lên",
-  "description": "Game bài Tiến Lên Miền Nam — chơi với máy hoặc online 2 người",
+  "description": "Game bài Tiến Lên Miền Nam — chơi với máy hoặc online 2-4 người thật",
   "id": "./index.html",
   "start_url": "./index.html",
   "scope": "./",

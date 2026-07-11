@@ -2,7 +2,7 @@
    SESSION — solo | host | guest
    ========================================================================= */
 let mode='solo';        // 'solo' | 'host' | 'guest'
-let myIdx=0;            // 0 solo/host, 2 guest
+let myIdx=0;            // 0 solo/host; online guest được cấp ghế 1..3
 let S=null;             // state hiện tại (host/solo: bản gốc; guest: bản sync)
 let selected=new Set(); // card ids đang chọn
 let sortByRank=true;
@@ -10,7 +10,6 @@ let botTimer=null, botToken=0;
 let myName='Bạn';
 let myClass=localStorage.getItem('tienlen-character')||'captain';
 
-const BOT_SEATS=[1,3];
 const CHARACTER_CLASSES={
   captain:{name:'Đội trưởng',asset:'assets/characters/captain.webp',accent:'#26a269'},
   mage:{name:'Pháp sư',asset:'assets/characters/mage.webp',accent:'#f59e42'},
@@ -30,12 +29,11 @@ function quipFor(S){
   if(S.ver%3!==0) return null;           // thỉnh thoảng mới nói cho đỡ ồn
   return QUIPS[S.ver%QUIPS.length];
 }
-const isBotSeat=p=>mode!=='solo'?BOT_SEATS.includes(p):(p!==0);
+const isBotSeat=p=>mode==='solo'&&p!==0;
 const seatClass=p=>{
   if(S&&S.classes&&S.classes[p]&&CHARACTER_CLASSES[S.classes[p]]) return S.classes[p];
   if(p===myIdx) return myClass;
   if(mode==='solo') return ['captain','mage','guardian','trickster'][p];
-  if(BOT_SEATS.includes(p)) return BOT_INFO[p].classId;
   return 'guardian';
 };
 const seatAvatar=p=>{
@@ -48,9 +46,18 @@ let db=null, auth=null, roomCode=null, roomRef=null;
 let unsubState=null, unsubActions=null, unsubGuest=null, unsubRoom=null, unsubPresence=null;
 // Tài khoản + ví (cloud): nguồn sự thật của tiền ở users/<uid>
 let profile=null, unsubProfile=null, settledGameId=null;
-let gameBet=10, soloGameCounter=0, throwHintShown=false;
+let gameBet=10, roomMaxPlayers=2, roomPlayers={}, soloGameCounter=0, throwHintShown=false;
 let botCoins={1:1000,2:1000,3:1000};   // xu hiển thị của bot (không lưu cloud)
-let guestCoins=1000;                    // host: xu guest tự báo, chỉ để hiển thị
+const roomSeatOrder=max=>max===2?[0,2]:(max===3?[0,1,3]:[0,1,2,3]);
+const roomPlayer=(players,seat)=>players&&players[seat]?players[seat]:null;
+function allocateRoomSeat(players,seatOrder,uid,data){
+  const next=Array.isArray(players)?players.slice():Object.assign({},players||{});
+  let seat=seatOrder.find(s=>s!==0&&roomPlayer(next,s)&&roomPlayer(next,s).uid===uid);
+  if(seat===undefined) seat=seatOrder.find(s=>s!==0&&!roomPlayer(next,s));
+  if(seat===undefined) return null;
+  next[seat]=Object.assign({},data,{uid});
+  return {players:next,seat};
+}
 function configReady(){ return FIREBASE_CONFIG.apiKey && !FIREBASE_CONFIG.apiKey.includes('DÁN'); }
 function initFirebase(){
   if(db) return true;
@@ -108,7 +115,7 @@ function attachProfile(uid){
     if(profile){
       if(profile.name) myName=profile.name;
       renderCoinBar();
-      if(mode==='guest'&&roomRef) roomRef.child('guest').update({coins:profile.coins||0});
+      if(mode!=='solo'&&roomRef) roomRef.child('players/'+myIdx).update({coins:profile.coins||0,name:myName});
     }
   });
 }
@@ -126,7 +133,7 @@ function addCoins(delta,gameId,isWinner){
     return u;
   }).catch(e=>console.error('addCoins',e));
 }
-// Áp kết quả tiền của ván vào ví mình (host=seat0, guest=seat2); bot không lưu
+// Áp kết quả tiền của ván vào ví mình (host=seat0, khách online=ghế được cấp); bot không lưu
 function settleMyWallet(S){
   if(!S||!S.settle) return;
   if(settledGameId===S.settle.gameId) return;
@@ -277,20 +284,25 @@ function boot(){
 }
 
 /* ---------- HOST ---------- */
-async function createRoom(name){
+async function createRoom(name,maxPlayers){
   if(!initFirebase()){ showFirebaseSetup(); return; }
   myName=name||myName||'Chủ phòng'; mode='host'; myIdx=0;
+  roomMaxPlayers=[2,3,4].includes(+maxPlayers)?+maxPlayers:2;
+  const hostPlayer={uid:auth.currentUser.uid,name:myName,classId:myClass,coins:(profile?profile.coins||0:0),online:true,joined:Date.now()};
+  roomPlayers={0:hostPlayer};
   roomCode=makeCode();
   roomRef=db.ref('rooms/'+roomCode);
   try{
-    await roomRef.set({created:Date.now(), hostName:myName, hostClass:myClass, hostOnline:true, bet:gameBet, state:null});
+    await roomRef.set({created:Date.now(), maxPlayers:roomMaxPlayers, hostName:myName, hostClass:myClass,
+      hostOnline:true, bet:gameBet, players:roomPlayers, state:null});
     // Trên điện thoại, đổi app để gửi mã có thể ngắt socket vài giây. Giữ phòng lại và chỉ đánh dấu offline.
     const hostRoom=roomRef;
     unsubPresence=db.ref('.info/connected');
     unsubPresence.on('value',snap=>{
       if(!snap.val()||mode!=='host'||roomRef!==hostRoom) return;
-      hostRoom.update({hostOnline:true,hostDisconnectedAt:null}).catch(()=>{});
-      hostRoom.onDisconnect().update({hostOnline:false,hostDisconnectedAt:firebase.database.ServerValue.TIMESTAMP}).catch(()=>{});
+      hostRoom.update({hostOnline:true,hostDisconnectedAt:null,'players/0/online':true,'players/0/disconnectedAt':null}).catch(()=>{});
+      hostRoom.onDisconnect().update({hostOnline:false,hostDisconnectedAt:firebase.database.ServerValue.TIMESTAMP,
+        'players/0/online':false,'players/0/disconnectedAt':firebase.database.ServerValue.TIMESTAMP}).catch(()=>{});
     });
   }catch(e){
     toast('Không kết nối được Firebase — kiểm tra config & rules'); console.error(e);
@@ -298,25 +310,40 @@ async function createRoom(name){
   }
   showWaiting();
   listenChat(); listenThrows(); updateChatUI();
-  // chờ khách vào
-  unsubGuest=roomRef.child('guest');
+  // chờ đủ số người thật đã chọn, không tự thêm bot
+  unsubGuest=roomRef.child('players');
   unsubGuest.on('value',snap=>{
-    const g=snap.val();
-    if(!g||!g.name) return;
-    if(typeof g.coins==='number') guestCoins=g.coins;
-    if(!S) hostStartGame(g.name,g.classId);      // khách vào lần đầu → chia bài
-    else{
-      S.names[2]=g.name;               // khách reconnect → cập nhật tên
-      S.classes[2]=CHARACTER_CLASSES[g.classId]?g.classId:'guardian';
-      if(typeof g.coins==='number'){ S.coins[2]=g.coins; pushState(); }
+    roomPlayers=snap.val()||{};
+    const seats=roomSeatOrder(roomMaxPlayers);
+    const ready=seats.filter(seat=>{ const p=roomPlayer(roomPlayers,seat); return p&&p.name&&p.online!==false; });
+    if(!S){
+      showWaiting(false,roomPlayers,roomMaxPlayers);
+      if(ready.length===roomMaxPlayers) hostStartGame(roomPlayers);
+      return;
     }
+    seats.forEach(seat=>{
+      const p=roomPlayer(roomPlayers,seat); if(!p) return;
+      S.names[seat]=p.name||S.names[seat];
+      S.classes[seat]=CHARACTER_CLASSES[p.classId]?p.classId:S.classes[seat];
+      if(typeof p.coins==='number') S.coins[seat]=p.coins;
+    });
+    pushState();
   });
 }
-function hostStartGame(guestName,guestClass){
-  const names=[myName,BOT_INFO[1].name,guestName||'Khách',BOT_INFO[3].name];
-  const classes=[myClass,'mage',CHARACTER_CLASSES[guestClass]?guestClass:'guardian','trickster'];
-  S=freshState(names,{bet:gameBet, gameId:newGameId(), classes});
-  S.coins=[ (profile?profile.coins||0:0), botCoins[1], guestCoins, botCoins[3] ];
+function hostStartGame(players){
+  players=players||roomPlayers||{};
+  const activeSeats=roomSeatOrder(roomMaxPlayers);
+  const names=['Ghế trống','Ghế trống','Ghế trống','Ghế trống'];
+  const classes=['captain','mage','guardian','trickster'];
+  const coins=[0,0,0,0];
+  activeSeats.forEach(seat=>{
+    const p=roomPlayer(players,seat)||{};
+    names[seat]=p.name||(seat===0?myName:'Người chơi');
+    classes[seat]=CHARACTER_CLASSES[p.classId]?p.classId:(seat===0?myClass:'guardian');
+    coins[seat]=p.coins||0;
+  });
+  S=freshState(names,{bet:gameBet, gameId:newGameId(), classes, activeSeats});
+  S.coins=coins;
   settledGameId=null;
   selected.clear();
   hideOverlay(); render();
@@ -331,13 +358,13 @@ function listenActions(){
   unsubActions=roomRef.child('actions');
   unsubActions.on('child_added',snap=>{
     const a=snap.val(); snap.ref.remove();
-    if(!a||a.seat!==2||!S) return;
+    if(!a||!S||a.seat===0||!S.activeSeats.includes(a.seat)) return;
     let res;
-    if(a.kind==='pass') res=applyPass(S,2);
+    if(a.kind==='pass') res=applyPass(S,a.seat);
     else{
       const ids=new Set(a.ids||[]);
-      const cards=S.hands[2].filter(c=>ids.has(cid(c)));
-      res=(cards.length===(a.ids||[]).length)?applyPlay(S,2,cards):{ok:false};
+      const cards=S.hands[a.seat].filter(c=>ids.has(cid(c)));
+      res=(cards.length===(a.ids||[]).length)?applyPlay(S,a.seat,cards):{ok:false};
     }
     if(res.ok){ postApply(); }
     else pushState(); // đồng bộ lại cho guest thấy state chuẩn
@@ -345,10 +372,9 @@ function listenActions(){
 }
 function driveBots(){
   clearTimeout(botTimer);
-  if(!S||S.status!=='playing') return;
-  if(mode==='guest') return;
+  if(!S||S.status!=='playing'||mode!=='solo') return;
   const p=S.turn;
-  const isBot = mode==='solo' ? p!==0 : BOT_SEATS.includes(p);
+  const isBot=p!==0;
   if(!isBot) return;
   const token=++botToken;
   botTimer=setTimeout(()=>{
@@ -395,6 +421,7 @@ async function joinRoom(code,name){
     return;
   }
   const room=snap.val()||{};
+  roomMaxPlayers=[2,3,4].includes(+room.maxPlayers)?+room.maxPlayers:2;
   if(room.created&&Date.now()-room.created>2*60*60*1000){
     setJoinError('Mã phòng đã hết hạn — nhờ chủ phòng tạo mã mới');
     if(joinBtn) joinBtn.disabled=false;
@@ -405,28 +432,52 @@ async function joinRoom(code,name){
     if(joinBtn) joinBtn.disabled=false;
     return;
   }
-  if(room.guest&&room.guest.name&&room.guest.online!==false){
-    setJoinError('Phòng đã đủ người');
+  const seatOrder=roomSeatOrder(roomMaxPlayers);
+  const uid=auth.currentUser.uid;
+  if(roomPlayer(room.players,0)&&roomPlayer(room.players,0).uid===uid){
+    setJoinError('Tài khoản này đang là chủ phòng — dùng tài khoản khác để tham gia');
     if(joinBtn) joinBtn.disabled=false;
     return;
   }
-  mode='guest'; myIdx=2; roomCode=code; roomRef=ref;
-  const guestRef=ref.child('guest');
+  const playersRef=ref.child('players');
+  let claim;
   try{
-    await guestRef.set({name:myName, classId:myClass, joined:Date.now(), online:true, coins:(profile?profile.coins||0:0)});
+    claim=await playersRef.transaction(players=>{
+      const allocated=allocateRoomSeat(players,seatOrder,uid,{name:myName,classId:myClass,joined:Date.now(),online:true,coins:(profile?profile.coins||0:0)});
+      return allocated?allocated.players:undefined;
+    });
   }catch(e){
-    console.error(e); mode='solo'; myIdx=0; roomCode=null; roomRef=null;
+    console.error(e);
     setJoinError('Không thể vào phòng — kiểm tra quyền Firebase');
     if(joinBtn) joinBtn.disabled=false;
     return;
   }
+  if(!claim||!claim.committed){
+    setJoinError('Phòng đã đủ '+roomMaxPlayers+' người');
+    if(joinBtn) joinBtn.disabled=false;
+    return;
+  }
+  roomPlayers=claim.snapshot.val()||{};
+  myIdx=seatOrder.find(s=>{ const p=roomPlayer(roomPlayers,s); return p&&p.uid===uid; });
+  if(myIdx===undefined||myIdx===0){
+    setJoinError('Không cấp được ghế trong phòng');
+    if(joinBtn) joinBtn.disabled=false;
+    return;
+  }
+  mode='guest'; roomCode=code; roomRef=ref;
+  const guestRef=playersRef.child(String(myIdx));
   unsubPresence=db.ref('.info/connected');
   unsubPresence.on('value',connected=>{
     if(!connected.val()||mode!=='guest'||roomRef!==ref) return;
     guestRef.update({online:true,disconnectedAt:null}).catch(()=>{});
     guestRef.onDisconnect().update({online:false,disconnectedAt:firebase.database.ServerValue.TIMESTAMP}).catch(()=>{});
   });
-  showWaiting(true);
+  showWaiting(true,roomPlayers,roomMaxPlayers);
+  unsubGuest=playersRef;
+  unsubGuest.on('value',playersSnap=>{
+    roomPlayers=playersSnap.val()||{};
+    if(!S) showWaiting(true,roomPlayers,roomMaxPlayers);
+  });
   listenChat(); listenThrows(); updateChatUI();
   unsubState=ref.child('state');
   let lastVer=0, lastFx=null;
@@ -440,6 +491,7 @@ async function joinRoom(code,name){
     ns.finished=ns.finished||[];
     ns.passed=ns.passed||[false,false,false,false];
     ns.coins=ns.coins||[0,0,0,0];
+    ns.activeSeats=ns.activeSeats||[0,1,2,3];
     ns.classes=ns.classes||['captain','mage',myClass,'trickster'];
     ns.settle=ns.settle||null;
     const isNew=!S;
@@ -461,7 +513,7 @@ async function joinRoom(code,name){
   unsubRoom.on('value',s=>{ if(!s.exists()&&mode==='guest'&&roomCode===code){ toast('Chủ phòng đã thoát'); leaveToMenu(); } });
 }
 function guestSend(kind,ids){
-  roomRef.child('actions').push({seat:2, kind, ids:ids||null, t:Date.now()});
+  roomRef.child('actions').push({seat:myIdx, kind, ids:ids||null, t:Date.now()});
 }
 
 /* ---------- SOLO ---------- */
