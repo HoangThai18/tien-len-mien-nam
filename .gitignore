@@ -8,3 +8,6 @@ tmp/
 
 # Cache deploy của Firebase (local, không cần lên git)
 .firebase/
+
+# Cấu hình/agent cục bộ của Claude Code
+.claude/

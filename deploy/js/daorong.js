@@ -82,7 +82,7 @@ function drModalFeature(title){
     ['farm',['nông trại']],['adventure',['phiêu lưu','bãi biển vắng','rừng rậm','hang băng','núi lửa','đầm lầy độc','vực bóng tối','đỉnh thần long']],
     ['boss',['boss','hải xà','titan']],['daily',['điểm danh']],['achievement',['thành tựu']],
     ['leaderboard',['bảng xếp hạng','bxh']],['friends',['bạn bè','quà tặng','thăm đảo']],['tower',['tháp']],
-    ['event',['sự kiện']],['runes',['cường hóa','đá rồng','rune']],['ranked',['đấu hạng','xếp hạng mùa']],['rebirth',['chuyển sinh']],
+    ['event',['sự kiện']],['runes',['cường hóa','đá rồng','rune']],['ranked',['đấu hạng','xếp hạng mùa','lực chiến']],['rebirth',['chuyển sinh']],
     ['decor',['trang trí','chướng ngại']],
     ['shop',['shop','vàng khi vắng mặt']],['quest',['nhiệm vụ']],['wheel',['vòng quay']],['forge',['lò rèn']],
     ['breed',['lai rồng','trứng']],['feed',['cho ăn']],['arena',['đấu trường','kết quả trận','trận chiến']],
@@ -102,13 +102,13 @@ function drModalFeature(title){
      • peach → "Rồng Đào Hồng"  → assets/dragons/peach.webp + evolution/peach.webp
      • candy → "Rồng Kẹo Ngọt"  → assets/dragons/candy.webp + evolution/candy.webp
 
-   Ý TƯỞNG MÀU DỄ THƯƠNG THÊM (tạo ảnh xong nói tên+màu, mình thêm data mỗi con 1 dòng):
-     • mint   "Rồng Bạc Hà"    — XANH MINT pastel #9be7c4
-     • lemon  "Rồng Chanh"     — VÀNG chanh #ffe37a
-     • berry  "Rồng Việt Quất" — XANH-TÍM berry #8aa0ff
-     • coral  "Rồng San Hô"    — CAM-HỒNG san hô #ff9e7a
-     • cloud  "Rồng Mây"       — XÁM-XANH mây pastel #cfe3ff
-     • rainbow "Rồng Cầu Vồng" — nhiều màu pastel chuyển sắc
+   ĐÃ TẠO ẢNH + ATLAS TIẾN HOÁ (thêm 2025-07): mint, lemon, berry, coral, cloud, rainbow
+     • mint   "Rồng Bạc Hà"    — XANH MINT pastel #9be7c4 (hệ Cây)
+     • lemon  "Rồng Chanh"     — VÀNG chanh #ffe37a (hệ Điện)
+     • berry  "Rồng Việt Quất" — XANH-TÍM berry #8aa0ff (hệ Nước)
+     • coral  "Rồng San Hô"    — CAM-HỒNG san hô #ff9e7a (hệ Nước)
+     • cloud  "Rồng Mây"       — XÁM-XANH mây pastel #cfe3ff (hệ Băng)
+     • rainbow "Rồng Cầu Vồng" — nhiều màu pastel chuyển sắc (hệ Ánh sáng)
 
    PROMPT MẪU CHO AI (thay [MÀU] / [TÊN]):
      "A super cute chibi baby dragon, [MÀU] pastel body, big sparkly round eyes, rosy cheeks,
@@ -130,6 +130,12 @@ const DR_SPECIES={
   prism:       {name:'Rồng Lăng Kính', el:'light', els:['light'], rar:'epic',      gold:42, atk:82, hp:148, range:5, spd:8, sheet:{url:'assets/dragons/prism.webp',frames:8,fps:7,act:1.3}},
   kaleidoscope:{name:'Rồng Vạn Hoa',   el:'light', els:['light'], rar:'legendary', gold:66, atk:106,hp:176, range:5, spd:8, sheet:{url:'assets/dragons/kaleidoscope.webp',frames:8,fps:7,act:1.45}},
   rainbow:     {name:'Rồng Cầu Vồng',  el:'light', els:['light'], rar:'epic',      gold:40, atk:80, hp:150, range:5, spd:8, sheet:{url:'assets/dragons/rainbow.webp',frames:8,fps:7,act:1.4}},
+  // ===== Rồng pastel dễ thương có sprite thật + ATLAS TIẾN HOÁ 4×8 — thêm 2025-07 =====
+  mint:  {name:'Rồng Bạc Hà',   el:'plant',   els:['plant'],   rar:'rare', gold:19, atk:48, hp:128, range:4, spd:6, evo:'assets/dragons/evolution/mint.webp',  sheet:{url:'assets/dragons/mint.webp', frames:8,fps:7,act:1.35}, pal:{body:'#9be7c4',bd:'#e8fff4',wg:'#bff2da',st:'#3fae86',horn:'#2f8f6a'}},
+  lemon: {name:'Rồng Chanh',    el:'electric',els:['electric'],rar:'rare', gold:19, atk:52, hp:118, range:5, spd:7, evo:'assets/dragons/evolution/lemon.webp', sheet:{url:'assets/dragons/lemon.webp',frames:8,fps:8,act:1.2},  pal:{body:'#ffe37a',bd:'#fff7cf',wg:'#ffee9e',st:'#e0a52a',horn:'#c98916'}},
+  berry: {name:'Rồng Việt Quất',el:'water',   els:['water'],   rar:'rare', gold:20, atk:50, hp:126, range:4, spd:6, evo:'assets/dragons/evolution/berry.webp', sheet:{url:'assets/dragons/berry.webp',frames:8,fps:7,act:1.3},  pal:{body:'#8aa0ff',bd:'#e6ebff',wg:'#b3c0ff',st:'#4f63cf',horn:'#3a49b3'}},
+  coral: {name:'Rồng San Hô',   el:'water',   els:['water'],   rar:'rare', gold:20, atk:49, hp:124, range:4, spd:7, evo:'assets/dragons/evolution/coral.webp', sheet:{url:'assets/dragons/coral.webp',frames:8,fps:7,act:1.3},  pal:{body:'#ff9e7a',bd:'#ffe6dc',wg:'#ffc2ab',st:'#e8663f',horn:'#c94f2a'}},
+  cloud: {name:'Rồng Mây',      el:'ice',     els:['ice'],     rar:'rare', gold:19, atk:47, hp:130, range:4, spd:6, evo:'assets/dragons/evolution/cloud.webp', sheet:{url:'assets/dragons/cloud.webp',frames:8,fps:7,act:1.4},  pal:{body:'#cfe3ff',bd:'#f2f8ff',wg:'#dfecff',st:'#7f9fd6',horn:'#5f7fb6'}},
   sakura:  {name:'Rồng Anh Đào',    el:'plant',   els:['plant'],          rar:'rare',   gold:19, atk:50, hp:124, range:4, spd:6, fx:'petal', evo:'assets/dragons/evolution/sakura.webp', sheet:{url:'assets/dragons/sakura.webp',frames:1,fps:1}, pal:{body:'#ff8fc7',bd:'#ffe3f1',wg:'#ffb3d9',st:'#e84f95',horn:'#c93a7a'}},
   fire:    {name:'Rồng Lửa',       el:'fire',    els:['fire'],           rar:'common', gold:10, atk:42, hp:100, range:3, spd:6, evo:'assets/dragons/evolution/fire.webp',       sheet:{url:'assets/dragons/fire.webp', frames:8, fps:7, act:1.25}},
   water:   {name:'Rồng Nước',      el:'water',   els:['water'],          rar:'common', gold:10, atk:38, hp:112, range:4, spd:5, evo:'assets/dragons/evolution/water.webp',      sheet:{url:'assets/dragons/water.webp', frames:8, fps:9, act:1.3}},
@@ -144,7 +150,7 @@ const DR_SPECIES={
   dark:    {name:'Hắc Long',       el:'dark',    els:['dark'],           rar:'epic',   gold:40, atk:86, hp:150, range:4, spd:7, evo:'assets/dragons/evolution/dark.webp',       sheet:{url:'assets/dragons/dark.webp', frames:8, fps:7, act:1.45}},
   light:   {name:'Thần Long',      el:'light',   els:['light'],          rar:'legendary',gold:70,atk:110,hp:180, range:5, spd:8, evo:'assets/dragons/evolution/light.webp',      sheet:{url:'assets/dragons/light.webp', frames:8, fps:7, act:1.6}},
 };
-const DR_SP_PRIORITY=['peach','sakura','candy','rose','lotus','peony','bubblegum','starlight','aurora','carnival','prism','kaleidoscope','rainbow','fire','water','plant','earth','electric','ice','lava','steam','swamp','storm','dark','light'];
+const DR_SP_PRIORITY=['peach','sakura','candy','rose','lotus','peony','bubblegum','mint','lemon','berry','coral','cloud','starlight','aurora','carnival','prism','kaleidoscope','rainbow','fire','water','plant','earth','electric','ice','lava','steam','swamp','storm','dark','light'];
 // DR_SP_ORDER LUÔN gồm mọi loài trong DR_SPECIES: chỉ cần thêm rồng mới vào DR_SPECIES
 // là nó TỰ có trong Sách rồng + Vòng quay + đối thủ Đấu, không cần đụng danh sách này.
 const DR_SP_ORDER=(function(){ const o=DR_SP_PRIORITY.filter(sp=>DR_SPECIES[sp]);
@@ -170,8 +176,8 @@ function drEvolutionNext(lv){
 /* Bảng lai: cặp nguyên tố (sắp xếp) -> loài có thể ra (ngẫu nhiên) */
 const DR_BREED={
   'fire+fire':['fire','fire','lava','carnival'],
-  'water+water':['water','water','steam','candy','lotus','bubblegum'],
-  'plant+plant':['plant','plant','swamp','peach','rose','peony','sakura'],
+  'water+water':['water','water','steam','candy','lotus','bubblegum','berry','coral'],
+  'plant+plant':['plant','plant','swamp','peach','rose','peony','sakura','mint'],
   'earth+earth':['earth','earth','lava'],
   'earth+fire':['lava','fire','earth'],
   'fire+water':['steam','fire','water'],
@@ -181,8 +187,8 @@ const DR_BREED={
   'ice+plant':['ice','plant','swamp'],
   'dark+fire':['dark','lava','fire'],
   'dark+dark':['dark','dark','light','rainbow','prism','starlight'],
-  'electric+electric':['electric','electric','storm'],
-  'ice+ice':['ice','ice','storm','aurora'],
+  'electric+electric':['electric','electric','storm','lemon'],
+  'ice+ice':['ice','ice','storm','aurora','cloud'],
   // --- công thức mới: lấp "vùng chết", cho lai tới MỌI hệ chỉ từ 3 rồng khởi đầu ---
   'fire+plant':['earth','plant','fire'],          // mở khoá ĐẤT
   'earth+plant':['electric','earth','plant'],     // mở khoá ĐIỆN
@@ -198,11 +204,13 @@ const DR_ADV={water:'fire', fire:'plant', plant:'water', earth:'electric', elect
 
 // 12 ô rải ĐỀU khắp đảo theo 4 hàng so le (tránh dồn giữa gây chồng rồng).
 // x 15–83%, y 22–74% — hàng dưới render đè hàng trên (z theo y) tạo chiều sâu.
+// Ô nhà của rồng — CHỪA TRỐNG vùng giữa-dưới quanh ổ trứng (≈ x40–62, y60–84) để
+// rồng không tụ tập che ổ ấp. Rải quanh rìa cỏ + nửa trên cho đều & dễ bấm.
 const DR_SLOTS=[
-  [30,24],[50,22],[70,24],            // hàng sau (trên)
-  [15,42],[37,40],[60,42],[83,41],    // hàng giữa — rộng nhất
-  [25,58],[48,60],[71,58],            // hàng dưới-giữa
-  [38,74],[62,74]                     // hàng trước (dưới)
+  [30,18],[45,15],[58,15],[72,18],    // hàng trên — lên sát bãi cỏ gần thác nước — 4 con
+  [17,38],[37,34],[63,34],[83,38],    // hàng giữa — rộng nhất — 4 con
+  [22,56],[78,56],                    // hai bên dưới (tránh giữa) — 2 con
+  [33,75],[67,75]                     // hàng trước, lệch khỏi ổ trứng (x50) — 2 con
 ];
 const DR_DECO=[['🌴',12,20,1.5],['🌸',82,42,1],['🍄',20,72,1],['🌷',75,73,1],['✨',52,17,.9],['🌿',88,60,1.1]];
 const DR_BASE_CAP=8;                      // số ô nuôi rồng ban đầu (giữ nguyên như bản cũ, không nerf save cũ)
@@ -361,6 +369,26 @@ function drXpToNext(lvl){ return Math.round(100*Math.pow(1.3,lvl-1)); }
 function drGoldPerTap(d){ return Math.round(DR_SPECIES[d.sp].gold * d.lv * (2+Math.random()*2) * drStarMult(d) * drForgeGoldMult() * drRebirthGoldMult() * (typeof drDecorMult==='function'?drDecorMult():1)); }
 function drSellPrice(d){ return Math.round(DR_SPECIES[d.sp].gold * 25 * d.lv * DR_RAR[DR_SPECIES[d.sp].rar].mult); }
 function drPower(d){ const s=DR_SPECIES[d.sp]; const rb=(typeof drRuneBonus==='function')?drRuneBonus(d):{atk:0,hp:0}; return Math.round((s.atk*1.6 + s.hp*0.4)*(1+0.18*(d.lv-1)) * drStarMult(d) * drForgePowerMult() * drRebirthPowerMult() * (1+rb.atk+rb.hp)); }
+// Tổng lực chiến của người chơi = cộng sức mạnh mọi rồng đang nuôi (hiện trên HUD)
+function drTotalPower(){ return (drState&&drState.dragons?drState.dragons:[]).reduce((t,d)=>t+drPower(d),0); }
+// Bảng chi tiết lực chiến: xếp hạng rồng theo sức mạnh + tổng (mở khi chạm ⚔️ trên HUD)
+function drShowPower(){
+  const list=(drState.dragons||[]).map(d=>({d,p:drPower(d)})).sort((a,b)=>b.p-a.p);
+  const total=list.reduce((t,x)=>t+x.p,0), max=list.length?list[0].p:1;
+  const rows=list.map((x,idx)=>{
+    const d=x.d, sp=DR_SPECIES[d.sp]||DR_SPECIES.fire, st=drStar(d), evo=drEvolution(d.lv);
+    const pct=Math.max(6,Math.round(x.p/max*100)), medal=['🥇','🥈','🥉'][idx]||(idx+1);
+    return `<div class="dr-pw-row">
+      <span class="dr-pw-rank">${medal}</span>
+      <span class="dr-pw-info"><b>${esc(sp.name)}</b><small>Lv${d.lv} · ${esc(evo.name)} · ★${st}</small>
+        <i class="dr-pw-bar"><em style="width:${pct}%"></em></i></span>
+      <span class="dr-pw-val">${fmtCoin(x.p)} ⚔️</span></div>`;
+  }).join('') || '<p class="dr-note">Chưa có rồng nào — ấp trứng để bắt đầu gây dựng lực chiến!</p>';
+  drModal('Lực chiến', `
+    <div class="dr-pw-total"><span>Tổng lực chiến</span><b>${fmtCoin(total)} ⚔️</b><i>${list.length} rồng</i></div>
+    <p class="dr-note">Sức mạnh mỗi rồng tăng theo cấp, sao, lò rèn, khảm đá & chuyển sinh. Nâng cấp để leo lực chiến!</p>
+    <div class="dr-pw-list">${rows}</div>`);
+}
 /* ---------- Lò rèn: bùa toàn đảo (mỗi cấp +5%) ---------- */
 const DR_FORGE_MAX=10;
 function drForgeGoldMult(){ return 1 + 0.05*(((drState&&drState.forge)?drState.forge.gold:0)||0); }
@@ -521,7 +549,8 @@ function drBuild(){
         <button class="dr-back" id="drBack" type="button" aria-label="Về sảnh">←</button>
         <div class="dr-who"><span class="dr-ava" aria-hidden="true">🐲</span>
           <span class="dr-col"><b id="drName">Người chơi</b>
-            <span class="dr-xp"><i id="drXpFill"></i><em id="drLvl">Cấp 1</em></span></span></div>
+            <span class="dr-xp"><i id="drXpFill"></i><em id="drLvl">Cấp 1</em></span>
+            <span class="dr-cp" id="drCP" title="Tổng lực chiến của cả đàn rồng">⚔️ <b id="drCPv">0</b></span></span></div>
         <div class="dr-pills">
           <span class="dr-pill">${drIcon('gold')}<b id="drGold">0</b></span>
           <span class="dr-pill">${drIcon('gem')}<b id="drGems">0</b></span>
@@ -536,7 +565,8 @@ function drBuild(){
   drBuilt=true;
   try{ if(db) db.ref('.info/serverTimeOffset').on('value',s=>{ drServerOffset=s.val()||0; }); }catch(_){}
 
-  $('drBack').onclick=leaveDragonIsland;
+  $('drBack').onclick=()=>leaveDragonIsland();   // gọi không tham số -> silent=undefined -> mở lại menu chọn game
+  $('drCP').onclick=drShowPower;                 // chạm Lực chiến -> bảng chi tiết
   $('drDock').addEventListener('click',e=>{ const b=e.target.closest('.dr-dock-btn'); if(!b) return; drOpen(b.dataset.act); });
   $('drDragons').addEventListener('click',e=>{
     if(e.target.closest('.dr-coin-bubble')) return;
@@ -553,18 +583,19 @@ function drBuild(){
 
 /* ---------- Mở/đóng đảo ---------- */
 async function showDragonIsland(){
-  drBuild(); hideOverlay();
+  drBuild();
   const cb=$('coinBar'); if(cb) cb.style.display='none';
+  $('drApp').style.display='block';          // hiện đảo NGAY để che bàn bài (#app) trong lúc tải
   const loaded=await drLoad(); drState=loaded||drDefault();
   const drOff=drOfflineEarned();             // tính vàng offline TRƯỚC khi đóng dấu lastSeen mới
   if(drOff.gold>=10 && (drState.dragons||[]).length) drState.gold+=drOff.gold;
   drState.lastSeen=drNow();
   drActive=true;
   try{ localStorage.setItem('lastGame','daorong'); }catch(_){}
-  $('drApp').style.display='block';
   $('drName').textContent=(profile&&profile.name)?profile.name:myName;
   drSeedMails();
   drRenderHud(); drRenderDragons(); drRenderEgg(); drRenderObstacles();
+  hideOverlay();                             // ẩn overlay SAU khi đảo đã sẵn sàng -> reload không lộ màn game bài
   drSaveNow();                               // luôn lưu để chốt lastSeen (chống cộng vàng offline trùng)
   drStartCoins();
   clearInterval(drTick); drTick=setInterval(drRenderEgg,1000);   // đếm ngược ổ ấp
@@ -588,6 +619,7 @@ function drRenderHud(){
   set('drGold',fmtCoin(Math.round(drState.gold))); set('drGems',fmtCoin(drState.gems)); set('drFood',fmtCoin(drState.food));
   set('drOre',fmtCoin(Math.round(drState.ore||0)));
   set('drLvl','Cấp '+drState.level);
+  set('drCPv',fmtCoin(drTotalPower()));                         // tổng lực chiến cả đàn
   const f=$('drXpFill'); if(f) f.style.width=Math.min(100,Math.round(drState.xp/drXpToNext(drState.level)*100))+'%';
   drUpdateQuestDot(); drUpdateMailDot();
   if(typeof drUpdateHabDot==='function') drUpdateHabDot();   // tính năng Khu đảo đang làm dở -> né crash
@@ -598,6 +630,7 @@ function drBump(id){ const el=$(id); if(!el) return; el.classList.remove('bump')
 /* ---------- Rồng trên đảo ---------- */
 function drRenderDragons(){
   const wrap=$('drDragons'); if(!wrap) return; wrap.innerHTML='';
+  const IW=wrap.clientWidth||600, IH=wrap.clientHeight||360;   // kích cỡ đảo (px) để quy đổi % -> px cho đường đi
   drState.dragons.slice(0,DR_MAX).forEach((d,i)=>{
     const s=DR_SPECIES[d.sp]||DR_SPECIES.fire, st=drStar(d), evo=drEvolution(d.lv);
     const slot=DR_SLOTS[i%DR_SLOTS.length];
@@ -640,20 +673,31 @@ function drRenderDragons(){
     roam.appendChild(bob); wrap.appendChild(roam);
     drScheduleDragonAction(bob,d.sp);
     if(!drReduce){
-      // Rồng biên đi VÀO trong cho khỏi rớt mép; rồng giữa xen kẽ trái/phải theo chỉ số
-      // (KHÔNG cùng dồn về tâm như trước) + biên độ nhỏ lại để đỡ chồng lên nhau.
-      const dir=slot[0]<24?1:slot[0]>76?-1:(i%2?1:-1);
-      const dist=16+Math.random()*20, dx=dir*dist, dy=Math.random()*12-6;
-      const dur=Math.max(6200,12400-(s.spd||5)*560)+Math.random()*2600;
-      roam.animate([
-        {transform:'translate(0,0)'},
-        {transform:`translate(${dx}px,${dy}px)`,offset:.46},
-        {transform:`translate(${dx}px,${dy}px)`,offset:.52},
-        {transform:'translate(0,0)',offset:.96},
-        {transform:'translate(0,0)'}
-      ],{duration:dur,iterations:Infinity,easing:'ease-in-out'});
-      roam.classList.toggle('flip',dx<0);
-      const t=setInterval(()=>{ if(!roam.isConnected){clearInterval(t);return;} roam.classList.toggle('flip'); },Math.round(dur/2));
+      // Rồng đi DẠO quanh Ô NHÀ của nó (mỗi con một vùng riêng nên TRẢI ĐỀU khắp đảo,
+      // không dồn cục vào giữa/ổ trứng, vẫn bấm được). Bước ĐỀU (linear) nên mượt không đơ.
+      // Đích luôn được kéo vào trong bãi cỏ và ĐẨY RA khỏi ổ trứng.
+      const clampGrass=(x,y)=>{ const dx=(x-50)/38, dy=(y-46)/33, r=Math.hypot(dx,dy);   // giữ trong cỏ
+        if(r>1){ x=50+dx/r*38*.98; y=46+dy/r*33*.98; } return [x,y]; };
+      const dodgeEgg=(x,y)=>{ let dx=(x-50)/16, dy=(y-73)/14, r=Math.hypot(dx,dy);         // né hẳn ổ trứng (50,73)
+        if(r<1){ if(r<1e-3){dx=0;dy=1;r=1;} x=50+dx/r*16; y=73+dy/r*14; } return [x,y]; };
+      const RX=18, RY=14;                                          // biên độ đi dạo quanh nhà (theo % của đảo)
+      const pick=()=>{ const a=Math.random()*Math.PI*2, r=Math.sqrt(Math.random());
+        let p=[slot[0]+RX*r*Math.cos(a), slot[1]+RY*r*Math.sin(a)];
+        p=clampGrass(p[0],p[1]); p=dodgeEgg(p[0],p[1]); return p; };
+      const N=5, pts=[]; for(let k=0;k<N;k++) pts.push(pick()); pts.push(pts[0]);   // đường vòng kín -> lặp mượt liên tục
+      const off=pts.map(p=>[ (p[0]-slot[0])/100*IW, (p[1]-slot[1])/100*IH ]);       // % -> px lệch so với ô nhà
+      const frames=off.map((o,k)=>({transform:`translate(${o[0].toFixed(1)}px,${o[1].toFixed(1)}px)`, offset:k/(off.length-1)}));
+      let dist=0; for(let k=1;k<off.length;k++) dist+=Math.hypot(off[k][0]-off[k-1][0], off[k][1]-off[k-1][1]);
+      const spd=24+(s.spd||5)*2;                                   // px/giây: rồng nhanh (spd cao) bước rảo hơn
+      const dur=Math.min(40000, Math.max(11000, dist/spd*1000));   // thời lượng theo quãng đường -> tốc độ nhìn đều nhau
+      roam.animate(frames,{duration:dur,iterations:Infinity,easing:'linear'});
+      // Quay mặt + độ sâu theo từng chặng (khớp thời gian đều của các chặng)
+      const segN=pts.length-1, segMs=Math.max(1,Math.round(dur/segN));
+      const apply=k=>{ const a=pts[k], b=pts[(k+1)%pts.length];
+        roam.classList.toggle('flip', b[0]<a[0]-0.3); roam.style.zIndex=10+Math.round(b[1]); };
+      apply(0); let si=0;
+      const t=setInterval(()=>{ if(!roam.isConnected){clearInterval(t);return;}
+        si=(si+1)%segN; apply(si); }, segMs);
     }
   });
 }
@@ -1152,7 +1196,7 @@ function drClaimMail(i){
 }
 
 /* ---------- Shop ---------- */
-const DR_SHOP_RARE_POOL=['electric','ice','lava','steam','swamp','storm','dark','rose','lotus','peony','bubblegum','aurora','carnival','prism','starlight','rainbow'];  // trứng hiếm: loài hiếm/epic đã có sprite
+const DR_SHOP_RARE_POOL=['electric','ice','lava','steam','swamp','storm','dark','rose','lotus','peony','bubblegum','aurora','carnival','prism','starlight','rainbow','mint','lemon','berry','coral','cloud'];  // trứng hiếm: loài hiếm/epic đã có sprite
 const DR_SHOP_LEGEND_POOL=['kaleidoscope','light'];   // trứng huyền thoại
 function drShowShop(){
   const body=`<div class="dr-shop-grid">
@@ -1250,36 +1294,72 @@ function drFightOld_unused(i){ return; /* mã kết quả cũ — đã chuyển 
 }
 
 /* ---------- Sách rồng (đồ giám) ---------- */
+// Cấp cao nhất của loài này đang sở hữu (0 = chưa nuôi con nào).
+function drBestLv(sp){ const b=drState.dragons.filter(d=>d.sp===sp).sort((a,b)=>b.lv-a.lv)[0]; return b?b.lv:0; }
 function drShowCodex(){
   const owned=new Set(drState.dragons.map(d=>d.sp));
   const seen=new Set([...(drState.seen||[]), ...owned]);           // sưu tầm bền vững qua Chuyển Sinh
-  const cells=DR_SP_ORDER.map(sp=>{ const s=DR_SPECIES[sp], has=seen.has(sp), have=owned.has(sp);
-    const best=drState.dragons.filter(d=>d.sp===sp).sort((a,b)=>b.lv-a.lv)[0];
-    const art = have?drDragonArt(best):(has?drDragonArt({sp,lv:1}):'<span class="dr-lock">?</span>');
-    const label = have?`${esc(s.name)} · ${drEvolution(best.lv).name}`:(has?esc(s.name):'? ? ?');
-    return `<button class="dr-codex-cell ${has?'':'locked'}" data-sp="${sp}">
-      <span class="dr-codex-mini">${art}</span>
-      <small>${label}</small></button>`; }).join('');
-  const body=`<p class="dr-note">Đã sưu tầm <b>${seen.size}/${DR_SP_ORDER.length}</b> loài rồng. Lai để mở khoá loài mới!</p>
-    <div class="dr-codex-grid">${cells}</div>`;
+  // Nhóm theo độ hiếm cho "sách" gọn gàng, dễ ngắm.
+  const order=['common','rare','epic','legendary'];
+  const groups=order.map(rar=>{
+    const list=DR_SP_ORDER.filter(sp=>DR_SPECIES[sp].rar===rar);
+    if(!list.length) return '';
+    const gotN=list.filter(sp=>seen.has(sp)).length;
+    const cells=list.map(sp=>{ const s=DR_SPECIES[sp], has=seen.has(sp), have=owned.has(sp);
+      const art = have?drDragonArt({sp,lv:drBestLv(sp)}):(has?drDragonArt({sp,lv:1}):'<span class="dr-lock">?</span>');
+      const evoTag = have?`<em class="dr-codex-stage">${drEvolution(drBestLv(sp)).name}</em>`:'';
+      const label = has?esc(s.name):'? ? ?';
+      return `<button class="dr-codex-cell ${has?'':'locked'} ${have?'owned':''}" data-sp="${sp}">
+        <span class="dr-codex-mini">${art}${evoTag}</span>
+        <small>${label}</small></button>`; }).join('');
+    const r=DR_RAR[rar]||DR_RAR.common;
+    return `<div class="dr-codex-sec">
+      <div class="dr-codex-sechead"><span class="dr-rar" style="--rc:${r.c}">${r.n}</span><b>${gotN}/${list.length}</b></div>
+      <div class="dr-codex-grid">${cells}</div></div>`;
+  }).join('');
+  const body=`<p class="dr-note">Đã sưu tầm <b>${seen.size}/${DR_SP_ORDER.length}</b> loài rồng. Bấm từng con để xem <b>các hình thái tiến hoá</b> khi lên cấp.</p>
+    ${groups}`;
   drModal('Sách Rồng', body, true);
   $('drModal').querySelectorAll('[data-sp]').forEach(c=>c.onclick=()=>drCodexDetail(c.dataset.sp, seen.has(c.dataset.sp)));
 }
+// Dải hình thái: Baby → Teen → Adult → Legend. Loài có atlas tiến hoá (s.evo) đổi hẳn
+// tạo hình theo cấp; loài chưa có atlas thì lớn dần + hào quang mạnh hơn theo cấp.
+function drCodexEvoStrip(sp,has){
+  const bestLv=drBestLv(sp);
+  return `<div class="dr-evostrip">`+DR_EVOLUTIONS.map((evo,i)=>{
+    const reached=bestLv>=evo.minLv, cur=reached&&drEvolution(bestLv).id===evo.id;
+    const next=DR_EVOLUTIONS[i+1];
+    const range='Lv'+evo.minLv+(next?'–'+(next.minLv-1):'+');
+    const art = has?drDragonArt({sp,lv:evo.minLv}):'<span class="dr-lock">?</span>';
+    return `<div class="dr-evostage ${cur?'cur':''} ${has?'':'silh'} ${reached?'reached':'todo'}">
+      <div class="dr-evostage-art">${art}${cur?'<i class="dr-evostage-flag">Hiện tại</i>':''}</div>
+      <b class="dr-evostage-name">${evo.name}</b>
+      <em class="dr-evostage-lv">${range}</em>
+    </div>${next?'<span class="dr-evoarrow">➜</span>':''}`;
+  }).join('')+`</div>`;
+}
 function drCodexDetail(sp,has){
   const s=DR_SPECIES[sp];
-  const best=drState.dragons.filter(d=>d.sp===sp).sort((a,b)=>b.lv-a.lv)[0]||{sp,lv:1};
+  const bestLv=drBestLv(sp), own=bestLv>0;
   const bar=(label,val,max)=>`<div class="dr-statrow"><span>${label}</span><div class="dr-statbar"><i style="width:${Math.min(100,Math.round(val/max*100))}%"></i></div></div>`;
-  const body=`<div class="dr-codex-detail">
-    <div class="dr-codex-art ${has?'':'silh'}">${drDragonArt(best)}</div>
+  const evoNote = s.evo ? 'Đổi hẳn tạo hình qua 4 hình thái khi lên cấp.' : 'Lớn dần & toả hào quang mạnh hơn theo cấp.';
+  const body=`<button class="dr-back-btn" id="drCodexBack">← Danh sách rồng</button>
+    <div class="dr-codex-detail">
+    <div class="dr-codex-art ${has?'':'silh'}">${has?drDragonArt({sp,lv:bestLv||1}):'<span class="dr-lock">?</span>'}</div>
     <div class="dr-codex-meta"><div class="dr-detail-name">${has?esc(s.name):'? ? ?'} ${drRarChip(s.rar)}</div>
       <div class="dr-chips">${s.els.map(drElChip).join('')}</div>
-      ${has?`<div class="dr-kv"><span>Hình thái cao nhất</span><b>${drEvolution(best.lv).name} · Lv${best.lv}</b></div><div class="dr-kv"><span>Sinh vàng</span><b>${s.gold} 🪙/phút (Lv1)</b></div>`:'<p class="dr-note">Chưa sở hữu — lai hoặc mua để mở khoá.</p>'}
+      ${own?`<div class="dr-kv"><span>Hình thái cao nhất</span><b>${drEvolution(bestLv).name} · Lv${bestLv}</b></div>`
+           :(has?'<p class="dr-note">Đã sưu tầm — nuôi & lên cấp để mở các hình thái.</p>':'<p class="dr-note">Chưa sở hữu — lai hoặc mua để mở khoá.</p>')}
+      <div class="dr-kv"><span>Sinh vàng</span><b>${s.gold} 🪙/phút (Lv1)</b></div>
     </div></div>
+    <div class="dr-evohead"><b>🧬 Hình thái tiến hoá</b><span>${evoNote}</span></div>
+    ${drCodexEvoStrip(sp,has)}
     <div class="dr-stats">
       ${bar('Máu',s.hp,200)}${bar('Sát thương',s.atk,120)}${bar('Tầm đánh',s.range,6)}${bar('Tốc độ',s.spd,10)}
     </div>
     ${has&&s.els.length>1?`<p class="dr-note">Lai từ: ${s.els.map(drElChip).join(' + ')}</p>`:''}`;
   drModal('Đồ giám: '+(has?esc(s.name):'Bí ẩn'), body);
+  const back=$('drCodexBack'); if(back) back.onclick=drShowCodex;
 }
 
 /* ---------- Hiệu ứng ---------- */

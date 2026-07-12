@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<title>Preview · Có gì mới</title>
+<style>
+  /* Nền cỏ giả để xem modal đúng bối cảnh */
+  body{margin:0; min-height:100vh; font-family:'Nunito',sans-serif;
+    background:radial-gradient(120% 120% at 50% 0%,#5fc57e,#12522e);}
+</style>
+</head>
+<body>
+<!-- Bản sao markup modal từ index.html để xem trước -->
+<div class="whatsnew show" id="whatsnew" role="dialog" aria-modal="true" aria-labelledby="wnTitle">
+  <div class="whatsnew-card">
+    <button class="wn-x" id="wnClose" type="button" aria-label="Đóng">✕</button>
+    <div class="wn-head">
+      <div class="wn-confetti" aria-hidden="true"><span>🎉</span><span>✨</span><span>🎊</span><span>⭐</span><span>✨</span></div>
+      <div class="wn-badge" aria-hidden="true">🎉</div>
+      <h2 id="wnTitle">Có gì mới</h2>
+      <div><span class="wn-ver" id="wnVer"></span></div>
+      <div class="wn-scallop" aria-hidden="true"></div>
+    </div>
+    <div class="wn-body" id="wnBody"></div>
+    <div class="wn-foot">
+      <button class="btn block" id="wnOk" type="button">Tuyệt, vào chơi! 🎮</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/version.js"></script>
+<script>
+  // Bản rút gọn của logic dựng bảng (mirror social.js) — chỉ dùng cho trang xem trước.
+  const $=id=>document.getElementById(id);
+  const esc=s=>String(s||'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+  function tagClass(tag){const t=String(tag||'').toLowerCase();
+    if(t.includes('lớn'))return'big'; if(t.includes('sửa')||t.includes('lỗi')||t.includes('fix'))return'fix'; return'';}
+  function relHTML(r,latest){
+    const items=(r.items||[]).map(it=>
+      `<li class="wn-item"><span class="wn-item-ic" aria-hidden="true">${esc(it.ic||'•')}</span><span>${esc(it.t||'')}</span></li>`).join('');
+    const tag=r.tag?`<span class="wn-tag ${tagClass(r.tag)}">${esc(r.tag)}</span>`:'';
+    return `<div class="wn-rel${latest?' latest':''}">
+      <div class="wn-rel-head">${tag}
+        <span class="wn-rel-title">${esc(r.title||('Phiên bản '+r.version))}</span>
+        <span class="wn-rel-meta">v${esc(r.version)} · ${esc(r.date||'')}</span>
+      </div><ul class="wn-items">${items}</ul></div>`;
+  }
+  $('wnVer').textContent='Phiên bản '+APP_VERSION;
+  let html=CHANGELOG.slice(0,1).map(r=>relHTML(r,true)).join('');
+  const older=CHANGELOG.slice(1,4);
+  if(older.length) html+=`<div class="wn-older-sep">Các bản trước</div>`+older.map(r=>relHTML(r,false)).join('');
+  $('wnBody').innerHTML=html;
+  const close=()=>alert('(Xem trước) Nút đóng hoạt động — trong game sẽ ẩn bảng.');
+  $('wnClose').onclick=close; $('wnOk').onclick=close;
+</script>
+</body>
+</html>

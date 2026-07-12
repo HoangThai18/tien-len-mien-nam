@@ -65,6 +65,24 @@
 </div>
 <div class="overlay" id="overlay"><div class="card-panel" id="panel"></div></div>
 
+<button class="version-badge" id="versionBadge" type="button" aria-label="Xem lịch sử phiên bản"></button>
+<div class="whatsnew" id="whatsnew" role="dialog" aria-modal="true" aria-labelledby="wnTitle" aria-hidden="true">
+  <div class="whatsnew-card">
+    <button class="wn-x" id="wnClose" type="button" aria-label="Đóng">✕</button>
+    <div class="wn-head">
+      <div class="wn-confetti" aria-hidden="true"><span>🎉</span><span>✨</span><span>🎊</span><span>⭐</span><span>✨</span></div>
+      <div class="wn-badge" aria-hidden="true">🎉</div>
+      <h2 id="wnTitle">Có gì mới</h2>
+      <div><span class="wn-ver" id="wnVer"></span></div>
+      <div class="wn-scallop" aria-hidden="true"></div>
+    </div>
+    <div class="wn-body" id="wnBody"></div>
+    <div class="wn-foot">
+      <button class="btn block" id="wnOk" type="button">Tuyệt, vào chơi! 🎮</button>
+    </div>
+  </div>
+</div>
+
 <div class="rotate-guard" id="rotateGuard" role="dialog" aria-modal="true" aria-labelledby="rotateTitle">
   <div class="rotate-card">
     <div class="rotate-phone" aria-hidden="true">📱</div>
@@ -92,6 +110,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-database-compat.min.js"></script>
 
 <script src="js/config.js"></script>
+<script src="js/version.js"></script>
 <script src="js/engine.js"></script>
 <script src="js/state.js"></script>
 <script src="js/game.js"></script>

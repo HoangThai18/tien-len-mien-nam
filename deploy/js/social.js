@@ -324,6 +324,72 @@ document.addEventListener('click',e=>{
 matchMedia('(display-mode: standalone)').addEventListener?.('change',refreshInstallButton);
 refreshInstallButton();
 
+// ===== Bảng "Có gì mới" (changelog theo phiên bản) =====
+const SEEN_VER_KEY='tienlen-seen-version';
+function tagClass(tag){
+  const t=String(tag||'').toLowerCase();
+  if(t.includes('lớn')) return 'big';
+  if(t.includes('sửa')||t.includes('lỗi')||t.includes('fix')) return 'fix';
+  return '';
+}
+function relHTML(r,latest){
+  const items=(r.items||[]).map(it=>
+    `<li class="wn-item"><span class="wn-item-ic" aria-hidden="true">${esc(it.ic||'•')}</span><span>${esc(it.t||'')}</span></li>`).join('');
+  const tag=r.tag?`<span class="wn-tag ${tagClass(r.tag)}">${esc(r.tag)}</span>`:'';
+  return `<div class="wn-rel${latest?' latest':''}">
+    <div class="wn-rel-head">${tag}
+      <span class="wn-rel-title">${esc(r.title||('Phiên bản '+r.version))}</span>
+      <span class="wn-rel-meta">v${esc(r.version)} · ${esc(r.date||'')}</span>
+    </div>
+    <ul class="wn-items">${items}</ul></div>`;
+}
+function buildWhatsNew(){
+  const wnVer=$('wnVer'); if(wnVer) wnVer.textContent='Phiên bản '+APP_VERSION;
+  const list=Array.isArray(CHANGELOG)?CHANGELOG:[];
+  let html=list.slice(0,1).map(r=>relHTML(r,true)).join('');
+  const older=list.slice(1,4);
+  if(older.length){
+    html+=`<div class="wn-older-sep">Các bản trước</div>`+older.map(r=>relHTML(r,false)).join('');
+  }
+  $('wnBody').innerHTML=html;
+}
+function showWhatsNew(){
+  buildWhatsNew();
+  const el=$('whatsnew');
+  el.classList.add('show'); el.setAttribute('aria-hidden','false');
+  const badge=$('versionBadge'); if(badge) badge.classList.remove('pulse');
+}
+function closeWhatsNew(){
+  const el=$('whatsnew');
+  el.classList.remove('show'); el.setAttribute('aria-hidden','true');
+  try{ localStorage.setItem(SEEN_VER_KEY,APP_VERSION); }catch(_){}
+}
+// true nếu người chơi đang ở bản cũ hơn (đã từng chơi) -> nên báo bản mới.
+function shouldAnnounceUpdate(){
+  let seen=null; try{ seen=localStorage.getItem(SEEN_VER_KEY); }catch(_){}
+  return !!seen && isNewerVersion(APP_VERSION,seen);
+}
+function initVersionUI(){
+  const badge=$('versionBadge');
+  if(badge){ badge.textContent='v'+APP_VERSION; badge.onclick=showWhatsNew; }
+  // Huy hiệu chỉ hiện ở màn hình menu (overlay đang mở) — ẩn khi vào ván cho khỏi đè bài.
+  const ov=$('overlay');
+  const syncBadge=()=>{ if(badge) badge.style.display=(ov&&ov.style.display!=='none')?'':'none'; };
+  if(ov){ new MutationObserver(syncBadge).observe(ov,{attributes:true,attributeFilter:['style']}); }
+  syncBadge();
+  $('wnClose').onclick=closeWhatsNew;
+  $('wnOk').onclick=closeWhatsNew;
+  $('whatsnew').addEventListener('click',e=>{ if(e.target===$('whatsnew')) closeWhatsNew(); });
+  if(shouldAnnounceUpdate()){
+    if(badge) badge.classList.add('pulse');
+    // Đợi màn hình đầu ổn định rồi mới bật bảng cho gọn gàng.
+    setTimeout(()=>{ if(!roomRef) showWhatsNew(); },1100);
+  }else{
+    // Người mới cài (chưa có mốc): ghi nhận âm thầm, không làm phiền.
+    try{ if(!localStorage.getItem(SEEN_VER_KEY)) localStorage.setItem(SEEN_VER_KEY,APP_VERSION); }catch(_){}
+  }
+}
+
 // PWA: luôn kiểm tra bản mới khi mở/lật lại app; service worker mới sẽ tự nhận quyền
 // và tải lại đúng một lần. updateViaCache:none tránh Android giữ sw.js cũ quá lâu.
 if('serviceWorker' in navigator){
@@ -346,7 +412,9 @@ if('serviceWorker' in navigator){
 }
 if(sessionStorage.getItem('tienlen-just-updated')){
   sessionStorage.removeItem('tienlen-just-updated');
-  setTimeout(()=>toast('Đã cập nhật bản mới ✓'),900);
+  // Nếu sắp bật bảng "Có gì mới" thì thôi toast cho khỏi trùng thông báo.
+  if(!shouldAnnounceUpdate()) setTimeout(()=>toast('Đã cập nhật bản mới ✓'),900);
 }
+initVersionUI();
 
 boot();   // đăng nhập trước, rồi mới vào menu

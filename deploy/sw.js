@@ -1,7 +1,7 @@
-const CACHE = 'tienlen-v70-new-dragons';
+const CACHE = 'tienlen-v84-5-dragons';
 const ASSETS = [
   './', './index.html', './styles.css', './manifest.webmanifest', './icon-192.png', './icon-512.png',
-  './js/config.js', './js/engine.js', './js/state.js', './js/game.js', './js/ui.js', './js/daorong.js', './js/maubinh.js', './js/social.js',
+  './js/config.js', './js/version.js', './js/engine.js', './js/state.js', './js/game.js', './js/ui.js', './js/daorong.js', './js/maubinh.js', './js/social.js',
   './assets/characters/captain.webp', './assets/characters/mage.webp',
   './assets/characters/guardian.webp', './assets/characters/trickster.webp',
   './assets/items/luck.webp', './assets/items/hint.webp', './assets/items/bomb.webp', './assets/items/pass.webp',
@@ -14,6 +14,10 @@ const ASSETS = [
   './assets/dragons/bubblegum.webp', './assets/dragons/starlight.webp', './assets/dragons/aurora.webp',
   './assets/dragons/carnival.webp', './assets/dragons/prism.webp', './assets/dragons/kaleidoscope.webp',
   './assets/dragons/rainbow.webp',
+  './assets/dragons/mint.webp', './assets/dragons/lemon.webp', './assets/dragons/berry.webp',
+  './assets/dragons/coral.webp', './assets/dragons/cloud.webp',
+  './assets/dragons/evolution/mint.webp', './assets/dragons/evolution/lemon.webp', './assets/dragons/evolution/berry.webp',
+  './assets/dragons/evolution/coral.webp', './assets/dragons/evolution/cloud.webp', './assets/dragons/evolution/rainbow.webp',
   './assets/dragons/evolution/fire.webp', './assets/dragons/evolution/water.webp',
   './assets/dragons/evolution/plant.webp', './assets/dragons/evolution/earth.webp',
   './assets/dragons/evolution/electric.webp', './assets/dragons/evolution/ice.webp',
