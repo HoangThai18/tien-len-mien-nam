@@ -1138,18 +1138,30 @@ function drClaimMail(i){
 }
 
 /* ---------- Shop ---------- */
+const DR_SHOP_RARE_POOL=['electric','ice','lava','steam','swamp','storm','dark'];   // trứng hiếm: chỉ loài đã có sprite
 function drShowShop(){
   const body=`<div class="dr-shop-grid">
-    <div class="dr-shop-item"><div class="dr-shop-ic">${drIcon('egg')}</div><b>Trứng ngẫu nhiên</b><small>Nở 1 rồng nguyên tố</small><button class="dr-btn" id="drBuyEgg">250 🪙</button></div>
+    <div class="dr-shop-item"><div class="dr-shop-ic">${drIcon('egg')}</div><b>Trứng thường</b><small>Nở 1 rồng nguyên tố cơ bản</small><button class="dr-btn" id="drBuyEgg">250 🪙</button></div>
+    <div class="dr-shop-item"><div class="dr-shop-ic">${drIcon('star')}</div><b>Trứng HIẾM</b><small>Nở rồng hiếm/epic (Điện, Băng, Bão, Hắc Long…)</small><button class="dr-btn alt" id="drBuyEggRare">40 💎</button></div>
     <div class="dr-shop-item"><div class="dr-shop-ic">${drIcon('food')}</div><b>Thức ăn ×20</b><small>Cho rồng lên cấp</small><button class="dr-btn" id="drBuyFood">100 🪙</button></div>
-    <div class="dr-shop-item"><div class="dr-shop-ic">${drIcon('gem')}</div><b>Đổi 30 🍖</b><small>Mua bằng kim cương</small><button class="dr-btn alt" id="drBuyFood2">3 💎</button></div>
-  </div><p class="dr-note">Rồng hiếm hơn có được qua <b>Lai rồng</b> 💞.</p>`;
+    <div class="dr-shop-item"><div class="dr-shop-ic">${drIcon('food')}</div><b>Thức ăn ×100</b><small>Gói lớn tiết kiệm</small><button class="dr-btn" id="drBuyFood100">400 🪙</button></div>
+    <div class="dr-shop-item"><div class="dr-shop-ic">${drIcon('gem')}</div><b>Đổi 30 🍖</b><small>Mua thức ăn bằng kim cương</small><button class="dr-btn alt" id="drBuyFood2">3 💎</button></div>
+    <div class="dr-shop-item"><div class="dr-shop-ic">${drIcon('rock')}</div><b>Quặng ×10 ⛏️</b><small>Nguyên liệu Lò rèn</small><button class="dr-btn alt" id="drBuyOre">5 💎</button></div>
+    <div class="dr-shop-item"><div class="dr-shop-ic">${drIcon('gold')}</div><b>Túi vàng 🪙5.000</b><small>Đổi kim cương lấy vàng</small><button class="dr-btn alt" id="drBuyGold">5 💎</button></div>
+  </div><p class="dr-note">Rồng cực hiếm có được qua <b>Lai rồng</b> 💞 và <b>Chúc phúc</b>.</p>`;
   drModal('Shop', body);
-  $('drBuyEgg').onclick=()=>{ if(drState.dragons.length>=drCapacity()){toast(drCapacity()>=DR_MAX?'Đảo đã đủ rồng':'Hết ô nuôi — dọn 🪨 chướng ngại để mở thêm');return;} if(drState.gold<250){toast('Thiếu vàng');return;}
+  const full=()=>{ if(drState.dragons.length>=drCapacity()){ toast(drCapacity()>=DR_MAX?'Đảo đã đủ rồng':'Hết ô nuôi — dọn 🪨 chướng ngại để mở thêm'); return true; } return false; };
+  $('drBuyEgg').onclick=()=>{ if(full())return; if(drState.gold<250){toast('Thiếu vàng');return;}
     drState.gold-=250; const sp=['fire','water','plant','earth'][Math.floor(Math.random()*4)]; drState.dragons.push({sp,lv:1,fed:0});
     drAddXp(10); drRenderHud(); drRenderDragons(); drSave(); toast('🥚 Nở ra '+DR_SPECIES[sp].name+'!'); };
+  $('drBuyEggRare').onclick=()=>{ if(full())return; if(drState.gems<40){toast('Thiếu 💎 (cần 40)');return;}
+    drState.gems-=40; const sp=DR_SHOP_RARE_POOL[Math.floor(Math.random()*DR_SHOP_RARE_POOL.length)]; drState.dragons.push({sp,lv:1,fed:0,star:1});
+    drAddXp(30); if(typeof confetti==='function') confetti(); drRenderHud(); drRenderDragons(); drSave(); toast('✨ Trứng hiếm nở: '+DR_SPECIES[sp].name+'!'); };
   $('drBuyFood').onclick=()=>{ if(drState.gold<100){toast('Thiếu vàng');return;} drState.gold-=100; drState.food+=20; drRenderHud(); drBump('drFood'); drSave(); toast('+20 🍖'); };
+  $('drBuyFood100').onclick=()=>{ if(drState.gold<400){toast('Thiếu vàng');return;} drState.gold-=400; drState.food+=100; drRenderHud(); drBump('drFood'); drSave(); toast('+100 🍖'); };
   $('drBuyFood2').onclick=()=>{ if(drState.gems<3){toast('Thiếu 💎');return;} drState.gems-=3; drState.food+=30; drRenderHud(); drBump('drFood'); drSave(); toast('+30 🍖'); };
+  $('drBuyOre').onclick=()=>{ if(drState.gems<5){toast('Thiếu 💎 (cần 5)');return;} drState.gems-=5; drState.ore=(drState.ore||0)+10; drRenderHud(); drBump('drOre'); drSave(); toast('+10 ⛏️ quặng'); };
+  $('drBuyGold').onclick=()=>{ if(drState.gems<5){toast('Thiếu 💎 (cần 5)');return;} drState.gems-=5; drState.gold+=5000; drRenderHud(); drBump('drGold'); drSave(); toast('+5.000 🪙'); };
 }
 
 /* ---------- Cho ăn (chọn rồng để nuôi) ---------- */

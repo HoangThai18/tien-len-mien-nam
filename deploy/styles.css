@@ -973,7 +973,7 @@
   .dr-tier-3 .dr-orbit i,.dr-tier-4 .dr-orbit i{width:7px; height:7px; margin:-3.5px 0 0 -3.5px; box-shadow:0 0 9px 2px var(--tcol,#fff);}
   @keyframes drOrbit{to{transform:rotate(360deg);}}
   /* Badge sao: pill nổi bật, viền + glow theo màu bậc; càng bậc cao càng to */
-  .dr-starbadge{position:absolute; top:-7px; left:50%; transform:translateX(-50%); z-index:4; pointer-events:none;
+  .dr-starbadge{position:absolute; top:2px; left:50%; transform:translateX(-50%); z-index:4; pointer-events:none;
     font:900 10px/1 'Baloo 2','Nunito',sans-serif; color:#fff; background:rgba(10,26,28,.92);
     padding:2px 7px; border-radius:999px; border:1.5px solid var(--tcol,#ffd24a); white-space:nowrap;
     text-shadow:0 1px 1px rgba(0,0,0,.6); box-shadow:0 1px 3px rgba(0,0,0,.55), 0 0 8px var(--tcol,#ffd24a);}
@@ -1575,3 +1575,12 @@
   .mb-rescards .card{margin-left:-14px;}
   .mb-rescards .card:first-child{margin-left:0;}
   .mb-modal-act{display:flex; gap:10px; justify-content:center; margin-top:14px;}
+
+  /* ĐẢO RỒNG — chỉnh trên mobile: nhãn ★ dính sát đầu rồng + hint xuống đáy (khỏi che rồng) */
+  @media (max-width:560px){
+    .dr-starbadge{top:12px;}
+  }
+  @media (orientation:landscape) and (max-height:600px){
+    .dr-starbadge{top:16px;}   /* khung rồng 70px, đẩy nhãn xuống ngay trên đầu */
+    .dr-hint{bottom:max(10px,calc(env(safe-area-inset-bottom) + 8px)) !important;}
+  }

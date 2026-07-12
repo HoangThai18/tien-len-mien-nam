@@ -1,4 +1,4 @@
-const CACHE = 'tienlen-v66-webp-dragons';
+const CACHE = 'tienlen-v68-shop-plus';
 const ASSETS = [
   './', './index.html', './styles.css', './manifest.webmanifest', './icon-192.png', './icon-512.png',
   './js/config.js', './js/engine.js', './js/state.js', './js/game.js', './js/ui.js', './js/daorong.js', './js/maubinh.js', './js/social.js',
