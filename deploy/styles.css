@@ -930,8 +930,8 @@
     background:radial-gradient(ellipse at center, #fff 0%, var(--tcol,#8fe0ff) 32%, transparent 70%);}
   @keyframes drAuraPulse{0%,100%{opacity:var(--au,.3); transform:translate(-50%,-50%) scale(1);}
     50%{opacity:calc(var(--au,.3) + .16); transform:translate(-50%,-50%) scale(1.1);}}
-  /* Lấp lánh từ bậc Hiếm (★6+) trở lên */
-  .dr-tier-1 .dr-aura::before,.dr-tier-2 .dr-aura::before,.dr-tier-3 .dr-aura::before,.dr-tier-4 .dr-aura::before{content:''; position:absolute; inset:-8%; border-radius:50%;
+  /* Ánh sáng nền lấp lánh cho bậc Quý+ (tier ≥2) */
+  .dr-tier-2 .dr-aura::before,.dr-tier-3 .dr-aura::before,.dr-tier-4 .dr-aura::before{content:''; position:absolute; inset:-8%; border-radius:50%;
     background:radial-gradient(2.4px 2.4px at 22% 32%,#fff 45%,transparent 55%),
       radial-gradient(2.4px 2.4px at 76% 24%,#fff 45%,transparent 55%),
       radial-gradient(2px 2px at 62% 78%,#fff 45%,transparent 55%),
@@ -939,15 +939,30 @@
       radial-gradient(1.6px 1.6px at 50% 12%,#fff 45%,transparent 55%);
     animation:drSpark 1.7s ease-in-out infinite;}
   @keyframes drSpark{0%,100%{opacity:.25;}50%{opacity:1;}}
-  /* Vòng sáng xoay cho bậc Sử thi trở lên (tier ≥ 3) — cảm giác "lực" */
-  .dr-tier-3 .dr-aura::after,.dr-tier-4 .dr-aura::after{content:''; position:absolute; left:50%; top:50%; width:80%; height:80%;
-    transform:translate(-50%,-50%); border-radius:50%; pointer-events:none; opacity:.55; filter:blur(.5px);
+  /* ===== FX RIÊNG THEO BẬC — mỗi bậc một KIỂU chuyển động khác ===== */
+  /* Bậc HIẾM: đốm nhấp nháy (scale in/out) ở các vị trí quanh rồng */
+  .dr-tw{position:absolute; inset:0; z-index:2; pointer-events:none;}
+  .dr-tw i{position:absolute; width:6px; height:6px; margin:-3px; border-radius:50%; background:#fff;
+    box-shadow:0 0 6px 1px var(--tcol,#fff); transform:scale(0); animation:drTwinkle 1.8s ease-in-out infinite;}
+  @keyframes drTwinkle{0%,100%{transform:scale(0); opacity:0;}50%{transform:scale(1); opacity:1;}}
+  /* Bậc SỬ THI+: vòng phép xoay (arc sáng quét quanh) */
+  .dr-ring{position:absolute; left:50%; top:50%; width:86%; height:86%; transform:translate(-50%,-50%); z-index:0;
+    border-radius:50%; pointer-events:none; opacity:.6; filter:blur(.5px);
     background:conic-gradient(from 0deg, transparent 0deg, var(--tcol,#fff) 60deg, transparent 130deg, var(--tcol,#fff) 240deg, transparent 320deg);
     -webkit-mask:radial-gradient(transparent 56%, #000 60%); mask:radial-gradient(transparent 56%, #000 60%);
-    animation:drRingSpin 3.6s linear infinite;}
-  .dr-tier-4 .dr-aura::after{opacity:.8; animation-duration:2.4s;
-    background:conic-gradient(from 0deg,#ff6b9d,#ffd24a,#8ef0ff,#c89bf0,#ff6b9d);}   /* vòng cầu vồng cho Cực hiếm */
+    animation:drRingSpin 3.4s linear infinite;}
   @keyframes drRingSpin{to{transform:translate(-50%,-50%) rotate(360deg);}}
+  /* Bậc CỰC HIẾM: hào quang cầu vồng xoay chậm sau lưng + hạt bay lên */
+  .dr-halo{position:absolute; left:50%; top:48%; width:132%; height:112%; transform:translate(-50%,-50%); z-index:0;
+    border-radius:50%; pointer-events:none; opacity:.5; filter:blur(9px);
+    background:conic-gradient(from 0deg,#ff6b9d,#ffd24a,#8ef0ff,#c89bf0,#ff6b9d); animation:drHaloSpin 8s linear infinite;}
+  @keyframes drHaloSpin{to{transform:translate(-50%,-50%) rotate(360deg);}}
+  .dr-tier-4 .dr-ring{opacity:.85; animation-duration:2.3s;
+    background:conic-gradient(from 0deg,#ff6b9d,#ffd24a,#8ef0ff,#c89bf0,#ff6b9d);}
+  .dr-rise{position:absolute; left:0; bottom:14%; width:100%; height:80%; z-index:2; pointer-events:none;}
+  .dr-rise i{position:absolute; bottom:0; width:5px; height:5px; border-radius:50%; background:#fff;
+    box-shadow:0 0 6px 1px var(--tcol,#fff); animation:drRise 2.6s ease-in infinite;}
+  @keyframes drRise{0%{transform:translateY(0) scale(.5); opacity:0;}20%{opacity:1;}100%{transform:translateY(-64px) scale(1); opacity:0;}}
   /* Hạt sáng bay quanh — SỐ LƯỢNG tăng theo TỪNG cấp sao (JS sinh), xoay nhanh dần */
   .dr-orbit{position:absolute; left:50%; top:50%; width:0; height:0; z-index:2; pointer-events:none;
     animation:drOrbit var(--odur,5s) linear infinite;}
@@ -1453,3 +1468,17 @@
   .dr-rank-ladder{display:flex; justify-content:center; gap:10px; margin:4px 0 10px; font-size:20px;}
   .dr-rank-pip{opacity:.3; filter:grayscale(.7); transition:.2s;}
   .dr-rank-pip.on{opacity:1; filter:none; transform:scale(1.35);}
+
+  /* 🌸 Mưa cánh hoa cho rồng có fx:'petal' (vd Rồng Anh Đào) — nhiều dần theo cấp */
+  .dr-petals{position:absolute; left:0; top:-8%; width:100%; height:116%; pointer-events:none; z-index:3; overflow:visible;}
+  .dr-petals i{position:absolute; left:var(--x,50%); top:0; width:var(--sz,9px); height:var(--sz,9px);
+    background:radial-gradient(circle at 32% 28%, #ffe0f0, #ff9ec9 68%, #f47bb0);
+    border-radius:100% 0 100% 0; opacity:0; will-change:transform,opacity;
+    animation:drPetalFall var(--dur,4.4s) linear var(--del,0s) infinite;}
+  @keyframes drPetalFall{
+    0%{opacity:0; transform:translate(0,-10px) rotate(0deg) scale(.75);}
+    14%{opacity:.95;}
+    82%{opacity:.8;}
+    100%{opacity:0; transform:translate(var(--drift,0),94px) rotate(300deg) scale(1);}
+  }
+  @media(prefers-reduced-motion:reduce){ .dr-petals{display:none;} }
