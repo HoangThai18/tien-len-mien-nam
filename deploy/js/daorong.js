@@ -274,7 +274,7 @@ function drDefault(){
 function drNormDragons(arr){
   return (arr||[]).map(d=>{
     if(typeof d==='string'){ const sp=d==='violet'?'dark':(DR_SPECIES[d]?d:'fire'); return {sp,lv:1,fed:0}; }
-    if(d&&d.sp&&DR_SPECIES[d.sp]) return {sp:d.sp, lv:d.lv||1, fed:d.fed||0, star:Math.min(5,Math.max(1,d.star||1)), hab:(typeof d.hab==='number'?d.hab:null), runes:Array.isArray(d.runes)?d.runes.filter(r=>r&&DR_RUNE[r.t]):[]};
+    if(d&&d.sp&&DR_SPECIES[d.sp]) return {sp:d.sp, lv:d.lv||1, fed:d.fed||0, star:Math.min(DR_STAR_MAX,Math.max(1,d.star||1)), hab:(typeof d.hab==='number'?d.hab:null), runes:Array.isArray(d.runes)?d.runes.filter(r=>r&&DR_RUNE[r.t]):[]};
     if(d&&d.el&&DR_SPECIES[d.el]) return {sp:d.el, lv:d.lv||1, fed:d.fed||0};
     return {sp:'fire',lv:1,fed:0};
   }).slice(0,DR_MAX);
