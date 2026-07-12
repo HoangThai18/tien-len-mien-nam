@@ -12,9 +12,10 @@ CHUẨN: 1 dải NGANG 8 khung, đi 4 chân, nghiêng 3/4, cùng nhân vật + c
 mọi khung, NỀN TRONG SUỐT, chibi mắt to má hồng (giống fire.png / water.png).
 
 Đã có sprite thật: fire, water, dark  (đang thêm: plant, earth, electric, ice)
-RỒNG CUTE ĐÃ VÀO GAME (đang chơi bằng SVG màu tạm 'pal' — CẦN ẢNH để đẹp hơn):
-  • peach   "Rồng Đào Hồng"   HỒNG đào   #ff9ec4  → peach.png
-  • candy   "Rồng Kẹo Ngọt"   TÍM pastel #c89bf0  → candy.png
+RỒNG CUTE ĐÃ CÓ ẢNH + ATLAS TIẾN HOÁ 4×8:
+  • peach   "Rồng Đào Hồng"   → peach.png + evolution/peach.png
+  • candy   "Rồng Kẹo Ngọt"   → candy.png + evolution/candy.png
+RỒNG CUTE ĐANG DÙNG SVG TẠM — CẦN ẢNH:
   • mint    "Rồng Bạc Hà"     XANH MINT  #9be7c4  → mint.png
   • lemon   "Rồng Chanh"      VÀNG chanh #ffe37a  → lemon.png
   • berry   "Rồng Việt Quất"  XANH-TÍM   #8aa0ff  → berry.png
@@ -32,11 +33,13 @@ PROMPT MẪU (thay [MÀU] / [TÊN]):
    cel-shaded game art, centered, even spacing between frames."
 
 ────────────────────────────────────────────────────────────────────────
-B) ICON CHỨC NĂNG (đang là emoji trên thanh dock)  →  deploy/assets/dragon-island/items/
+B) ICON CHỨC NĂNG  →  deploy/assets/dragon-island/ui/
 ────────────────────────────────────────────────────────────────────────
-Tuỳ chọn. Muốn icon đẹp thay emoji thì tạo PNG VUÔNG ~128px, nền trong suốt:
-  🏝️ Khu đảo · 🌾 Nông trại · 🗺️ Phiêu lưu · 👹 Boss · 📅 Điểm danh
-  🏆 Thành tựu · 👑 BXH · 👫 Bạn bè · 🌴 Trang trí · 🎉 Sự kiện · 💎 Cường hóa · 🏅 Đấu hạng
+ĐÃ TẠO + ĐÃ GẮN huy hiệu WebP trong suốt cho toàn bộ dock/popup:
+  Khu đảo · Nông trại · Phiêu lưu · Tháp · Boss · Điểm danh · Thành tựu
+  BXH · Bạn bè · Trang trí · Sự kiện · Cường hóa · Đấu hạng · Shop
+  Nhiệm vụ · Vòng quay · Lò rèn · Lai rồng · Cho ăn · Đấu · Sách rồng · Thư
+CHƯA TẠO icon đá riêng:
   Đá cường hóa (3 loại, mỗi loại 3 bậc T1/T2/T3): 🔴 Đá Công · 🟢 Đá Thủ · 🔵 Đá Tốc
 (Đã có sẵn: shop, quest, breed, food, arena, codex, egg, gem, gold, rock, star, gift)
 

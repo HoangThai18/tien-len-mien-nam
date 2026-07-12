@@ -48,6 +48,10 @@ const DR_FEATURE_UI={
   achievement:{icon:'achievement.webp',color:'#f4c64f', soft:'rgba(244,198,79,.22)', sub:'Vinh danh người nuôi rồng'},
   leaderboard:{icon:'leaderboard.webp',color:'#ffd65c', soft:'rgba(255,214,92,.22)', sub:'So tài lực chiến toàn máy chủ'},
   friends:    {icon:'friends.webp',    color:'#67d6cf', soft:'rgba(103,214,207,.22)', sub:'Kết bạn và trao quà mỗi ngày'},
+  tower:      {icon:'tower.webp',      color:'#e5aa4f', soft:'rgba(229,170,79,.22)', sub:'Leo tầng tháp thử thách đội rồng'},
+  event:      {icon:'event.webp',      color:'#f48b63', soft:'rgba(244,139,99,.22)', sub:'Sự kiện giới hạn và quà đặc biệt'},
+  runes:      {icon:'runes.webp',      color:'#9b7af2', soft:'rgba(155,122,242,.22)', sub:'Khảm đá tăng sức mạnh cho rồng'},
+  ranked:     {icon:'ranked.webp',     color:'#e85e52', soft:'rgba(232,94,82,.22)', sub:'Leo hạng bằng đội hình mạnh nhất'},
   decor:      {icon:'decor.webp',      color:'#63cf79', soft:'rgba(99,207,121,.22)', sub:'Tạo lãnh địa mang dấu ấn riêng'},
   shop:       {icon:'shop.webp',       color:'#51c7e8', soft:'rgba(81,199,232,.22)', sub:'Vật phẩm và tài nguyên quý'},
   quest:      {icon:'quest.webp',      color:'#ef9f4b', soft:'rgba(239,159,75,.22)', sub:'Hoàn thành mục tiêu nhận thưởng'},
@@ -58,6 +62,7 @@ const DR_FEATURE_UI={
   arena:      {icon:'arena.webp',      color:'#6da7ee', soft:'rgba(109,167,238,.22)', sub:'Đưa đội rồng bước vào trận chiến'},
   codex:      {icon:'codex.webp',      color:'#a987ed', soft:'rgba(169,135,237,.22)', sub:'Khám phá bộ sưu tập loài rồng'},
   mail:       {icon:'mail.webp',       color:'#ef6d62', soft:'rgba(239,109,98,.22)', sub:'Quà tặng và thông báo mới'},
+  tower:      {icon:'tower.webp',      color:'#c89bf0', soft:'rgba(200,155,240,.22)', sub:'Leo tháp vô tận mỗi ngày'},
   event:      {icon:'event.webp',      color:'#ff9ec4', soft:'rgba(255,158,196,.22)', sub:'Đua điểm sự kiện mỗi tuần'},
   runes:      {icon:'runes.webp',      color:'#7ad0c4', soft:'rgba(122,208,196,.22)', sub:'Khảm đá cường hoá cho rồng'},
   ranked:     {icon:'ranked.webp',     color:'#ffd65c', soft:'rgba(255,214,92,.22)', sub:'Đấu xếp hạng theo mùa'},
@@ -74,7 +79,9 @@ function drModalFeature(title){
   const rules=[
     ['farm',['nông trại']],['adventure',['phiêu lưu','bãi biển vắng','rừng rậm','hang băng','núi lửa','đầm lầy độc','vực bóng tối','đỉnh thần long']],
     ['boss',['boss','hải xà','titan']],['daily',['điểm danh']],['achievement',['thành tựu']],
-    ['leaderboard',['xếp hạng','bxh']],['friends',['bạn bè','quà tặng']],['decor',['trang trí','chướng ngại']],
+    ['leaderboard',['bảng xếp hạng','bxh']],['friends',['bạn bè','quà tặng','thăm đảo']],['tower',['tháp']],
+    ['event',['sự kiện']],['runes',['cường hóa','đá rồng','rune']],['ranked',['đấu hạng','xếp hạng mùa']],
+    ['decor',['trang trí','chướng ngại']],
     ['shop',['shop','vàng khi vắng mặt']],['quest',['nhiệm vụ']],['wheel',['vòng quay']],['forge',['lò rèn']],
     ['breed',['lai rồng','trứng']],['feed',['cho ăn']],['arena',['đấu trường','kết quả trận','trận chiến']],
     ['codex',['sách rồng']],['mail',['thư']],['habitat',['khu đảo','môi trường sống']]
@@ -252,7 +259,8 @@ function drDefault(){
     qc:{tap:0,feed:0,breed:0,win:0,clear:0}, qClaimed:[],
     habitats:[{id:1,el:'fire',at:0,bank:0},{id:2,el:'water',at:0,bank:0}], habNext:3,
     farm:[0,0,0], daily:{day:0,streak:0}, achClaimed:[], adv:0, boss:{week:0,dmg:0,hits:0,day:0,claimed:[]}, decos:[], pity:0, friends:[], giftLog:{}, event:{week:-1,pts:0,claimed:[]}, runes:[], arena:{pts:0,week:-1,wins:0,claimed:false},
-    ore:0, forge:{gold:0,power:0}, mails:[], spinDay:0, mailSeeded:false, lastSeen:0, tower:{floor:0,sweepDay:0}};
+    ore:0, forge:{gold:0,power:0}, mails:[], spinDay:0, mailSeeded:false, lastSeen:0, tower:{floor:0,sweepDay:0},
+    rebirth:{count:0,ki:0,up:{gold:0,power:0,xp:0}}, seen:['fire','water','plant']};
 }
 function drNormDragons(arr){
   return (arr||[]).map(d=>{
@@ -287,7 +295,9 @@ function drNorm(v){
     runes:Array.isArray(v.runes)?v.runes.filter(r=>r&&DR_RUNE[r.t]):[],
     arena:(v.arena&&typeof v.arena==='object')?{pts:v.arena.pts||0,week:(typeof v.arena.week==='number'?v.arena.week:-1),wins:v.arena.wins||0,claimed:!!v.arena.claimed}:{pts:0,week:-1,wins:0,claimed:false},
     spinDay:v.spinDay||0, mailSeeded:!!v.mailSeeded, lastSeen:v.lastSeen||0,
-    tower:(v.tower&&typeof v.tower==='object')?{floor:Math.max(0,v.tower.floor||0),sweepDay:v.tower.sweepDay||0}:{floor:0,sweepDay:0}};
+    tower:(v.tower&&typeof v.tower==='object')?{floor:Math.max(0,v.tower.floor||0),sweepDay:v.tower.sweepDay||0}:{floor:0,sweepDay:0},
+    rebirth:(v.rebirth&&typeof v.rebirth==='object')?{count:Math.max(0,v.rebirth.count||0),ki:Math.max(0,v.rebirth.ki||0),up:{gold:Math.max(0,(v.rebirth.up&&v.rebirth.up.gold)||0),power:Math.max(0,(v.rebirth.up&&v.rebirth.up.power)||0),xp:Math.max(0,(v.rebirth.up&&v.rebirth.up.xp)||0)}}:{count:0,ki:0,up:{gold:0,power:0,xp:0}},
+    seen:Array.isArray(v.seen)?Array.from(new Set(v.seen.filter(sp=>DR_SPECIES[sp]))):[]};
 }
 async function drLoad(){
   // 1) ưu tiên cloud (đồng bộ đa thiết bị)
@@ -312,6 +322,8 @@ function drSaveNow(){
     habitats:(drState.habitats||[]).map(h=>({id:h.id,el:h.el,at:h.at||0,bank:Math.round(h.bank||0)})), habNext:drState.habNext||3,
     farm:(drState.farm||[]).slice(0,3), daily:drState.daily||{day:0,streak:0}, achClaimed:(drState.achClaimed||[]).slice(),
     adv:drState.adv||0, boss:drState.boss||{week:0,dmg:0,hits:0,day:0,claimed:[]}, decos:(drState.decos||[]).slice(), pity:drState.pity||0, friends:(drState.friends||[]).slice(), giftLog:drState.giftLog||{}, event:drState.event||{week:-1,pts:0,claimed:[]}, runes:(drState.runes||[]).slice(), arena:drState.arena||{pts:0,week:-1,wins:0,claimed:false}, tower:drState.tower||{floor:0,sweepDay:0},
+    rebirth:drState.rebirth||{count:0,ki:0,up:{gold:0,power:0,xp:0}},
+    seen:Array.from(new Set([...(drState.seen||[]), ...(drState.dragons||[]).map(d=>d.sp)])),
     updatedAt:Date.now()};
   try{ localStorage.setItem(drLsKey(), JSON.stringify(obj)); }catch(_){}   // LUÔN lưu cục bộ trước
   if(auth&&auth.currentUser&&db){                                          // rồi mới đồng bộ cloud (best-effort)
@@ -322,9 +334,9 @@ function drSaveNow(){
 /* ---------- Công thức ---------- */
 function drFoodToNext(lv){ return Math.round(20*Math.pow(1.5,lv-1)); }
 function drXpToNext(lvl){ return Math.round(100*Math.pow(1.3,lvl-1)); }
-function drGoldPerTap(d){ return Math.round(DR_SPECIES[d.sp].gold * d.lv * (2+Math.random()*2) * drStarMult(d) * drForgeGoldMult() * (typeof drDecorMult==='function'?drDecorMult():1)); }
-function drSellPrice(d){ return Math.round(DR_SPECIES[d.sp].gold * 25 * d.lv * DR_RAR[DR_SPECIES[d.sp].rar].mult/ (DR_SPECIES[d.sp].rar==='common'?1:1)); }
-function drPower(d){ const s=DR_SPECIES[d.sp]; const rb=(typeof drRuneBonus==='function')?drRuneBonus(d):{atk:0,hp:0}; return Math.round((s.atk*1.6 + s.hp*0.4)*(1+0.18*(d.lv-1)) * drStarMult(d) * drForgePowerMult() * (1+rb.atk+rb.hp)); }
+function drGoldPerTap(d){ return Math.round(DR_SPECIES[d.sp].gold * d.lv * (2+Math.random()*2) * drStarMult(d) * drForgeGoldMult() * drRebirthGoldMult() * (typeof drDecorMult==='function'?drDecorMult():1)); }
+function drSellPrice(d){ return Math.round(DR_SPECIES[d.sp].gold * 25 * d.lv * DR_RAR[DR_SPECIES[d.sp].rar].mult); }
+function drPower(d){ const s=DR_SPECIES[d.sp]; const rb=(typeof drRuneBonus==='function')?drRuneBonus(d):{atk:0,hp:0}; return Math.round((s.atk*1.6 + s.hp*0.4)*(1+0.18*(d.lv-1)) * drStarMult(d) * drForgePowerMult() * drRebirthPowerMult() * (1+rb.atk+rb.hp)); }
 /* ---------- Lò rèn: bùa toàn đảo (mỗi cấp +5%) ---------- */
 const DR_FORGE_MAX=10;
 function drForgeGoldMult(){ return 1 + 0.05*(((drState&&drState.forge)?drState.forge.gold:0)||0); }
@@ -351,6 +363,7 @@ function drBreedResult(elA,elB,blessed){
   return pool[pool.length-1];
 }
 function drAddXp(n){
+  n=Math.round(n*drRebirthXpMult());
   drState.xp+=n; let up=false;
   while(drState.xp>=drXpToNext(drState.level)){ drState.xp-=drXpToNext(drState.level); drState.level++; drState.gems+=5; up=true; }
   if(up) toast('⭐ Lên cấp '+drState.level+'! +5 💎');
@@ -387,9 +400,19 @@ function drBuild(){
   const app=document.createElement('div'); app.id='drApp'; app.className='dr-screen'; app.style.display='none';
   let deco=DR_DECO.map(d=>`<span class="dr-deco" style="left:${d[1]}%; top:${d[2]}%; font-size:${26*d[3]}px">${d[0]}</span>`).join('');
   let sparks=''; for(let i=0;i<10;i++) sparks+=`<span class="dr-sparkle" style="left:${Math.floor(Math.random()*100)}%; top:${58+Math.floor(Math.random()*38)}%; animation-delay:${(-Math.random()*3.5).toFixed(1)}s"></span>`;
-  const dock=[
-    ['habitat','Khu đảo'],['farm','Nông trại'],['adventure','Phiêu lưu'],['tower','Tháp'],['boss','Boss'],['daily','Điểm danh'],['ach','Thành tựu'],['leaderboard','BXH'],['friends','Bạn bè'],['event','Sự kiện'],['runes','Cường hóa'],['ranked','Đấu hạng'],['decor','Trang trí'],['shop','Shop'],['quest','Nhiệm vụ'],['wheel','Vòng quay'],['forge','Lò rèn'],['breed','Lai rồng'],['feed','Cho ăn'],['arena','Đấu'],['codex','Sách rồng'],['mail','Thư']
-  ].map(d=>{ const icon=d[0]==='ach'?'achievement':d[0]; return `<button class="dr-dock-btn dr-dock-${icon}" data-act="${d[0]}" type="button"><span class="di">${drFeatureIcon(icon)}</span><span class="dl">${d[1]}</span>${typeof drDockBadge==='function'?drDockBadge(d[0]):''}</button>`; }).join('');
+  const dockList=[
+    ['habitat','Khu đảo'],['farm','Nông trại'],['adventure','Phiêu lưu'],['tower','Tháp'],['boss','Boss'],['daily','Điểm danh'],['ach','Thành tựu'],['leaderboard','BXH'],['friends','Bạn bè'],['event','Sự kiện'],['runes','Cường hóa'],['ranked','Đấu hạng'],['decor','Trang trí'],['shop','Shop'],['quest','Nhiệm vụ'],['wheel','Vòng quay'],['forge','Lò rèn'],['rebirth','Chuyển Sinh'],['breed','Lai rồng'],['feed','Cho ăn'],['arena','Đấu'],['codex','Sách rồng'],['mail','Thư']
+  ];
+  // Gán mỗi icon vào 1 cụm góc; icon mới (nếu có) mặc định vào cụm 'br'
+  const DR_DOCK_POS={ habitat:'bl',farm:'bl',feed:'bl',breed:'bl',decor:'bl',
+    adventure:'lm',tower:'lm',boss:'lm',arena:'lm',ranked:'lm',
+    shop:'br',quest:'br',wheel:'br',forge:'br',runes:'br',rebirth:'br',daily:'br',
+    friends:'rm',leaderboard:'rm',event:'rm',codex:'rm',ach:'rm',mail:'rm' };
+  const DR_POD_T={ bl:'Nuôi dưỡng', lm:'Chiến đấu', br:'Cửa hàng', rm:'Cộng đồng' };
+  const podBuckets={bl:[],lm:[],br:[],rm:[]};
+  dockList.forEach(d=>{ const pos=DR_DOCK_POS[d[0]]||'br', icon=d[0]==='ach'?'achievement':d[0];
+    podBuckets[pos].push(`<button class="dr-dock-btn dr-dock-${icon}" data-act="${d[0]}" type="button" title="${d[1]}"><span class="di">${drFeatureIcon(icon)}</span><span class="dl">${d[1]}</span>${typeof drDockBadge==='function'?drDockBadge(d[0]):''}</button>`); });
+  const dock=['bl','lm','br','rm'].map(pos=>`<div class="dr-pod dr-pod-${pos}"><span class="dr-pod-t">${DR_POD_T[pos]}</span><div class="dr-pod-grid">${podBuckets[pos].join('')}</div></div>`).join('');
   app.innerHTML=`
     <div class="dr-sun" aria-hidden="true"></div>
     <div class="dr-cloud a" aria-hidden="true"></div><div class="dr-cloud b" aria-hidden="true"></div><div class="dr-cloud c" aria-hidden="true"></div>
@@ -620,6 +643,7 @@ function drOpen(act){
   else if(act==='runes'){ if(typeof drShowRunes==='function') drShowRunes(0); }
   else if(act==='ranked'){ if(typeof drShowRanked==='function') drShowRanked(); }
   else if(act==='tower'){ if(typeof drShowTower==='function') drShowTower(); }
+  else if(act==='rebirth'){ if(typeof drShowRebirth==='function') drShowRebirth(); }
 }
 function drDragonCard(d,i,extra){
   const s=DR_SPECIES[d.sp], evo=drEvolution(d.lv);
@@ -813,7 +837,7 @@ const DR_OFFLINE_CAP_H=8;              // tích luỹ tối đa 8 giờ
 const DR_OFFLINE_K=0.6;               // hệ số vàng offline / phút cho mỗi rồng
 function drOfflineRatePerMin(){        // tổng vàng/phút của cả đàn (theo cấp, sao, bùa vàng)
   const base=(drState.dragons||[]).reduce((sum,d)=>sum + DR_SPECIES[d.sp].gold * d.lv * drStarMult(d), 0);
-  return base * drForgeGoldMult() * DR_OFFLINE_K;
+  return base * drForgeGoldMult() * drRebirthGoldMult() * DR_OFFLINE_K;
 }
 function drOfflineEarned(){
   const last=drState.lastSeen||0;
@@ -1062,15 +1086,18 @@ function drFightOld_unused(i){ return; /* mã kết quả cũ — đã chuyển 
 /* ---------- Sách rồng (đồ giám) ---------- */
 function drShowCodex(){
   const owned=new Set(drState.dragons.map(d=>d.sp));
-  const cells=DR_SP_ORDER.map(sp=>{ const s=DR_SPECIES[sp], has=owned.has(sp);
+  const seen=new Set([...(drState.seen||[]), ...owned]);           // sưu tầm bền vững qua Chuyển Sinh
+  const cells=DR_SP_ORDER.map(sp=>{ const s=DR_SPECIES[sp], has=seen.has(sp), have=owned.has(sp);
     const best=drState.dragons.filter(d=>d.sp===sp).sort((a,b)=>b.lv-a.lv)[0];
+    const art = have?drDragonArt(best):(has?drDragonArt({sp,lv:1}):'<span class="dr-lock">?</span>');
+    const label = have?`${esc(s.name)} · ${drEvolution(best.lv).name}`:(has?esc(s.name):'? ? ?');
     return `<button class="dr-codex-cell ${has?'':'locked'}" data-sp="${sp}">
-      <span class="dr-codex-mini">${has?drDragonArt(best):'<span class="dr-lock">?</span>'}</span>
-      <small>${has?`${esc(s.name)} · ${drEvolution(best.lv).name}`:'? ? ?'}</small></button>`; }).join('');
-  const body=`<p class="dr-note">Đã sưu tầm <b>${owned.size}/${DR_SP_ORDER.length}</b> loài rồng. Lai để mở khoá loài mới!</p>
+      <span class="dr-codex-mini">${art}</span>
+      <small>${label}</small></button>`; }).join('');
+  const body=`<p class="dr-note">Đã sưu tầm <b>${seen.size}/${DR_SP_ORDER.length}</b> loài rồng. Lai để mở khoá loài mới!</p>
     <div class="dr-codex-grid">${cells}</div>`;
   drModal('Sách Rồng', body, true);
-  $('drModal').querySelectorAll('[data-sp]').forEach(c=>c.onclick=()=>drCodexDetail(c.dataset.sp, owned.has(c.dataset.sp)));
+  $('drModal').querySelectorAll('[data-sp]').forEach(c=>c.onclick=()=>drCodexDetail(c.dataset.sp, seen.has(c.dataset.sp)));
 }
 function drCodexDetail(sp,has){
   const s=DR_SPECIES[sp];
@@ -1108,7 +1135,7 @@ function drHabAt(h){ if(!h.at) h.at=drNow(); return h.at; }        // 'at'=0 -> 
 function drDragonHabHr(d, habEl){
   const s=DR_SPECIES[d.sp]; if(!s) return 0;
   const match=(s.el===habEl)?1.5:1;
-  return s.gold * (d.lv||1) * drStarMult(d) * drForgeGoldMult() * match * DR_HAB_RATE_HR;
+  return s.gold * (d.lv||1) * drStarMult(d) * drForgeGoldMult() * drRebirthGoldMult() * match * DR_HAB_RATE_HR;
 }
 function drHabRateHr(h){ return drHabDragons(h.id).reduce((sum,o)=>sum+drDragonHabHr(o.d,h.el),0); }
 function drHabCap(h){ return Math.round(drHabRateHr(h)*DR_HAB_STORE_HRS); }
@@ -1889,4 +1916,68 @@ function drShowTower(){
   drModal('🗼 Tháp Vô Tận', body, true);
   const c=$('drTowerClimb'); if(c) c.onclick=drTowerClimb;
   const s=$('drTowerSweep'); if(s) s.onclick=drTowerSweep;
+}
+
+/* ================= CHUYỂN SINH (Prestige) =================
+   Reset "ván chơi" (đàn rồng, cấp, vàng, Phiêu lưu, Tháp, Khu đảo...) để nhận Linh Khí 🔮 —
+   tiền tệ vĩnh viễn mua hệ số nhân TOÀN CỤC (vàng/lực/XP) không bao giờ mất.
+   GIỮ NGUYÊN: Sách rồng đã sưu tầm (drState.seen), 💎, Lò rèn, Cường hoá, Trang trí, Bạn bè, Thư. */
+const DR_REBIRTH_MIN=2500;          // lực đội tối thiểu để Chuyển Sinh (đạt được sau 1 lượt chơi ổn)
+function drReb(){ if(!drState.rebirth) drState.rebirth={count:0,ki:0,up:{gold:0,power:0,xp:0}}; if(!drState.rebirth.up) drState.rebirth.up={gold:0,power:0,xp:0}; return drState.rebirth; }
+function drRebLv(kind){ const u=(drState&&drState.rebirth&&drState.rebirth.up)||{}; return u[kind]||0; }
+function drRebirthGoldMult(){ const r=drState&&drState.rebirth; if(!r) return 1; return (1+0.10*drRebLv('gold'))*(1+0.03*(r.count||0)); }
+function drRebirthPowerMult(){ const r=drState&&drState.rebirth; if(!r) return 1; return (1+0.08*drRebLv('power'))*(1+0.03*(r.count||0)); }
+function drRebirthXpMult(){ const r=drState&&drState.rebirth; if(!r) return 1; return 1+0.12*drRebLv('xp'); }
+function drRebirthGain(){ return Math.floor(Math.sqrt(drTeamPower()/1200)); }   // Linh Khí (2500→1, 4800→2, 10800→3, 30k→5, 120k→10)
+function drCanRebirth(){ return drTeamPower()>=DR_REBIRTH_MIN && drRebirthGain()>=1; }
+const DR_REB_UP={
+  gold:  {name:'Vàng Vĩnh Cửu', ic:'🪙', per:'+10% vàng'},
+  power: {name:'Lực Vĩnh Cửu',  ic:'⚔️', per:'+8% lực'},
+  xp:    {name:'Trí Tuệ Cổ',    ic:'⭐', per:'+12% XP'},
+};
+function drRebUpCost(kind){ return drRebLv(kind)+1; }    // Lv0→1:1🔮, Lv1→2:2🔮 ...
+function drBuyRebUp(kind){
+  const r=drReb(), cost=drRebUpCost(kind);
+  if((r.ki||0)<cost){ toast('Thiếu Linh Khí 🔮 (cần '+cost+')'); return; }
+  r.ki-=cost; r.up[kind]=drRebLv(kind)+1;
+  drRenderHud(); drSave(); drShowRebirth(); toast('🔮 Nâng '+DR_REB_UP[kind].name+' → Lv'+r.up[kind]);
+}
+let drRebConfirm=false;
+function drDoRebirth(){
+  if(!drCanRebirth()){ toast('Cần lực đội ≥ '+fmtCoin(DR_REBIRTH_MIN)+' để Chuyển Sinh'); return; }
+  const gain=drRebirthGain(), r=drReb();
+  drState.seen=Array.from(new Set([...(drState.seen||[]), ...drState.dragons.map(d=>d.sp)]));   // giữ bộ sưu tập
+  r.count=(r.count||0)+1; r.ki=(r.ki||0)+gain;
+  const def=drDefault();                    // reset "ván chơi", giữ meta
+  drState.dragons=def.dragons; drState.gold=def.gold; drState.food=def.food; drState.ore=0;
+  drState.level=1; drState.xp=0; drState.adv=0; drState.breed=null; drState.pity=0;
+  drState.tower={floor:0,sweepDay:0};
+  drState.habitats=def.habitats; drState.habNext=3; drState.farm=[0,0,0];
+  drState.qc={tap:0,feed:0,breed:0,win:0,clear:0}; drState.qClaimed=[]; drState.cleared=[];
+  drCloseModal(); if(typeof drRenderDragons==='function') drRenderDragons(); drRenderHud(); drSave();
+  if(typeof drUpdateQuestDot==='function') drUpdateQuestDot();
+  if(typeof confetti==='function') confetti();
+  toast('🔮 Chuyển Sinh lần '+r.count+'! +'+gain+' Linh Khí');
+  drShowRebirth();
+}
+function drShowRebirth(keepConfirm){
+  if(!keepConfirm) drRebConfirm=false;
+  const r=drReb(), tp=drTeamPower(), gain=drRebirthGain(), can=drCanRebirth();
+  const goldM=Math.round((drRebirthGoldMult()-1)*100), powM=Math.round((drRebirthPowerMult()-1)*100), xpM=Math.round((drRebirthXpMult()-1)*100);
+  const upRow=(k)=>{ const d=DR_REB_UP[k], lv=drRebLv(k), cost=drRebUpCost(k), afford=(r.ki||0)>=cost;
+    return `<div class="dr-reb-up"><span class="dr-reb-ic">${d.ic}</span>
+      <div class="dr-reb-mid"><b>${d.name}</b><small>Lv${lv} · ${d.per} mỗi cấp</small></div>
+      <button class="dr-btn sm ${afford?'alt':''}" data-rebup="${k}" ${afford?'':'disabled'}>${cost} 🔮</button></div>`; };
+  const body=`<div class="dr-reb-hd">🔮 <b>${fmtCoin(r.ki||0)}</b> Linh Khí · đã Chuyển Sinh <b>${r.count||0}</b> lần</div>
+    <div class="dr-reb-mults">🪙 +${goldM}% vàng · ⚔️ +${powM}% lực · ⭐ +${xpM}% XP</div>
+    <div class="dr-reb-cur">
+      <div class="dr-kv"><span>Lực đội hiện tại</span><b>${fmtCoin(tp)} 💪</b></div>
+      <div class="dr-kv"><span>Chuyển Sinh sẽ nhận</span><b>+${gain} 🔮</b></div>
+    </div>
+    <button class="dr-btn ${can&&drRebConfirm?'go':(can?'alt':'')} block" id="drRebGo" ${can?'':'disabled'}>${can?(drRebConfirm?'⚠️ Chắc chắn? Nhấn lần nữa để RESET':('🔮 Chuyển Sinh · nhận +'+gain+' Linh Khí')):('🔒 Cần lực đội ≥ '+fmtCoin(DR_REBIRTH_MIN))}</button>
+    <div class="dr-reb-shop"><div class="dr-sub2">Nâng cấp vĩnh viễn (mua bằng 🔮)</div>${upRow('gold')}${upRow('power')}${upRow('xp')}</div>
+    <p class="dr-hab-intro">Chuyển Sinh reset đàn rồng, cấp, vàng, Phiêu lưu, Tháp, Khu đảo → đổi lấy Linh Khí mua hệ số nhân <b>vĩnh viễn</b>. <b>Giữ nguyên:</b> Sách rồng đã sưu tầm, 💎, Lò rèn, Cường hoá, Trang trí, Bạn bè.</p>`;
+  const bd=drModal('🔮 Chuyển Sinh', body, true);
+  const go=$('drRebGo'); if(go) go.onclick=()=>{ if(!drRebConfirm){ drRebConfirm=true; drShowRebirth(true); return; } drRebConfirm=false; drDoRebirth(); };
+  bd.addEventListener('click',e=>{ const b=e.target.closest('[data-rebup]'); if(b) drBuyRebUp(b.dataset.rebup); });
 }
