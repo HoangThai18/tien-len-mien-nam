@@ -94,13 +94,13 @@ function drModalFeature(title){
 /* ---------- Loài rồng (đồ giám) ---------- */
 /* ==================== GHI CHÚ: RỒNG DỄ THƯƠNG — CẦN TẠO ẢNH (dùng AI) ====================
    Các rồng này đang dùng SVG màu tạm qua field 'pal'. Khi có ảnh, thêm 'sheet' như Rồng Nước:
-       sheet:{url:'assets/dragons/<id>.png', frames:8, fps:8}
+       sheet:{url:'assets/dragons/<id>.webp', frames:8, fps:8}
    CHUẨN ẢNH (giống fire.png / water.png): 1 dải NGANG 8 khung đi bộ 4 chân, NỀN TRONG SUỐT,
    nhìn nghiêng 3/4, cùng nhân vật + cỡ ở mọi khung, style chibi mắt to má hồng.
 
    ĐÃ TẠO ẢNH + GẮN ATLAS TIẾN HOÁ 4×8:
-     • peach → "Rồng Đào Hồng"  → assets/dragons/peach.png + evolution/peach.png
-     • candy → "Rồng Kẹo Ngọt"  → assets/dragons/candy.png + evolution/candy.png
+     • peach → "Rồng Đào Hồng"  → assets/dragons/peach.webp + evolution/peach.webp
+     • candy → "Rồng Kẹo Ngọt"  → assets/dragons/candy.webp + evolution/candy.webp
 
    Ý TƯỞNG MÀU DỄ THƯƠNG THÊM (tạo ảnh xong nói tên+màu, mình thêm data mỗi con 1 dòng):
      • mint   "Rồng Bạc Hà"    — XANH MINT pastel #9be7c4
@@ -117,27 +117,27 @@ function drModalFeature(title){
       place. Transparent background, soft cel-shaded game art, centered, even spacing between frames."
    =========================================================================================== */
 const DR_SPECIES={
-  peach:   {name:'Rồng Đào Hồng',   el:'plant',   els:['plant'],          rar:'rare',   gold:18, atk:48, hp:125, range:4, spd:6, evo:'assets/dragons/evolution/peach.png', sheet:{url:'assets/dragons/peach.png',frames:8,fps:7,act:1.35}, pal:{body:'#ff9ec4',bd:'#ffe0ee',wg:'#ffc2dc',st:'#e85b93',horn:'#d43f7a'}},
-  candy:   {name:'Rồng Kẹo Ngọt',   el:'water',   els:['water'],          rar:'rare',   gold:20, atk:52, hp:120, range:4, spd:7, evo:'assets/dragons/evolution/candy.png', sheet:{url:'assets/dragons/candy.png',frames:8,fps:8,act:1.25}, pal:{body:'#c89bf0',bd:'#f4e6ff',wg:'#dcc2f5',st:'#8f5ecf',horn:'#7346b3'}},
+  peach:   {name:'Rồng Đào Hồng',   el:'plant',   els:['plant'],          rar:'rare',   gold:18, atk:48, hp:125, range:4, spd:6, evo:'assets/dragons/evolution/peach.webp', sheet:{url:'assets/dragons/peach.webp',frames:8,fps:7,act:1.35}, pal:{body:'#ff9ec4',bd:'#ffe0ee',wg:'#ffc2dc',st:'#e85b93',horn:'#d43f7a'}},
+  candy:   {name:'Rồng Kẹo Ngọt',   el:'water',   els:['water'],          rar:'rare',   gold:20, atk:52, hp:120, range:4, spd:7, evo:'assets/dragons/evolution/candy.webp', sheet:{url:'assets/dragons/candy.webp',frames:8,fps:8,act:1.25}, pal:{body:'#c89bf0',bd:'#f4e6ff',wg:'#dcc2f5',st:'#8f5ecf',horn:'#7346b3'}},
   mint:    {name:'Rồng Bạc Hà',     el:'plant',   els:['plant'],          rar:'rare',   gold:19, atk:46, hp:130, range:4, spd:6, pal:{body:'#9be7c4',bd:'#e4fbf0',wg:'#bff2dc',st:'#3fae86',horn:'#2f9670'}},
   lemon:   {name:'Rồng Chanh',      el:'electric',els:['electric'],       rar:'rare',   gold:21, atk:58, hp:112, range:5, spd:8, pal:{body:'#ffe37a',bd:'#fff9d6',wg:'#ffee9e',st:'#d9a516',horn:'#b9860d'}},
   berry:   {name:'Rồng Việt Quất',  el:'ice',     els:['ice'],            rar:'rare',   gold:20, atk:50, hp:122, range:4, spd:6, pal:{body:'#8aa0ff',bd:'#e6ebff',wg:'#b3c0ff',st:'#5566cc',horn:'#3f4ba3'}},
   coral:   {name:'Rồng San Hô',     el:'fire',    els:['fire'],           rar:'rare',   gold:20, atk:54, hp:118, range:4, spd:7, pal:{body:'#ff9e7a',bd:'#ffe6dc',wg:'#ffc2ac',st:'#e8663f',horn:'#c24a25'}},
   cloud:   {name:'Rồng Mây',        el:'water',   els:['water'],          rar:'rare',   gold:19, atk:48, hp:126, range:4, spd:6, pal:{body:'#cfe3ff',bd:'#f0f7ff',wg:'#e0eeff',st:'#8fa8c8',horn:'#6f88a8'}},
   rainbow: {name:'Rồng Cầu Vồng',   el:'light',   els:['light'],          rar:'epic',   gold:40, atk:80, hp:150, range:5, spd:8, pal:{body:'#ff9ec4',bd:'#fff0f8',wg:'#c9b3ff',st:'#b0569f',horn:'#8f3f86'}},
-  sakura:  {name:'Rồng Anh Đào',    el:'plant',   els:['plant'],          rar:'rare',   gold:19, atk:50, hp:124, range:4, spd:6, fx:'petal', evo:'assets/dragons/evolution/sakura.png', sheet:{url:'assets/dragons/sakura.png',frames:1,fps:1}, pal:{body:'#ff8fc7',bd:'#ffe3f1',wg:'#ffb3d9',st:'#e84f95',horn:'#c93a7a'}},
-  fire:    {name:'Rồng Lửa',       el:'fire',    els:['fire'],           rar:'common', gold:10, atk:42, hp:100, range:3, spd:6, evo:'assets/dragons/evolution/fire.png',       sheet:{url:'assets/dragons/fire.png', frames:8, fps:7, act:1.25}},
-  water:   {name:'Rồng Nước',      el:'water',   els:['water'],          rar:'common', gold:10, atk:38, hp:112, range:4, spd:5, evo:'assets/dragons/evolution/water.png',      sheet:{url:'assets/dragons/water.png', frames:8, fps:9, act:1.3}},
-  plant:   {name:'Rồng Cây',       el:'plant',   els:['plant'],          rar:'common', gold:10, atk:36, hp:118, range:3, spd:5, evo:'assets/dragons/evolution/plant.png',      sheet:{url:'assets/dragons/plant.png', frames:8, fps:6, act:1.45}},
-  earth:   {name:'Rồng Đất',       el:'earth',   els:['earth'],          rar:'common', gold:11, atk:46, hp:126, range:2, spd:4, evo:'assets/dragons/evolution/earth.png',      sheet:{url:'assets/dragons/earth.png', frames:8, fps:5, act:1.55}},
-  electric:{name:'Rồng Điện',      el:'electric',els:['electric'],       rar:'rare',   gold:16, atk:54, hp:100, range:5, spd:8, evo:'assets/dragons/evolution/electric.png',   sheet:{url:'assets/dragons/electric.png', frames:8, fps:9, act:1.05}},
-  ice:     {name:'Rồng Băng',      el:'ice',     els:['ice'],            rar:'rare',   gold:16, atk:50, hp:110, range:4, spd:6, evo:'assets/dragons/evolution/ice.png',        sheet:{url:'assets/dragons/ice.png', frames:8, fps:6, act:1.5}},
-  lava:    {name:'Rồng Dung Nham', el:'fire',    els:['fire','earth'],   rar:'rare',   gold:22, atk:62, hp:132, range:3, spd:5, evo:'assets/dragons/evolution/lava.png',       sheet:{url:'assets/dragons/lava.png', frames:8, fps:6, act:1.35}},
-  steam:   {name:'Rồng Hơi Nước',  el:'water',   els:['fire','water'],   rar:'rare',   gold:22, atk:56, hp:120, range:4, spd:6, evo:'assets/dragons/evolution/steam.png',      sheet:{url:'assets/dragons/steam.png', frames:8, fps:7, act:1.35}},
-  swamp:   {name:'Rồng Đầm Lầy',   el:'plant',   els:['water','plant'],  rar:'rare',   gold:22, atk:52, hp:138, range:3, spd:5, evo:'assets/dragons/evolution/swamp.png',      sheet:{url:'assets/dragons/swamp.png', frames:8, fps:5, act:1.7}},
-  storm:   {name:'Rồng Bão',       el:'electric',els:['electric','water'],rar:'epic',  gold:34, atk:74, hp:130, range:5, spd:9, evo:'assets/dragons/evolution/storm.png',      sheet:{url:'assets/dragons/storm.png', frames:8, fps:8, act:1.15}},
-  dark:    {name:'Hắc Long',       el:'dark',    els:['dark'],           rar:'epic',   gold:40, atk:86, hp:150, range:4, spd:7, evo:'assets/dragons/evolution/dark.png',       sheet:{url:'assets/dragons/dark.png', frames:8, fps:7, act:1.45}},
-  light:   {name:'Thần Long',      el:'light',   els:['light'],          rar:'legendary',gold:70,atk:110,hp:180, range:5, spd:8, evo:'assets/dragons/evolution/light.png',      sheet:{url:'assets/dragons/light.png', frames:8, fps:7, act:1.6}},
+  sakura:  {name:'Rồng Anh Đào',    el:'plant',   els:['plant'],          rar:'rare',   gold:19, atk:50, hp:124, range:4, spd:6, fx:'petal', evo:'assets/dragons/evolution/sakura.webp', sheet:{url:'assets/dragons/sakura.webp',frames:1,fps:1}, pal:{body:'#ff8fc7',bd:'#ffe3f1',wg:'#ffb3d9',st:'#e84f95',horn:'#c93a7a'}},
+  fire:    {name:'Rồng Lửa',       el:'fire',    els:['fire'],           rar:'common', gold:10, atk:42, hp:100, range:3, spd:6, evo:'assets/dragons/evolution/fire.webp',       sheet:{url:'assets/dragons/fire.webp', frames:8, fps:7, act:1.25}},
+  water:   {name:'Rồng Nước',      el:'water',   els:['water'],          rar:'common', gold:10, atk:38, hp:112, range:4, spd:5, evo:'assets/dragons/evolution/water.webp',      sheet:{url:'assets/dragons/water.webp', frames:8, fps:9, act:1.3}},
+  plant:   {name:'Rồng Cây',       el:'plant',   els:['plant'],          rar:'common', gold:10, atk:36, hp:118, range:3, spd:5, evo:'assets/dragons/evolution/plant.webp',      sheet:{url:'assets/dragons/plant.webp', frames:8, fps:6, act:1.45}},
+  earth:   {name:'Rồng Đất',       el:'earth',   els:['earth'],          rar:'common', gold:11, atk:46, hp:126, range:2, spd:4, evo:'assets/dragons/evolution/earth.webp',      sheet:{url:'assets/dragons/earth.webp', frames:8, fps:5, act:1.55}},
+  electric:{name:'Rồng Điện',      el:'electric',els:['electric'],       rar:'rare',   gold:16, atk:54, hp:100, range:5, spd:8, evo:'assets/dragons/evolution/electric.webp',   sheet:{url:'assets/dragons/electric.webp', frames:8, fps:9, act:1.05}},
+  ice:     {name:'Rồng Băng',      el:'ice',     els:['ice'],            rar:'rare',   gold:16, atk:50, hp:110, range:4, spd:6, evo:'assets/dragons/evolution/ice.webp',        sheet:{url:'assets/dragons/ice.webp', frames:8, fps:6, act:1.5}},
+  lava:    {name:'Rồng Dung Nham', el:'fire',    els:['fire','earth'],   rar:'rare',   gold:22, atk:62, hp:132, range:3, spd:5, evo:'assets/dragons/evolution/lava.webp',       sheet:{url:'assets/dragons/lava.webp', frames:8, fps:6, act:1.35}},
+  steam:   {name:'Rồng Hơi Nước',  el:'water',   els:['fire','water'],   rar:'rare',   gold:22, atk:56, hp:120, range:4, spd:6, evo:'assets/dragons/evolution/steam.webp',      sheet:{url:'assets/dragons/steam.webp', frames:8, fps:7, act:1.35}},
+  swamp:   {name:'Rồng Đầm Lầy',   el:'plant',   els:['water','plant'],  rar:'rare',   gold:22, atk:52, hp:138, range:3, spd:5, evo:'assets/dragons/evolution/swamp.webp',      sheet:{url:'assets/dragons/swamp.webp', frames:8, fps:5, act:1.7}},
+  storm:   {name:'Rồng Bão',       el:'electric',els:['electric','water'],rar:'epic',  gold:34, atk:74, hp:130, range:5, spd:9, evo:'assets/dragons/evolution/storm.webp',      sheet:{url:'assets/dragons/storm.webp', frames:8, fps:8, act:1.15}},
+  dark:    {name:'Hắc Long',       el:'dark',    els:['dark'],           rar:'epic',   gold:40, atk:86, hp:150, range:4, spd:7, evo:'assets/dragons/evolution/dark.webp',       sheet:{url:'assets/dragons/dark.webp', frames:8, fps:7, act:1.45}},
+  light:   {name:'Thần Long',      el:'light',   els:['light'],          rar:'legendary',gold:70,atk:110,hp:180, range:5, spd:8, evo:'assets/dragons/evolution/light.webp',      sheet:{url:'assets/dragons/light.webp', frames:8, fps:7, act:1.6}},
 };
 const DR_SP_PRIORITY=['peach','sakura','candy','mint','lemon','berry','coral','cloud','rainbow','fire','water','plant','earth','electric','ice','lava','steam','swamp','storm','dark','light'];
 // DR_SP_ORDER LUÔN gồm mọi loài trong DR_SPECIES: chỉ cần thêm rồng mới vào DR_SPECIES

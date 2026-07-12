@@ -5,3 +5,6 @@ CLAUDE.md
 
 # Thư mục tạm / file trung gian tạo ảnh
 tmp/
+
+# Cache deploy của Firebase (local, không cần lên git)
+.firebase/

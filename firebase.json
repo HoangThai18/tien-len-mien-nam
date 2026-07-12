@@ -1,0 +1,22 @@
+{
+  "hosting": {
+    "public": "deploy",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**",
+      "**/HUONG-DAN.txt",
+      "**/_frames/**",
+      "**/icon-source.png",
+      "**/_headers"
+    ],
+    "headers": [
+      {
+        "source": "**/*.@(html|js|css|webmanifest)",
+        "headers": [
+          { "key": "Cache-Control", "value": "no-cache" }
+        ]
+      }
+    ]
+  }
+}
