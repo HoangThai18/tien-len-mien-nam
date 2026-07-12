@@ -1,4 +1,4 @@
-const CACHE = 'tienlen-v110-mb-drag';
+const CACHE = 'tienlen-v125-evo-2-5';
 const ASSETS = [
   './', './index.html', './styles.css', './manifest.webmanifest', './icon-192.png', './icon-512.png',
   './js/config.js', './js/version.js', './js/engine.js', './js/state.js', './js/game.js', './js/ui.js', './js/daorong.js', './js/maubinh.js', './js/social.js',
@@ -25,6 +25,13 @@ const ASSETS = [
   './assets/dragons/evolution/swamp.webp', './assets/dragons/evolution/storm.webp',
   './assets/dragons/evolution/dark.webp', './assets/dragons/evolution/light.webp',
   './assets/dragons/evolution/peach.webp', './assets/dragons/evolution/candy.webp', './assets/dragons/evolution/sakura.webp',
+  './assets/dragons/evolution/rose.webp', './assets/dragons/evolution/lotus.webp', './assets/dragons/evolution/peony.webp',
+  './assets/dragons/evolution/bubblegum.webp', './assets/dragons/evolution/starlight.webp', './assets/dragons/evolution/aurora.webp',
+  './assets/dragons/evolution/carnival.webp', './assets/dragons/evolution/prism.webp', './assets/dragons/evolution/kaleidoscope.webp',
+  './assets/dragon-island/effects/projectiles/fire.webp', './assets/dragon-island/effects/projectiles/water.webp',
+  './assets/dragon-island/effects/projectiles/electric.webp', './assets/dragon-island/effects/projectiles/ice.webp',
+  './assets/dragon-island/effects/projectiles/dark.webp', './assets/dragon-island/effects/projectiles/light.webp',
+  './assets/dragon-island/effects/projectiles/plant.webp', './assets/dragon-island/effects/projectiles/earth.webp',
   './assets/dragon-island/island.webp',
   './assets/dragon-island/bosses/sea-serpent.webp', './assets/dragon-island/bosses/lava-dragon.webp', './assets/dragon-island/bosses/ice-titan.webp', './assets/dragon-island/bosses/dark-dragon.webp',
   './assets/dragon-island/adventure/01-beach.webp', './assets/dragon-island/adventure/02-jungle.webp', './assets/dragon-island/adventure/03-ice-cave.webp',

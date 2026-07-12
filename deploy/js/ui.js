@@ -429,14 +429,19 @@ function showLeaderboard(){
       const medal=['🥇','🥈','🥉'][i]||(i+1);
       const val=by==='elo'?`${u.elo??1000} <small>ELO</small>`:`${fmtCoin(u.coins||0)} 🪙`;
       const t=eloTier(u.elo);
-      return `<div class="rank-row${u.uid===myUid?' you':''}"><div class="pos">${medal}</div>
-        <div class="who">${esc(u.name||'Bạn')} <span class="rank-badge" style="--rk:${t.color}">${t.icon} ${t.name}</span>
+      const tag=u.bot?`<span class="rank-badge" style="--rk:#8a93a3">🤖 Máy</span>`:'';
+      const title=(!u.bot&&u.title)?`<span class="mb-title-chip">${esc(u.title)}</span>`:'';
+      const nm=u.bot&&u.emoji?`${u.emoji} ${u.name||'Máy'}`:(u.name||'Bạn');
+      return `<div class="rank-row${!u.bot&&u.uid===myUid?' you':''}"><div class="pos">${medal}</div>
+        <div class="who">${esc(nm)} ${title}<span class="rank-badge" style="--rk:${t.color}">${t.icon} ${t.name}</span>${tag}
           <span class="sub" style="display:block;margin:0;font-weight:600">${u.wins||0} thắng · ${u.games||0} ván</span></div>
         <div class="hl">${val}</div></div>`;
     }).join('')||'<p class="sub">Chưa có dữ liệu.</p>';
   };
-  db.ref('cardrank').once('value').then(snap=>{
-    users=[]; snap.forEach(c=>{ const v=c.val()||{}; users.push({uid:c.key,name:v.name,coins:v.coins,elo:v.elo,wins:v.wins,games:v.games}); });
+  Promise.all([db.ref('cardrank').once('value'), db.ref('cardbots').once('value').catch(()=>null)]).then(([snap,bots])=>{
+    users=[]; snap.forEach(c=>{ const v=c.val()||{}; users.push({uid:c.key,name:v.name,coins:v.coins,elo:v.elo,wins:v.wins,games:v.games,title:v.title}); });
+    // Tài khoản máy DÙNG CHUNG (không có coins → không lên tab "Giàu nhất")
+    if(bots) bots.forEach(c=>{ const v=c.val()||{}; users.push({uid:'bot:'+c.key,name:v.name,emoji:v.emoji,elo:v.elo,wins:v.wins,games:v.games,bot:true}); });
     draw();
   }).catch(()=>{ $('bxhList').innerHTML='<p class="sub" style="color:var(--red)">Không tải được BXH — cần thêm mục "cardrank" vào Rules Firebase (xem HUONG-DAN.txt).</p>'; });
   document.querySelectorAll('.bxh-tab').forEach(t=>t.onclick=()=>{ by=t.dataset.by;
@@ -579,19 +584,22 @@ const BET_PRESETS=[5,10,20,50];
 function showBetSetup(next){
   const chips=BET_PRESETS.map(v=>`<button class="bet-chip${v===gameBet?' sel':''}" data-v="${v}">${v} 🪙/lá</button>`).join('');
   $('panel').innerHTML=`
-    <div class="logo">Mệnh giá</div>
-    <h1 style="font-size:24px">Đặt cược mỗi lá</h1>
+    <div class="logo">Tạo bàn</div>
+    <h1 style="font-size:24px">Chọn mức cược</h1>
     <p class="sub">Người thua trả <b>số lá còn lại × mệnh giá</b>. Người TỚI ăn cả pot.</p>
     <div class="bet-chips">${chips}</div>
     <input class="field" id="inBet" type="number" min="0" inputmode="numeric" value="${gameBet}">
+    <p class="sub" id="betElo" style="margin-top:8px">⚔️ Cược cao → ăn/thua <b>ELO</b> nhiều hơn (±<b id="betEloN">--</b>/ván)</p>
     <div class="menu-gap"><button class="btn block" id="betGo">Bắt đầu 🎴</button></div>
     <button class="linkish" id="betBack">← Quay lại</button>`;
   $('overlay').style.display='flex';
+  const refreshElo=()=>{ const n=$('betEloN'); if(n&&typeof eloK==='function') n.textContent='~'+eloK(Math.max(0,Math.floor(+$('inBet').value||0))); };
   document.querySelectorAll('.bet-chip').forEach(c=>c.onclick=()=>{
     $('inBet').value=c.dataset.v;
     document.querySelectorAll('.bet-chip').forEach(x=>x.classList.remove('sel'));
-    c.classList.add('sel');
+    c.classList.add('sel'); refreshElo();
   });
+  $('inBet').oninput=refreshElo; refreshElo();
   $('betGo').onclick=()=>{ gameBet=Math.max(0,Math.floor(+$('inBet').value||0)); next(); };
   $('betBack').onclick=()=>{ if(gameType&&gameType!=='tienlen') showGameSelect(); else showMenu(); };
 }

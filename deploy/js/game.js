@@ -140,9 +140,13 @@ function attachProfile(uid){
       if(profile.name) myName=profile.name;
       renderCoinBar();
       if(mode!=='solo'&&roomRef) roomRef.child('players/'+myIdx).update({coins:profile.coins||0,name:myName});
+      // Danh hiệu Mậu Binh đang đeo (nếu có) -> hiện kèm tên trên BXH
+      let titleStr='';
+      if(profile.mbTitle && typeof MB_ACHS!=='undefined'){ const a=MB_ACHS.find(x=>x.id===profile.mbTitle);
+        if(a&&a.title && profile.achievements&&profile.achievements[profile.mbTitle]) titleStr=a.icon+' '+a.title; }
       // Gương thông tin CÔNG KHAI cho BXH bài (node RIÊNG 'cardrank' — KHÔNG đụng 'leaderboard' của Đảo Rồng)
       db.ref('cardrank/'+uid).set({name:profile.name||'Bạn', elo:profile.elo||1000,
-        coins:profile.coins||0, wins:profile.wins||0, games:profile.games||0}).catch(()=>{});
+        coins:profile.coins||0, wins:profile.wins||0, games:profile.games||0, title:titleStr}).catch(()=>{});
     }
   });
 }
@@ -163,7 +167,7 @@ function addCoins(delta,gameId,isWinner,meta){
     if(isWinner) u.wins=(u.wins||0)+1;
     u.lastSettled=gameId;
     if(meta&&meta.game){                          // ván bài thật -> cập nhật ELO + nhiệm vụ + chuỗi thắng
-      u.elo=eloAfter(u.elo||1000, !!isWinner);
+      u.elo=eloAfter(u.elo||1000, !!isWinner, meta.bet);
       u.quests=questTick(u.quests, !!isWinner, meta.game);
       if(isWinner){ u.streak=(u.streak||0)+1;
         u.coins += Math.min(Math.max(u.streak-1,0),6)*30;   // chuỗi thắng: thưởng tăng dần (x2→+30 … x7+→+180)
@@ -175,10 +179,25 @@ function addCoins(delta,gameId,isWinner,meta){
     toast('⚠️ Chưa lưu được xu — kiểm tra mạng hoặc Rules Firebase (mục users)'); });
 }
 /* ---------- ELO ---------- */
-// Đấu với "bàn" mốc 1000 (bot/đối thủ trung bình). Thắng +, thua −, co giãn theo chênh lệch.
-function eloAfter(cur,won){
-  const K=24, base=1000, E=1/(1+Math.pow(10,(base-cur)/400));
+// Cược càng cao → ăn/thua ELO càng nhiều (K co giãn 16→56 theo mệnh giá bàn).
+function eloK(bet){ bet=Math.max(0, Math.floor(bet||0)); return Math.round(16 + Math.min(bet,60)/60*40); }
+// Đấu với "bàn" mốc 1000 (bot/đối thủ trung bình). Thắng +, thua −, co giãn theo chênh lệch & mức cược.
+function eloAfter(cur,won,bet){
+  const K=eloK(bet), base=1000, E=1/(1+Math.pow(10,(base-cur)/400));
   return Math.max(100, Math.round(cur + K*((won?1:0)-E)));
+}
+// Cập nhật ELO cho 1 "tài khoản máy" DÙNG CHUNG toàn hệ thống (node cardbots).
+// Máy binh tối ưu nên leo hạng nhanh — thành cột mốc trên BXH để người chơi vượt.
+function updateBotElo(key,name,emoji,won,bet){
+  if(!db||!auth||!auth.currentUser) return;
+  db.ref('cardbots/'+key).transaction(b=>{
+    b=b||{elo:1000,wins:0,games:0};
+    b.name=name; b.emoji=emoji||''; b.bot=true;
+    b.games=(b.games||0)+1;
+    if(won) b.wins=(b.wins||0)+1;
+    b.elo=eloAfter(b.elo||1000, !!won, bet);
+    return b;
+  }).catch(()=>{});
 }
 // Hạng đấu theo ELO — mốc mục tiêu để leo, mỗi hạng 1 màu + huy hiệu.
 const ELO_TIERS=[
@@ -279,7 +298,7 @@ function settleMyWallet(S){
   settledGameId=S.settle.gameId;
   const row=(S.settle.rows||[]).find(r=>r.seat===myIdx);
   if(!row) return;
-  addCoins(row.delta, S.settle.gameId, S.settle.winner===myIdx, {game:'tienlen'});
+  addCoins(row.delta, S.settle.gameId, S.settle.winner===myIdx, {game:'tienlen', bet:S.bet});
 }
 function fmtCoin(n){ n=Number(n); if(!isFinite(n)) return '--'; return n.toLocaleString('vi-VN'); }
 function renderCoinBar(){

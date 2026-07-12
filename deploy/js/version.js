@@ -18,8 +18,41 @@
 const GAME_CHANGELOGS = {
   daorong: {
     name: 'Đảo Rồng',
-    version: '2.2.0',
+    version: '2.5.0',
     log: [
+      {
+        version: '2.5.0',
+        date: '12/07/2026',
+        tag: 'Tính năng',
+        title: 'Hoá rồng rực rỡ',
+        items: [
+          { ic: '🦋', t: 'Thêm hình thái tiến hoá cho loạt rồng hồng & rực rỡ (Hoa Hồng, Hoa Sen, Mẫu Đơn, Kẹo Bông, Ánh Sao, Cực Quang, Lễ Hội, Lăng Kính, Vạn Hoa) — mỗi con đổi hẳn tạo hình khi lên cấp.' },
+          { ic: '✨', t: 'Đạn phép có hình riêng theo hệ (Lửa, Nước, Điện, Băng, Cây, Đất, Ánh Sáng, Bóng Tối) bay vào kẻ địch khi giao chiến.' },
+          { ic: '🏆', t: 'Thành tựu tiến hoá mới — nuôi rồng lên Thiếu Niên & Trưởng Thành để nhận thưởng.' },
+        ],
+      },
+      {
+        version: '2.4.0',
+        date: '12/07/2026',
+        tag: 'Tính năng',
+        title: 'Chiến đấu chiến thuật',
+        items: [
+          { ic: '⚔️', t: 'Chiến đấu theo lượt có chiến thuật — rồng chia vai trò (đỡ đòn / sát thương), tung kỹ năng riêng theo hệ.' },
+          { ic: '🛡️', t: 'Khắc hệ & hiệu ứng — đánh khắc chế gây thêm sát thương, có khiên/buff và thứ tự ra đòn rõ ràng.' },
+          { ic: '🎯', t: 'Tự dàn trận & nhắm mục tiêu — theo dõi diễn biến từng đòn ngay trên sân.' },
+        ],
+      },
+      {
+        version: '2.3.0',
+        date: '12/07/2026',
+        tag: 'Tính năng',
+        title: 'Đảo Rồng lung linh',
+        items: [
+          { ic: '🖼️', t: 'Thay hình ảnh thật cho cả đảo — boss oai vệ, 12 cảnh phiêu lưu, trang trí & chướng ngại sống động.' },
+          { ic: '🎒', t: 'Thêm Túi đồ — gom bộ sưu tập rồng, tài nguyên & đá cường hoá về một chỗ.' },
+          { ic: '💎', t: 'Đá cường hoá có hình riêng — gắn đá tăng lực cho rồng trực quan hơn.' },
+        ],
+      },
       {
         version: '2.2.0',
         date: '12/07/2026',
@@ -61,8 +94,19 @@ const GAME_CHANGELOGS = {
 
   tienlen: {
     name: 'Tiến Lên Miền Nam',
-    version: '1.0.0',
+    version: '1.1.0',
     log: [
+      {
+        version: '1.1.0',
+        date: '12/07/2026',
+        tag: 'Tính năng',
+        title: 'Lên hạng, tranh mùa',
+        items: [
+          { ic: '🏆', t: 'Hạng đấu theo trình độ — leo từ Tân Thủ đến Cao Thủ, mỗi hạng một huy hiệu.' },
+          { ic: '📅', t: 'Mùa giải hàng tháng — cuối mùa nhận thưởng theo hạng, điểm reset mềm sang mùa mới.' },
+          { ic: '🔥', t: 'Chuỗi thắng — thắng liên tiếp càng dài, thưởng xu càng lớn.' },
+        ],
+      },
       {
         version: '1.0.0',
         date: '12/07/2026',
@@ -79,8 +123,29 @@ const GAME_CHANGELOGS = {
 
   maubinh: {
     name: 'Mậu Binh',
-    version: '1.0.0',
+    version: '1.2.0',
     log: [
+      {
+        version: '1.2.0',
+        date: '12/07/2026',
+        tag: 'Tính năng',
+        title: 'Danh hiệu & phong cách',
+        items: [
+          { ic: '🏅', t: 'Hồ sơ người chơi + Danh hiệu — khoe thành tích, thống kê thắng/thua.' },
+          { ic: '🖼️', t: 'Khung avatar cosmetic — Bạc, Vàng, Neon, Lửa (khung Lửa nhấp nháy).' },
+          { ic: '📊', t: 'Bảng thống kê — theo dõi phong độ qua từng ván.' },
+        ],
+      },
+      {
+        version: '1.1.0',
+        date: '12/07/2026',
+        tag: 'Tính năng',
+        title: 'Kéo thả binh bài',
+        items: [
+          { ic: '✋', t: 'Kéo-thả lá bài để binh — nhanh gọn trên cả điện thoại & máy tính.' },
+          { ic: '🏆', t: 'Chung hệ Hạng đấu & Mùa giải với Tiến Lên — mỗi ván ăn xu còn tính điểm leo hạng.' },
+        ],
+      },
       {
         version: '1.0.0',
         date: '12/07/2026',

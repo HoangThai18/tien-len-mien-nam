@@ -42,11 +42,17 @@ Game giờ có ĐĂNG NHẬP + VÍ XU nên phải bật thêm Authentication.
             "$uid": { ".write": "auth != null && auth.uid === $uid" } },
           "cardrank": {
             ".read": "auth != null",
-            "$uid": { ".write": "auth != null && auth.uid === $uid" } }
+            "$uid": { ".write": "auth != null && auth.uid === $uid" } },
+          "cardbots": {
+            ".read": "auth != null",
+            "$id": { ".write": "auth != null" } },
+          "gifts": {
+            "$uid": { ".read": "auth != null", ".write": "auth != null" } }
         }
       }
 
     → "leaderboard" = BXH Đảo Rồng (lực chiến rồng);  "cardrank" = BXH game bài (ELO/xu).
+      "cardbots" = ELO các tài khoản MÁY dùng chung (ai đăng nhập cũng cập nhật được).
       Cả hai là bản CÔNG KHAI (KHÔNG có email); mỗi người chỉ ghi ô của mình, mọi người đọc được.
 
     → Người thường chỉ sửa ví CỦA MÌNH; tài khoản ADMIN (email khai ở trên) được
