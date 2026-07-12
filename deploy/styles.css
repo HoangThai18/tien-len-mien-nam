@@ -823,11 +823,13 @@
     border-radius:999px; padding:7px 15px; font-size:12px; font-weight:700; font-family:'Nunito',sans-serif;}
   .dr-hint b{color:#ffd35c;}
 
-  @media (orientation:landscape) and (max-height:540px){
+  @media (orientation:landscape) and (max-height:600px){
     .dr-sun{width:56px; height:56px;}
-    .dr-island{top:50%; height:min(66vh,320px); width:min(80vw,620px);}
-    .dr-bob{width:76px;} .dr-sprite{--sz:76px;}
-    .dr-hint{bottom:max(58px,calc(env(safe-area-inset-bottom) + 48px)); font-size:11px; padding:6px 12px;}
+    /* Kéo khu rồng XUỐNG ngồi lên cỏ tiền cảnh (trước bị dồn lên cao, chừa trống dưới);
+       thu hẹp bề ngang để rồng bên không đụng dock 4 góc */
+    .dr-island{top:58%; height:min(64vh,320px); width:min(70vw,560px);}
+    .dr-bob{width:70px;} .dr-sprite{--sz:70px;}
+    .dr-hint{bottom:max(52px,calc(env(safe-area-inset-bottom) + 44px)); font-size:11px; padding:6px 12px;}
     .dr-shop{padding:9px 16px; font-size:13px;}
   }
   @media (prefers-reduced-motion:reduce){
@@ -1196,11 +1198,7 @@
   @media (max-width:380px){ .dr-dock-btn .di{width:34px; height:34px;} }
 
   @media (orientation:landscape) and (max-height:540px){
-    .dr-island{top:51%; width:min(82vw,760px); height:min(68vh,400px);}
-    .dr-pod{gap:3px; padding:4px 6px 5px;} .dr-pod-t{font-size:8.5px;}
-    .dr-dock-btn{width:52px; padding:3px 2px;}
-    .dr-dock-btn .di{width:37px; height:37px;}
-    .dr-dock-btn .dl{font-size:9px;}
+    .dr-island{top:58%; width:min(70vw,560px); height:min(64vh,320px);}   /* kéo xuống cỏ tiền cảnh, thu hẹp tránh dock */
     .dr-pill .dr-ui-icon{width:22px; height:22px;}
     .dr-egg-art{width:50px; height:50px;}
     .dr-shop-ic{width:58px; height:58px;}

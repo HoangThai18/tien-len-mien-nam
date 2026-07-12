@@ -228,7 +228,9 @@ function confetti(){
    MÀN HÌNH
    ========================================================================= */
 // Sảnh chọn loại bài — màn đầu tiên sau khi đăng nhập
+let gsOpenAt=0;   // mốc mở sảnh — chặn "ghost click" từ nút Thoát/Back của game vừa bấm
 function showGameSelect(){
+  gsOpenAt=Date.now();
   const cards=GAME_TYPES.map(g=>{
     const locked=!g.ready;
     const pips=g.icon
@@ -261,6 +263,7 @@ function showGameSelect(){
   $('overlay').style.display='flex';
   renderCoinBar();
   document.querySelectorAll('.game-card').forEach(btn=>btn.onclick=()=>{
+    if(Date.now()-gsOpenAt<450) return;   // vừa mở sảnh <0.45s -> là cú chạm dội của nút back, bỏ qua
     const g=GAME_TYPES.find(x=>x.id===btn.dataset.game);
     if(!g) return;
     if(!g.ready){ toast(`${g.name} đang phát triển — sắp ra mắt! 🔜`); return; }

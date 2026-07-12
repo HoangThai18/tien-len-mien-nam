@@ -1,4 +1,4 @@
-const CACHE = 'tienlen-v62-maubinh';
+const CACHE = 'tienlen-v65-mobile-island';
 const ASSETS = [
   './', './index.html', './styles.css', './manifest.webmanifest', './icon-192.png', './icon-512.png',
   './js/config.js', './js/engine.js', './js/state.js', './js/game.js', './js/ui.js', './js/daorong.js', './js/maubinh.js', './js/social.js',
@@ -62,8 +62,11 @@ self.addEventListener('fetch', e => {
     || u.hostname === 'fonts.googleapis.com' || u.hostname === 'fonts.gstatic.com';
   if (!cacheable) return;
   if (u.origin === location.origin) {
+    // Chỉ file code (html/js/css) mới bỏ qua cache HTTP để luôn lấy bản mới;
+    // ảnh vẫn dùng cache cho nhẹ data.
+    const isCode = e.request.mode === 'navigate' || /\.(?:js|css|webmanifest)$/.test(u.pathname);
     e.respondWith(
-      fetch(e.request).then(res => {
+      fetch(e.request, isCode ? { cache: 'reload' } : undefined).then(res => {
         if (res.ok) {
           const copy = res.clone();
           caches.open(CACHE).then(c => c.put(e.request, copy));

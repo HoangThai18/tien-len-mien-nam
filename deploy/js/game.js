@@ -172,6 +172,9 @@ function settleMyWallet(S){
 }
 function fmtCoin(n){ n=Number(n); if(!isFinite(n)) return '--'; return n.toLocaleString('vi-VN'); }
 function renderCoinBar(){
+  // Ví xu dùng CHUNG cho các game bài (Tiến Lên, Mậu Binh) — cùng users/<uid>/coins.
+  // Cập nhật cả ô xu riêng của Mậu Binh để luôn khớp số dư thật, cho thấy tiền là một.
+  const mb=$('mbCoin'); if(mb) mb.textContent=(profile&&profile.coins!=null)?fmtCoin(profile.coins):'--';
   const bar=$('coinBar'); if(!bar) return;
   if(profile){ $('coinVal').textContent=(profile.coins!=null?fmtCoin(profile.coins):'--'); bar.style.display='inline-flex'; }
   else bar.style.display='none';
