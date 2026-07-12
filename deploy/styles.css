@@ -939,13 +939,11 @@
   /* dock icon chức năng */
   /* dock: 4 cụm icon ở các góc (thay 1 thanh cuộn ngang) */
   .dr-dock{position:fixed; inset:0; z-index:33; pointer-events:none;}
-  .dr-pod{position:absolute; pointer-events:auto; display:flex; flex-direction:column; gap:4px;
-    padding:6px 7px 7px; border-radius:18px; max-width:46vw;
-    background:rgba(9,42,44,.5); backdrop-filter:blur(8px); border:2px solid rgba(255,255,255,.2);
-    box-shadow:0 8px 20px rgba(0,0,0,.35);}
-  .dr-pod-t{font:800 9.5px/1 'Nunito',sans-serif; letter-spacing:.6px; text-transform:uppercase;
-    color:#ffe6a0; text-shadow:0 1px 2px rgba(0,0,0,.55); padding-left:4px; opacity:.92;
-    align-self:flex-start;}
+  .dr-pod{position:absolute; pointer-events:auto; display:flex; flex-direction:column; gap:3px;
+    padding:2px; border-radius:16px; max-width:46vw; background:none; border:0; box-shadow:0 0 0;}
+  .dr-pod-t{font:800 10px/1 'Nunito',sans-serif; letter-spacing:.6px; text-transform:uppercase;
+    color:#ffe9a8; text-shadow:0 1px 1px #063,0 0 4px rgba(0,0,0,.9); padding:3px 7px; margin-bottom:1px;
+    opacity:1; align-self:flex-start; background:rgba(6,40,44,.5); border-radius:9px; backdrop-filter:blur(3px);}
   .dr-pod-grid{display:grid; gap:3px;}
   .dr-pod-bl{left:12px; bottom:calc(env(safe-area-inset-bottom) + 12px);}
   .dr-pod-br{right:12px; bottom:calc(env(safe-area-inset-bottom) + 12px);}
@@ -954,10 +952,10 @@
   .dr-pod-bl>.dr-pod-grid, .dr-pod-br>.dr-pod-grid{grid-auto-flow:column; grid-template-rows:repeat(2,auto);}
   .dr-pod-lm>.dr-pod-grid, .dr-pod-rm>.dr-pod-grid{grid-auto-flow:row;}
   /* màn hẹp/dọc: gom hết icon xuống 1 dải đáy tự xuống hàng (không cuộn ngang) */
-  @media (max-width:760px), (orientation:portrait){
+  @media (max-width:760px), (orientation:portrait), (max-height:520px){
     .dr-dock{inset:auto 6px calc(env(safe-area-inset-bottom) + 6px) 6px; pointer-events:auto;
-      display:flex; flex-wrap:wrap; justify-content:center; align-content:flex-end; gap:2px 4px;
-      max-height:36vh; overflow-y:auto; padding:6px 6px 4px; border-radius:18px;
+      display:flex; flex-wrap:wrap; justify-content:center; align-content:flex-start; gap:2px 4px;
+      max-height:48vh; overflow-y:auto; padding:6px 6px 4px; border-radius:18px;
       background:rgba(9,42,44,.55); backdrop-filter:blur(8px); border:2px solid rgba(255,255,255,.2);
       box-shadow:0 8px 20px rgba(0,0,0,.4);}
     .dr-pod{position:static; display:contents; transform:none; background:none; border:0; box-shadow:0 0 0; padding:0;}
@@ -1121,14 +1119,12 @@
   .dr-ui-icon{display:block; width:100%; height:100%; object-fit:contain; pointer-events:none; user-select:none;}
   .dr-pill .dr-ui-icon{width:26px; height:26px; margin:-4px 0 -4px -5px; border-radius:50%;
     box-shadow:0 2px 5px rgba(0,0,0,.24);}
-  .dr-pod{gap:5px; padding:7px 8px 8px; border-radius:20px;
-    background:linear-gradient(180deg,rgba(10,63,75,.72),rgba(4,38,51,.82));
-    border-color:rgba(255,238,164,.5); box-shadow:0 6px 0 rgba(2,31,40,.4),0 14px 26px rgba(0,0,0,.28);}
+  .dr-pod{gap:3px; padding:2px; background:none; border:0; box-shadow:0 0 0;}
   .dr-dock-btn{width:62px; padding:4px 3px 5px; gap:3px; transition:transform .15s,background .15s;}
   .dr-dock-btn .di{display:block; width:46px; height:46px; font-size:0; border-radius:50%;
     filter:drop-shadow(0 4px 5px rgba(0,0,0,.32)); transition:transform .18s;}
   .dr-dock-btn:active .di{transform:scale(.9) rotate(-4deg);}
-  .dr-dock-btn .dl{font-size:10px; color:#fff7d6; text-shadow:0 2px 3px rgba(0,0,0,.65);}
+  .dr-dock-btn .dl{font-size:10px; color:#fff7d6; text-shadow:0 1px 1px #000,0 0 3px rgba(0,0,0,.9),0 2px 4px rgba(0,0,0,.7);}
   .dr-dock-badge{top:0; right:4px; z-index:2;}
 
   .dr-egg{top:75%;}
@@ -1212,6 +1208,14 @@
   .dr-day.next{border-color:#ffd35c; box-shadow:0 0 12px rgba(255,211,92,.35); animation:drAuraPulse 1.8s ease-in-out infinite;}
   .dr-day.got{opacity:.6;}
   .dr-day-tick{position:absolute; top:2px; right:5px; color:#7ee08a; font-weight:900;}
+  /* Lịch điểm danh tháng: 5 cột gọn cho 30 ngày, ô mốc lớn nổi bật */
+  .dr-daily-grid.month{grid-template-columns:repeat(5,1fr); gap:5px;}
+  .dr-daily-grid.month .dr-day{padding:6px 2px; gap:2px; border-radius:9px;}
+  .dr-daily-grid.month .dr-day-n{font-size:9.5px;}
+  .dr-daily-grid.month .dr-day-r{font-size:9px; line-height:1.15;}
+  .dr-day.mile{border-color:rgba(255,196,79,.75); background:linear-gradient(180deg,rgba(255,196,79,.18),rgba(0,0,0,.2));}
+  .dr-day.mile .dr-day-n{color:#ffd35c;}
+  .dr-q-reset{font-weight:600; color:rgba(255,255,255,.5); font-size:10px;}
   /* Thành tựu / Phiêu lưu — dòng danh sách */
   .dr-ach-list,.dr-adv-list,.dr-boss-miles,.dr-lb-list{display:flex; flex-direction:column; gap:8px;}
   .dr-ach,.dr-adv{display:flex; align-items:center; gap:10px; background:rgba(255,255,255,.05);

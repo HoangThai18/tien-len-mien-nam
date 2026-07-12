@@ -1,4 +1,4 @@
-const CACHE = 'tienlen-v46-rebirth';
+const CACHE = 'tienlen-v51-float-dock';
 const ASSETS = [
   './', './index.html', './styles.css', './manifest.webmanifest', './icon-192.png', './icon-512.png',
   './js/config.js', './js/engine.js', './js/state.js', './js/game.js', './js/ui.js', './js/daorong.js', './js/social.js',
@@ -36,7 +36,7 @@ const ASSETS = [
   './assets/dragon-island/ui/feed.webp', './assets/dragon-island/ui/arena.webp',
   './assets/dragon-island/ui/codex.webp', './assets/dragon-island/ui/mail.webp',
   './assets/dragon-island/ui/incubator.webp', './assets/dragon-island/ui/back.webp',
-  './assets/dragon-island/ui/close.webp',
+  './assets/dragon-island/ui/close.webp', './assets/dragon-island/ui/rebirth.webp',
   'https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-auth-compat.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-database-compat.min.js',

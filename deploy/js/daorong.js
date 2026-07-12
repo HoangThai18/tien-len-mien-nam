@@ -52,6 +52,7 @@ const DR_FEATURE_UI={
   event:      {icon:'event.webp',      color:'#f48b63', soft:'rgba(244,139,99,.22)', sub:'Sự kiện giới hạn và quà đặc biệt'},
   runes:      {icon:'runes.webp',      color:'#9b7af2', soft:'rgba(155,122,242,.22)', sub:'Khảm đá tăng sức mạnh cho rồng'},
   ranked:     {icon:'ranked.webp',     color:'#e85e52', soft:'rgba(232,94,82,.22)', sub:'Leo hạng bằng đội hình mạnh nhất'},
+  rebirth:    {icon:'rebirth.webp',    color:'#f3a04c', soft:'rgba(243,160,76,.22)', sub:'Tái sinh để nhận sức mạnh vĩnh viễn'},
   decor:      {icon:'decor.webp',      color:'#63cf79', soft:'rgba(99,207,121,.22)', sub:'Tạo lãnh địa mang dấu ấn riêng'},
   shop:       {icon:'shop.webp',       color:'#51c7e8', soft:'rgba(81,199,232,.22)', sub:'Vật phẩm và tài nguyên quý'},
   quest:      {icon:'quest.webp',      color:'#ef9f4b', soft:'rgba(239,159,75,.22)', sub:'Hoàn thành mục tiêu nhận thưởng'},
@@ -63,6 +64,7 @@ const DR_FEATURE_UI={
   codex:      {icon:'codex.webp',      color:'#a987ed', soft:'rgba(169,135,237,.22)', sub:'Khám phá bộ sưu tập loài rồng'},
   mail:       {icon:'mail.webp',       color:'#ef6d62', soft:'rgba(239,109,98,.22)', sub:'Quà tặng và thông báo mới'},
   tower:      {icon:'tower.webp',      color:'#c89bf0', soft:'rgba(200,155,240,.22)', sub:'Leo tháp vô tận mỗi ngày'},
+  rebirth:    {icon:'rebirth.webp',    color:'#ffb84d', soft:'rgba(255,184,77,.22)', sub:'Chuyển Sinh nhận Linh Khí vĩnh viễn'},
   event:      {icon:'event.webp',      color:'#ff9ec4', soft:'rgba(255,158,196,.22)', sub:'Đua điểm sự kiện mỗi tuần'},
   runes:      {icon:'runes.webp',      color:'#7ad0c4', soft:'rgba(122,208,196,.22)', sub:'Khảm đá cường hoá cho rồng'},
   ranked:     {icon:'ranked.webp',     color:'#ffd65c', soft:'rgba(255,214,92,.22)', sub:'Đấu xếp hạng theo mùa'},
@@ -80,7 +82,7 @@ function drModalFeature(title){
     ['farm',['nông trại']],['adventure',['phiêu lưu','bãi biển vắng','rừng rậm','hang băng','núi lửa','đầm lầy độc','vực bóng tối','đỉnh thần long']],
     ['boss',['boss','hải xà','titan']],['daily',['điểm danh']],['achievement',['thành tựu']],
     ['leaderboard',['bảng xếp hạng','bxh']],['friends',['bạn bè','quà tặng','thăm đảo']],['tower',['tháp']],
-    ['event',['sự kiện']],['runes',['cường hóa','đá rồng','rune']],['ranked',['đấu hạng','xếp hạng mùa']],
+    ['event',['sự kiện']],['runes',['cường hóa','đá rồng','rune']],['ranked',['đấu hạng','xếp hạng mùa']],['rebirth',['chuyển sinh']],
     ['decor',['trang trí','chướng ngại']],
     ['shop',['shop','vàng khi vắng mặt']],['quest',['nhiệm vụ']],['wheel',['vòng quay']],['forge',['lò rèn']],
     ['breed',['lai rồng','trứng']],['feed',['cho ăn']],['arena',['đấu trường','kết quả trận','trận chiến']],
@@ -260,7 +262,8 @@ function drDefault(){
     habitats:[{id:1,el:'fire',at:0,bank:0},{id:2,el:'water',at:0,bank:0}], habNext:3,
     farm:[0,0,0], daily:{day:0,streak:0}, achClaimed:[], adv:0, boss:{week:0,dmg:0,hits:0,day:0,claimed:[]}, decos:[], pity:0, friends:[], giftLog:{}, event:{week:-1,pts:0,claimed:[]}, runes:[], arena:{pts:0,week:-1,wins:0,claimed:false},
     ore:0, forge:{gold:0,power:0}, mails:[], spinDay:0, mailSeeded:false, lastSeen:0, tower:{floor:0,sweepDay:0},
-    rebirth:{count:0,ki:0,up:{gold:0,power:0,xp:0}}, seen:['fire','water','plant']};
+    rebirth:{count:0,ki:0,up:{gold:0,power:0,xp:0}}, seen:['fire','water','plant'],
+    periodic:{dk:-1,wk:-1,d:{},w:{}}, dq:{day:-1,claimed:[]}, wq:{week:-1,claimed:[]}};
 }
 function drNormDragons(arr){
   return (arr||[]).map(d=>{
@@ -297,7 +300,10 @@ function drNorm(v){
     spinDay:v.spinDay||0, mailSeeded:!!v.mailSeeded, lastSeen:v.lastSeen||0,
     tower:(v.tower&&typeof v.tower==='object')?{floor:Math.max(0,v.tower.floor||0),sweepDay:v.tower.sweepDay||0}:{floor:0,sweepDay:0},
     rebirth:(v.rebirth&&typeof v.rebirth==='object')?{count:Math.max(0,v.rebirth.count||0),ki:Math.max(0,v.rebirth.ki||0),up:{gold:Math.max(0,(v.rebirth.up&&v.rebirth.up.gold)||0),power:Math.max(0,(v.rebirth.up&&v.rebirth.up.power)||0),xp:Math.max(0,(v.rebirth.up&&v.rebirth.up.xp)||0)}}:{count:0,ki:0,up:{gold:0,power:0,xp:0}},
-    seen:Array.isArray(v.seen)?Array.from(new Set(v.seen.filter(sp=>DR_SPECIES[sp]))):[]};
+    seen:Array.isArray(v.seen)?Array.from(new Set(v.seen.filter(sp=>DR_SPECIES[sp]))):[],
+    periodic:(v.periodic&&typeof v.periodic==='object')?{dk:(typeof v.periodic.dk==='number'?v.periodic.dk:-1),wk:(typeof v.periodic.wk==='number'?v.periodic.wk:-1),d:(v.periodic.d&&typeof v.periodic.d==='object')?v.periodic.d:{},w:(v.periodic.w&&typeof v.periodic.w==='object')?v.periodic.w:{}}:{dk:-1,wk:-1,d:{},w:{}},
+    dq:(v.dq&&typeof v.dq==='object')?{day:(typeof v.dq.day==='number'?v.dq.day:-1),claimed:Array.isArray(v.dq.claimed)?v.dq.claimed:[]}:{day:-1,claimed:[]},
+    wq:(v.wq&&typeof v.wq==='object')?{week:(typeof v.wq.week==='number'?v.wq.week:-1),claimed:Array.isArray(v.wq.claimed)?v.wq.claimed:[]}:{week:-1,claimed:[]}};
 }
 async function drLoad(){
   // 1) ưu tiên cloud (đồng bộ đa thiết bị)
@@ -324,6 +330,7 @@ function drSaveNow(){
     adv:drState.adv||0, boss:drState.boss||{week:0,dmg:0,hits:0,day:0,claimed:[]}, decos:(drState.decos||[]).slice(), pity:drState.pity||0, friends:(drState.friends||[]).slice(), giftLog:drState.giftLog||{}, event:drState.event||{week:-1,pts:0,claimed:[]}, runes:(drState.runes||[]).slice(), arena:drState.arena||{pts:0,week:-1,wins:0,claimed:false}, tower:drState.tower||{floor:0,sweepDay:0},
     rebirth:drState.rebirth||{count:0,ki:0,up:{gold:0,power:0,xp:0}},
     seen:Array.from(new Set([...(drState.seen||[]), ...(drState.dragons||[]).map(d=>d.sp)])),
+    periodic:drState.periodic||{dk:-1,wk:-1,d:{},w:{}}, dq:drState.dq||{day:-1,claimed:[]}, wq:drState.wq||{week:-1,claimed:[]},
     updatedAt:Date.now()};
   try{ localStorage.setItem(drLsKey(), JSON.stringify(obj)); }catch(_){}   // LUÔN lưu cục bộ trước
   if(auth&&auth.currentUser&&db){                                          // rồi mới đồng bộ cloud (best-effort)
@@ -381,7 +388,16 @@ const DR_QUESTS=[
   {id:'win',    ic:'arena', name:'Chiến binh',  desc:'Thắng 3 trận đấu trường', type:'win',    target:3,  gold:800, gems:4},
   {id:'species',ic:'codex', name:'Nhà sưu tầm', desc:'Sưu tầm đủ 5 loài rồng',   type:'species',target:5,  gems:8},
 ];
-function drQC(type){ if(!drState.qc) drState.qc={}; drState.qc[type]=(drState.qc[type]||0)+1; }
+function drQC(type){ if(!drState.qc) drState.qc={}; drState.qc[type]=(drState.qc[type]||0)+1; drPeriodicBump(type); }
+/* ---- Bộ đếm theo kỳ (ngày/tuần) cho nhiệm vụ luân phiên; tự reset khi sang kỳ mới ---- */
+function drPeriodic(){
+  if(!drState.periodic) drState.periodic={dk:-1,wk:-1,d:{},w:{}};
+  const p=drState.periodic, dk=drDayNum(), wk=Math.floor(drNow()/604800000);
+  if(p.dk!==dk){ p.dk=dk; p.d={}; }
+  if(p.wk!==wk){ p.wk=wk; p.w={}; }
+  return p;
+}
+function drPeriodicBump(type){ const p=drPeriodic(); p.d[type]=(p.d[type]||0)+1; p.w[type]=(p.w[type]||0)+1; }
 function drQuestVal(q){
   if(q.type==='level')   return drState.dragons.reduce((m,d)=>Math.max(m,d.lv),0);
   if(q.type==='species') return new Set(drState.dragons.map(d=>d.sp)).size;
@@ -389,7 +405,50 @@ function drQuestVal(q){
 }
 function drQuestDone(q){ return drQuestVal(q)>=q.target; }
 function drQuestClaimable(q){ return drQuestDone(q) && !(drState.qClaimed||[]).includes(q.id); }
-function drQuestCount(){ return DR_QUESTS.filter(drQuestClaimable).length; }
+function drQuestCount(){ return DR_QUESTS.filter(drQuestClaimable).length + drRotClaimCount(); }
+/* ============ NHIỆM VỤ NGÀY / TUẦN LUÂN PHIÊN ============
+   Chọn xoay vòng theo drDayNum()/tuần nên mỗi kỳ ra bộ nhiệm vụ khác nhau.
+   Tiến độ đọc từ bộ đếm theo kỳ (drPeriodic) -> tự reset đầu ngày/tuần. */
+const DR_DQ_POOL=[
+  {id:'d_tap',  ic:'gold',  name:'Đãi vàng',    type:'tap',   target:15, r:{gold:400,gems:1}},
+  {id:'d_feed', ic:'food',  name:'Bữa ăn ngon', type:'feed',  target:6,  r:{food:40,gems:1}},
+  {id:'d_win',  ic:'arena', name:'Thử sức',     type:'win',   target:2,  r:{gold:500,gems:1}},
+  {id:'d_breed',ic:'breed', name:'Ươm mầm',     type:'breed', target:1,  r:{gems:3}},
+  {id:'d_tap2', ic:'gold',  name:'Thợ mỏ vàng', type:'tap',   target:30, r:{gold:800,gems:2}},
+  {id:'d_win2', ic:'arena', name:'Đấu sĩ',      type:'win',   target:4,  r:{gold:900,food:20}},
+];
+const DR_WQ_POOL=[
+  {id:'w_tap',  ic:'gold',  name:'Núi vàng',      type:'tap',   target:120, r:{gold:4000,gems:5}},
+  {id:'w_win',  ic:'arena', name:'Bất bại',       type:'win',   target:20,  r:{gold:6000,gems:8}},
+  {id:'w_feed', ic:'food',  name:'Nhà chăn rồng', type:'feed',  target:40,  r:{food:150,gems:5}},
+  {id:'w_breed',ic:'breed', name:'Bậc thầy lai',  type:'breed', target:6,   r:{gems:15}},
+  {id:'w_clear',ic:'rock',  name:'Mở mang bờ cõi',type:'clear', target:2,   r:{gold:5000,gems:6}},
+];
+function drRotPick(pool, count, seed){
+  const n=pool.length, start=((seed%n)+n)%n, out=[];
+  for(let k=0;k<Math.min(count,n);k++) out.push(pool[(start+k)%n]);
+  return out;
+}
+function drDailyQuests(){ return drRotPick(DR_DQ_POOL, 3, drDayNum()); }
+function drWeeklyQuests(){ return drRotPick(DR_WQ_POOL, 3, Math.floor(drNow()/604800000)+3); }
+function drRotProg(q, scope){ const p=drPeriodic(); return Math.min(q.target, ((scope==='w'?p.w:p.d)[q.type])||0); }
+function drRotClaimed(scope){                    // danh sách id đã nhận trong kỳ hiện tại (tự reset khi sang kỳ)
+  if(scope==='w'){ const wk=Math.floor(drNow()/604800000); if(!drState.wq||drState.wq.week!==wk) drState.wq={week:wk,claimed:[]}; return drState.wq.claimed; }
+  const dk=drDayNum(); if(!drState.dq||drState.dq.day!==dk) drState.dq={day:dk,claimed:[]}; return drState.dq.claimed;
+}
+function drRotClaimable(q, scope){ return drRotProg(q,scope)>=q.target && !drRotClaimed(scope).includes(q.id); }
+function drRotClaimCount(){
+  return drDailyQuests().filter(q=>drRotClaimable(q,'d')).length + drWeeklyQuests().filter(q=>drRotClaimable(q,'w')).length;
+}
+function drClaimRot(id, scope){
+  const q=(scope==='w'?drWeeklyQuests():drDailyQuests()).find(x=>x.id===id);
+  if(!q||!drRotClaimable(q,scope)) return;
+  drRotClaimed(scope).push(id); drReward(q.r);
+  drRenderHud(); drSave(); if(typeof drUpdateQuestDot==='function') drUpdateQuestDot();
+  if(typeof confetti==='function') confetti();
+  toast('🎁 '+(scope==='w'?'Nhiệm vụ tuần':'Nhiệm vụ ngày')+': '+q.name+'! +'+drRewardText(q.r));
+  drShowQuests();
+}
 function drUpdateQuestDot(){ const d=$('drQuestDot'); if(!d) return; const n=drQuestCount(); d.textContent=n; d.hidden=(n<=0);
 }
 
@@ -805,7 +864,20 @@ function drHatch(){
 }
 
 /* ---------- Bảng nhiệm vụ ---------- */
+function drRotRow(q, scope){
+  const val=drRotProg(q,scope), done=val>=q.target, claimed=drRotClaimed(scope).includes(q.id), pct=Math.round(val/q.target*100);
+  const right = claimed ? `<span class="dr-q-done">✓ Đã nhận</span>`
+    : done ? `<button class="dr-btn sm go" data-rot="${q.id}" data-scope="${scope}">Nhận</button>`
+    : `<span class="dr-q-prog">${val}/${q.target}</span>`;
+  return `<div class="dr-quest ${claimed?'claimed':(done?'ready':'')}">
+      <span class="dr-q-ic">${drIcon(q.ic)}</span>
+      <div class="dr-q-mid"><b>${esc(q.name)}</b><small>${drRewardText(q.r)}</small>
+        <div class="dr-q-bar"><i style="width:${pct}%"></i></div></div>
+      ${right}</div>`;
+}
 function drShowQuests(){
+  const dq=drDailyQuests().map(q=>drRotRow(q,'d')).join('');
+  const wq=drWeeklyQuests().map(q=>drRotRow(q,'w')).join('');
   const rows=DR_QUESTS.map(q=>{
     const val=Math.min(drQuestVal(q),q.target), done=drQuestDone(q);
     const claimed=(drState.qClaimed||[]).includes(q.id), pct=Math.round(val/q.target*100);
@@ -819,8 +891,13 @@ function drShowQuests(){
           <div class="dr-q-bar"><i style="width:${pct}%"></i></div></div>
         ${right}</div>`;
   }).join('');
-  drModal('Nhiệm vụ', `<div class="dr-note dr-note-with-icon">${drIcon('gift')}<span>Hoàn thành để nhận thưởng</span></div><div class="dr-qlist">${rows}</div>`, true);
+  const body=`<div class="dr-note dr-note-with-icon">${drIcon('gift')}<span>Nhiệm vụ ngày/tuần đổi mới liên tục — làm để nhận thưởng.</span></div>
+    <div class="dr-sub2">📅 Nhiệm vụ ngày <small class="dr-q-reset">(đổi mới mỗi ngày)</small></div><div class="dr-qlist">${dq}</div>
+    <div class="dr-sub2">🗓️ Nhiệm vụ tuần <small class="dr-q-reset">(đổi mới mỗi tuần)</small></div><div class="dr-qlist">${wq}</div>
+    <div class="dr-sub2">🏆 Mục tiêu nhập môn</div><div class="dr-qlist">${rows}</div>`;
+  drModal('Nhiệm vụ', body, true);
   $('drModal').querySelectorAll('[data-claim]').forEach(b=>b.onclick=()=>drClaimQuest(b.dataset.claim));
+  $('drModal').querySelectorAll('[data-rot]').forEach(b=>b.onclick=()=>drClaimRot(b.dataset.rot, b.dataset.scope));
 }
 function drClaimQuest(id){
   const q=DR_QUESTS.find(x=>x.id===id); if(!q||!drQuestClaimable(q)) return;
@@ -1289,29 +1366,44 @@ function drShowFarm(){
 }
 
 /* ---- Điểm danh: chuỗi 7 ngày, thưởng tăng dần ---- */
-const DR_DAILY=[{gold:200},{gold:300},{food:35},{gems:2},{gold:700},{food:60},{gems:6}];
+const DR_DAILY_CYCLE=30;                       // lịch điểm danh theo tháng (30 ngày)
+function drDailyIsMile(i){ const n=i+1; return n===7||n===14||n===21||n===30; }
+function drDailyReward(i){                      // i = 0-based (0..29); mốc lớn 7/14/21/30
+  const n=i+1;
+  if(n===7)  return {gold:1200, gems:5};
+  if(n===14) return {gold:2500, gems:10, food:40};
+  if(n===21) return {gold:4000, gems:15, food:60};
+  if(n===30) return {gold:9000, gems:30, food:100};        // jackpot cuối tháng
+  const r={gold:150+n*35};
+  if(n%3===0) r.food=15+Math.floor(n/3)*4;
+  if(n%5===0) r.gems=2;
+  return r;
+}
 function drCanDaily(){ return (drState.daily?drState.daily.day:0) < drDayNum(); }
 function drClaimDaily(){
   if(!drCanDaily()){ toast('Hôm nay đã điểm danh rồi 📅'); return; }
   const today=drDayNum(), cont=(drState.daily.day===today-1);
   drState.daily.streak = cont ? (drState.daily.streak+1) : 1;
   drState.daily.day = today;
-  const r=DR_DAILY[(drState.daily.streak-1)%7];
+  const r=drDailyReward((drState.daily.streak-1)%DR_DAILY_CYCLE);
   drReward(r); if(typeof confetti==='function') confetti();
   drRenderHud(); drSave(); drShowDaily();
   toast('📅 Điểm danh ngày '+drState.daily.streak+': +'+drRewardText(r));
 }
 function drShowDaily(){
   const streak=drState.daily?drState.daily.streak:0;
-  const nextPos=drCanDaily()?((drState.daily&&drState.daily.day===drDayNum()-1?streak:0)%7):-1;
-  const days=DR_DAILY.map((r,i)=>{
-    const got = !drCanDaily() && ((streak-1)%7)===i;
+  const donePos=(streak>0)?((streak-1)%DR_DAILY_CYCLE):-1;                                 // ô vừa nhận
+  const nextPos=drCanDaily()?((drState.daily&&drState.daily.day===drDayNum()-1?streak:0)%DR_DAILY_CYCLE):-1;
+  const days=Array.from({length:DR_DAILY_CYCLE},(_,i)=>{
+    const r=drDailyReward(i), mile=drDailyIsMile(i);
+    const got = !drCanDaily() && donePos===i;
     const isNext = i===nextPos;
-    return `<div class="dr-day ${got?'got':''} ${isNext?'next':''}">
-      <span class="dr-day-n">Ngày ${i+1}</span><span class="dr-day-r">${drRewardText(r)}</span>${got?'<span class="dr-day-tick">✓</span>':''}</div>`;
+    return `<div class="dr-day ${got?'got':''} ${isNext?'next':''} ${mile?'mile':''}">
+      <span class="dr-day-n">${mile?'★ ':''}N${i+1}</span><span class="dr-day-r">${drRewardText(r)}</span>${got?'<span class="dr-day-tick">✓</span>':''}</div>`;
   }).join('');
-  const body=`<p class="dr-hab-intro">Điểm danh mỗi ngày, thưởng tăng dần. Chuỗi hiện tại: <b>${streak} ngày</b>. Bỏ lỡ 1 ngày sẽ về mốc 1.</p>
-    <div class="dr-daily-grid">${days}</div>
+  const cycleDay=((streak>0?streak-1:0)%DR_DAILY_CYCLE)+1;
+  const body=`<p class="dr-hab-intro">Điểm danh mỗi ngày, thưởng tăng dần cả tháng. Chuỗi: <b>${streak} ngày</b> (lịch ngày ${cycleDay}/${DR_DAILY_CYCLE}). Mốc lớn ★ ở ngày 7/14/21/30. Bỏ lỡ 1 ngày về mốc 1.</p>
+    <div class="dr-daily-grid month">${days}</div>
     <button class="dr-btn alt block" id="drDailyBtn" ${drCanDaily()?'':'disabled'}>${drCanDaily()?'📅 Nhận thưởng hôm nay':'✅ Mai quay lại nhé'}</button>`;
   drModal('📅 Điểm danh', body, true);
   const b=$('drDailyBtn'); if(b) b.onclick=drClaimDaily;
