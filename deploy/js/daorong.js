@@ -125,7 +125,7 @@ const DR_SPECIES={
   coral:   {name:'Rồng San Hô',     el:'fire',    els:['fire'],           rar:'rare',   gold:20, atk:54, hp:118, range:4, spd:7, pal:{body:'#ff9e7a',bd:'#ffe6dc',wg:'#ffc2ac',st:'#e8663f',horn:'#c24a25'}},
   cloud:   {name:'Rồng Mây',        el:'water',   els:['water'],          rar:'rare',   gold:19, atk:48, hp:126, range:4, spd:6, pal:{body:'#cfe3ff',bd:'#f0f7ff',wg:'#e0eeff',st:'#8fa8c8',horn:'#6f88a8'}},
   rainbow: {name:'Rồng Cầu Vồng',   el:'light',   els:['light'],          rar:'epic',   gold:40, atk:80, hp:150, range:5, spd:8, pal:{body:'#ff9ec4',bd:'#fff0f8',wg:'#c9b3ff',st:'#b0569f',horn:'#8f3f86'}},
-  sakura:  {name:'Rồng Anh Đào',    el:'plant',   els:['plant'],          rar:'rare',   gold:19, atk:50, hp:124, range:4, spd:6, pal:{body:'#ff8fc7',bd:'#ffe3f1',wg:'#ffb3d9',st:'#e84f95',horn:'#c93a7a'}},
+  sakura:  {name:'Rồng Anh Đào',    el:'plant',   els:['plant'],          rar:'rare',   gold:19, atk:50, hp:124, range:4, spd:6, evo:'assets/dragons/evolution/sakura.png', sheet:{url:'assets/dragons/sakura.png',frames:1,fps:1}, pal:{body:'#ff8fc7',bd:'#ffe3f1',wg:'#ffb3d9',st:'#e84f95',horn:'#c93a7a'}},
   fire:    {name:'Rồng Lửa',       el:'fire',    els:['fire'],           rar:'common', gold:10, atk:42, hp:100, range:3, spd:6, evo:'assets/dragons/evolution/fire.png',       sheet:{url:'assets/dragons/fire.png', frames:8, fps:7, act:1.25}},
   water:   {name:'Rồng Nước',      el:'water',   els:['water'],          rar:'common', gold:10, atk:38, hp:112, range:4, spd:5, evo:'assets/dragons/evolution/water.png',      sheet:{url:'assets/dragons/water.png', frames:8, fps:9, act:1.3}},
   plant:   {name:'Rồng Cây',       el:'plant',   els:['plant'],          rar:'common', gold:10, atk:36, hp:118, range:3, spd:5, evo:'assets/dragons/evolution/plant.png',      sheet:{url:'assets/dragons/plant.png', frames:8, fps:6, act:1.45}},
@@ -592,13 +592,14 @@ function drRenderDragons(){
     const slot=DR_SLOTS[i%DR_SLOTS.length];
     const roam=document.createElement('div'); roam.className='dr-roam'; roam.dataset.idx=i;
     roam.style.left=slot[0]+'%'; roam.style.top=slot[1]+'%'; roam.style.zIndex=10+Math.round(slot[1]);
-    const bob=document.createElement('div'); bob.className=`dr-bob dr-star-${Math.min(st,5)} dr-stage-${evo.id}`;
+    const bob=document.createElement('div'); bob.className=`dr-bob dr-tier-${drStarTier(st)} dr-stage-${evo.id}`;
     bob.style.animationDelay=(-Math.random()*2.6).toFixed(2)+'s';
     bob.style.setProperty('--acc',(DR_PAL[s.el]||{}).body||'#8fe0ff');
+    bob.style.setProperty('--tcol',drStarCol(st));
     const scale=(evo.scale+Math.max(0,(d.lv||1)-evo.minLv)*0.012).toFixed(3);
     bob.innerHTML=`<span class="dr-aura"></span>`
       +`<div class="dr-artwrap dr-facing" style="--dScale:${scale}">${drDragonArt(d)}</div>`
-      +(st>1?`<span class="dr-starbadge" style="color:${drStarCol(st)}">★${st}</span>`:'')
+      +`<span class="dr-starbadge">★${st}</span>`
       +`<span class="dr-lvtag">Lv${d.lv} · ${evo.name}</span>`;
     roam.appendChild(bob); wrap.appendChild(roam);
     drScheduleDragonAction(bob,d.sp);

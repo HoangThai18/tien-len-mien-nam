@@ -846,9 +846,10 @@
   .dr-xp em{position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
     font-size:9px; font-weight:900; font-style:normal; color:#fff; text-shadow:0 1px 1px rgba(0,0,0,.6);}
   #drFood.bump,#drGems.bump{animation:drBump .4s ease;}
-  .dr-lvtag{position:absolute; bottom:8px; left:50%; transform:translateX(-50%); pointer-events:none;
-    background:rgba(9,42,44,.72); color:#fff; font-size:9px; font-weight:900; padding:0 6px; border-radius:999px;
-    border:1px solid rgba(255,255,255,.3); white-space:nowrap; font-family:'Baloo 2','Nunito',sans-serif;}
+  .dr-lvtag{position:absolute; bottom:6px; left:50%; transform:translateX(-50%); pointer-events:none;
+    background:rgba(6,24,26,.92); color:#fff; font-size:10px; font-weight:900; padding:1px 8px; border-radius:999px;
+    border:1px solid rgba(255,255,255,.4); white-space:nowrap; font-family:'Baloo 2','Nunito',sans-serif;
+    text-shadow:0 1px 2px rgba(0,0,0,.85); box-shadow:0 2px 5px rgba(0,0,0,.45);}
   /* hình rồng từ asset: sprite-sheet (nhiều khung) hoặc ảnh tĩnh — thay SVG khi hoạ sĩ cấp file */
   .dr-sprite{--sz:96px; width:var(--sz); height:var(--sz); display:block; transform-origin:50% 92%;
     background:var(--url) 0 var(--row-y,0%) / var(--bg-cols,100%) var(--bg-rows,100%) no-repeat;
@@ -917,26 +918,31 @@
 
   /* Nâng sao: hào quang màu hệ + lấp lánh + to dần theo cấp — KHÔNG cần vẽ art riêng cho từng sao */
   .dr-artwrap{position:relative; z-index:1; display:block; transform:scale(var(--dScale,1)); transform-origin:50% 90%;}
-  .dr-aura{position:absolute; left:50%; top:52%; width:120%; height:82%; z-index:0; opacity:0;
+  /* Aura theo BẬC SAO (5 bậc: đồng/bạc/vàng/tím/cầu vồng) — màu = --tcol, độ sáng & nhịp tăng dần */
+  .dr-aura{position:absolute; left:50%; top:52%; width:128%; height:88%; z-index:0; opacity:0;
     transform:translate(-50%,-50%); border-radius:50%; pointer-events:none; filter:blur(7px);
-    background:radial-gradient(ellipse at center, var(--acc,#8fe0ff) 0%, transparent 66%);}
-  .dr-star-2 .dr-aura{opacity:.16;}
-  .dr-star-3 .dr-aura{opacity:.26;}
-  .dr-star-4 .dr-aura{opacity:.34; animation:drAuraPulse 2.4s ease-in-out infinite;}
-  .dr-star-5 .dr-aura{opacity:.44; animation:drAuraPulse 1.8s ease-in-out infinite;
-    background:radial-gradient(ellipse at center, var(--acc,#8fe0ff) 0%, rgba(255,214,90,.42) 42%, transparent 72%);}
-  @keyframes drAuraPulse{0%,100%{opacity:.32; transform:translate(-50%,-50%) scale(1);}
-    50%{opacity:.52; transform:translate(-50%,-50%) scale(1.09);}}
-  .dr-star-4 .dr-aura::before,.dr-star-5 .dr-aura::before{content:''; position:absolute; inset:-4%; border-radius:50%;
+    background:radial-gradient(ellipse at center, var(--tcol,#8fe0ff) 0%, transparent 64%);}
+  .dr-tier-0 .dr-aura{opacity:.16;}
+  .dr-tier-1 .dr-aura{--au:.30; opacity:.30; animation:drAuraPulse 2.8s ease-in-out infinite;}
+  .dr-tier-2 .dr-aura{--au:.42; opacity:.42; animation:drAuraPulse 2.3s ease-in-out infinite;}
+  .dr-tier-3 .dr-aura{--au:.54; opacity:.54; animation:drAuraPulse 1.9s ease-in-out infinite;}
+  .dr-tier-4 .dr-aura{--au:.66; opacity:.66; animation:drAuraPulse 1.5s ease-in-out infinite;
+    background:radial-gradient(ellipse at center, var(--tcol,#8fe0ff) 0%, rgba(255,255,255,.45) 40%, transparent 72%);}
+  @keyframes drAuraPulse{0%,100%{opacity:var(--au,.4); transform:translate(-50%,-50%) scale(1);}
+    50%{opacity:calc(var(--au,.4) + .18); transform:translate(-50%,-50%) scale(1.1);}}
+  /* Lấp lánh cho bậc Quý trở lên (tier ≥ 2) */
+  .dr-tier-2 .dr-aura::before,.dr-tier-3 .dr-aura::before,.dr-tier-4 .dr-aura::before{content:''; position:absolute; inset:-6%; border-radius:50%;
     background:radial-gradient(2px 2px at 22% 32%,#fff 45%,transparent 55%),
       radial-gradient(2px 2px at 76% 24%,#fff 45%,transparent 55%),
       radial-gradient(1.6px 1.6px at 62% 78%,#fff 45%,transparent 55%),
       radial-gradient(1.6px 1.6px at 34% 70%,#fff 45%,transparent 55%);
     animation:drSpark 1.8s ease-in-out infinite;}
   @keyframes drSpark{0%,100%{opacity:.25;}50%{opacity:.95;}}
-  .dr-starbadge{position:absolute; top:-3px; left:50%; transform:translateX(-50%); z-index:2; pointer-events:none;
-    font-size:8px; line-height:1; letter-spacing:-1px; color:#ffd24a; white-space:nowrap;
-    text-shadow:0 1px 1px rgba(0,0,0,.55), 0 0 4px rgba(255,190,60,.6);}
+  /* Badge sao: pill nổi bật, viền + glow theo màu bậc */
+  .dr-starbadge{position:absolute; top:-7px; left:50%; transform:translateX(-50%); z-index:3; pointer-events:none;
+    font:900 10px/1 'Baloo 2','Nunito',sans-serif; color:#fff; background:rgba(10,26,28,.92);
+    padding:2px 7px; border-radius:999px; border:1.5px solid var(--tcol,#ffd24a); white-space:nowrap;
+    text-shadow:0 1px 1px rgba(0,0,0,.6); box-shadow:0 1px 3px rgba(0,0,0,.55), 0 0 8px var(--tcol,#ffd24a);}
 
   /* dock icon chức năng */
   /* dock: 4 cụm icon ở các góc (thay 1 thanh cuộn ngang) */

@@ -1,4 +1,4 @@
-const CACHE = 'tienlen-v55-star-loadfix';
+const CACHE = 'tienlen-v56-sakura-art';
 const ASSETS = [
   './', './index.html', './styles.css', './manifest.webmanifest', './icon-192.png', './icon-512.png',
   './js/config.js', './js/engine.js', './js/state.js', './js/game.js', './js/ui.js', './js/daorong.js', './js/social.js',
@@ -9,14 +9,14 @@ const ASSETS = [
   './assets/dragons/earth.png', './assets/dragons/electric.png', './assets/dragons/ice.png',
   './assets/dragons/lava.png', './assets/dragons/steam.png', './assets/dragons/swamp.png',
   './assets/dragons/storm.png', './assets/dragons/dark.png', './assets/dragons/light.png',
-  './assets/dragons/peach.png', './assets/dragons/candy.png',
+  './assets/dragons/peach.png', './assets/dragons/candy.png', './assets/dragons/sakura.png',
   './assets/dragons/evolution/fire.png', './assets/dragons/evolution/water.png',
   './assets/dragons/evolution/plant.png', './assets/dragons/evolution/earth.png',
   './assets/dragons/evolution/electric.png', './assets/dragons/evolution/ice.png',
   './assets/dragons/evolution/lava.png', './assets/dragons/evolution/steam.png',
   './assets/dragons/evolution/swamp.png', './assets/dragons/evolution/storm.png',
   './assets/dragons/evolution/dark.png', './assets/dragons/evolution/light.png',
-  './assets/dragons/evolution/peach.png', './assets/dragons/evolution/candy.png',
+  './assets/dragons/evolution/peach.png', './assets/dragons/evolution/candy.png', './assets/dragons/evolution/sakura.png',
   './assets/dragon-island/island.webp',
   './assets/dragon-island/items/shop.webp', './assets/dragon-island/items/quest.webp',
   './assets/dragon-island/items/breed.webp', './assets/dragon-island/items/food.webp',
