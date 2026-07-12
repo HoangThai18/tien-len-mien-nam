@@ -1,4 +1,4 @@
-const CACHE = 'tienlen-v92-mb-reveal-fit';
+const CACHE = 'tienlen-v110-mb-drag';
 const ASSETS = [
   './', './index.html', './styles.css', './manifest.webmanifest', './icon-192.png', './icon-512.png',
   './js/config.js', './js/version.js', './js/engine.js', './js/state.js', './js/game.js', './js/ui.js', './js/daorong.js', './js/maubinh.js', './js/social.js',
@@ -26,6 +26,15 @@ const ASSETS = [
   './assets/dragons/evolution/dark.webp', './assets/dragons/evolution/light.webp',
   './assets/dragons/evolution/peach.webp', './assets/dragons/evolution/candy.webp', './assets/dragons/evolution/sakura.webp',
   './assets/dragon-island/island.webp',
+  './assets/dragon-island/bosses/sea-serpent.webp', './assets/dragon-island/bosses/lava-dragon.webp', './assets/dragon-island/bosses/ice-titan.webp', './assets/dragon-island/bosses/dark-dragon.webp',
+  './assets/dragon-island/adventure/01-beach.webp', './assets/dragon-island/adventure/02-jungle.webp', './assets/dragon-island/adventure/03-ice-cave.webp',
+  './assets/dragon-island/adventure/04-volcano.webp', './assets/dragon-island/adventure/05-swamp.webp', './assets/dragon-island/adventure/06-dark-abyss.webp',
+  './assets/dragon-island/adventure/07-dragon-peak.webp', './assets/dragon-island/adventure/08-ancient-desert.webp', './assets/dragon-island/adventure/09-cloud-islands.webp',
+  './assets/dragon-island/adventure/10-luminous-grove.webp', './assets/dragon-island/adventure/11-ruined-city.webp', './assets/dragon-island/adventure/12-crystal-garden.webp',
+  './assets/dragon-island/decor/flowers.webp', './assets/dragon-island/decor/torch.webp', './assets/dragon-island/decor/tree.webp', './assets/dragon-island/decor/fountain.webp',
+  './assets/dragon-island/decor/statue.webp', './assets/dragon-island/decor/lantern.webp', './assets/dragon-island/decor/crystal.webp', './assets/dragon-island/decor/rainbow.webp',
+  './assets/dragon-island/obstacles/rock.webp', './assets/dragon-island/obstacles/cactus.webp', './assets/dragon-island/obstacles/log.webp', './assets/dragon-island/obstacles/boulder.webp',
+  './assets/dragon-island/runes/atk.webp', './assets/dragon-island/runes/atk-t1.webp', './assets/dragon-island/runes/hp.webp', './assets/dragon-island/runes/hp-t1.webp', './assets/dragon-island/runes/spd.webp', './assets/dragon-island/runes/spd-t1.webp',
   './assets/dragon-island/items/shop.webp', './assets/dragon-island/items/quest.webp',
   './assets/dragon-island/items/breed.webp', './assets/dragon-island/items/food.webp',
   './assets/dragon-island/items/arena.webp', './assets/dragon-island/items/codex.webp',

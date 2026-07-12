@@ -324,8 +324,10 @@ document.addEventListener('click',e=>{
 matchMedia('(display-mode: standalone)').addEventListener?.('change',refreshInstallButton);
 refreshInstallButton();
 
-// ===== Bảng "Có gì mới" (changelog theo phiên bản) =====
-const SEEN_VER_KEY='tienlen-seen-version';
+// ===== Bảng "Có gì mới" — nhật ký RIÊNG cho TỪNG game, tự bật NGAY trong màn hình game đó =====
+const SEEN_VER_PREFIX='whatsnew-seen:';           // mốc version đã xem, mỗi game 1 khoá
+function seenKey(game){ return SEEN_VER_PREFIX+game; }
+let wnGame='tienlen';                             // game đang gắn với bảng/huy hiệu hiện tại
 function tagClass(tag){
   const t=String(tag||'').toLowerCase();
   if(t.includes('lớn')) return 'big';
@@ -343,18 +345,19 @@ function relHTML(r,latest){
     </div>
     <ul class="wn-items">${items}</ul></div>`;
 }
-function buildWhatsNew(){
-  const wnVer=$('wnVer'); if(wnVer) wnVer.textContent='Phiên bản '+APP_VERSION;
-  const list=Array.isArray(CHANGELOG)?CHANGELOG:[];
-  let html=list.slice(0,1).map(r=>relHTML(r,true)).join('');
-  const older=list.slice(1,4);
+function buildWhatsNew(game){
+  const meta=gameMeta(game), log=gameLog(game);
+  const wnVer=$('wnVer'); if(wnVer) wnVer.textContent=(meta?meta.name+' — ':'')+'Phiên bản '+gameVersion(game);
+  let html=log.slice(0,1).map(r=>relHTML(r,true)).join('');
+  const older=log.slice(1,4);
   if(older.length){
     html+=`<div class="wn-older-sep">Các bản trước</div>`+older.map(r=>relHTML(r,false)).join('');
   }
-  $('wnBody').innerHTML=html;
+  $('wnBody').innerHTML=html || '<p class="wn-empty">Chưa có ghi chú cập nhật.</p>';
 }
-function showWhatsNew(){
-  buildWhatsNew();
+function showWhatsNew(game){
+  wnGame=game||wnGame;
+  buildWhatsNew(wnGame);
   const el=$('whatsnew');
   el.classList.add('show'); el.setAttribute('aria-hidden','false');
   const badge=$('versionBadge'); if(badge) badge.classList.remove('pulse');
@@ -362,7 +365,7 @@ function showWhatsNew(){
 function closeWhatsNew(){
   const el=$('whatsnew');
   el.classList.remove('show'); el.setAttribute('aria-hidden','true');
-  try{ localStorage.setItem(SEEN_VER_KEY,APP_VERSION); }catch(_){}
+  try{ localStorage.setItem(seenKey(wnGame),gameVersion(wnGame)); }catch(_){}
 }
 // Người chơi CŨ = đã có dữ liệu game từ lần trước (tên, nhân vật hoặc game gần nhất).
 // Người mới cài lần đầu chưa có key nào tại thời điểm này -> không làm phiền.
@@ -374,18 +377,42 @@ function isReturningPlayer(){
   }catch(_){}
   return false;
 }
-// true nếu nên bật bảng "Có gì mới":
-//   • đã có mốc version cũ hơn  -> báo bản mới (như thường lệ), hoặc
-//   • CHƯA có mốc nhưng là người chơi cũ -> báo 1 lần (vd bản đầu tiên có tính năng này).
-function shouldAnnounceUpdate(){
-  let seen=null; try{ seen=localStorage.getItem(SEEN_VER_KEY); }catch(_){}
-  if(seen) return isNewerVersion(APP_VERSION,seen);
+// Nên bật bảng cho `game`: version game đó mới hơn mốc đã xem; chưa có mốc thì báo nếu là người chơi cũ.
+function shouldAnnounce(game){
+  let seen=null; try{ seen=localStorage.getItem(seenKey(game)); }catch(_){}
+  if(seen) return isNewerVersion(gameVersion(game),seen);
   return isReturningPlayer();
 }
+// Gọi khi VÀO một game -> gắn huy hiệu theo game đó & tự bật bảng nếu có bản mới (1 lần/bản).
+function announceGameUpdate(game){
+  if(!gameMeta(game)) return;
+  wnGame=game;
+  const badge=$('versionBadge'); if(badge) badge.textContent='v'+gameVersion(game);
+  if(shouldAnnounce(game)){
+    if(badge) badge.classList.add('pulse');
+    // Đợi màn game vẽ xong rồi mới bật bảng cho gọn gàng; không bật khi đang trong phòng online.
+    setTimeout(()=>{ if(!roomRef) showWhatsNew(game); },700);
+  }else{
+    // Người mới (chưa có mốc): ghi nhận âm thầm, không làm phiền.
+    try{ if(!localStorage.getItem(seenKey(game))) localStorage.setItem(seenKey(game),gameVersion(game)); }catch(_){}
+  }
+}
+// Chuyển mốc từ hệ CŨ (1 khoá chung 'tienlen-seen-version' = nhật ký Đảo Rồng) sang hệ mới theo game.
+function migrateSeen(){
+  try{
+    const old=localStorage.getItem('tienlen-seen-version');
+    if(old && !localStorage.getItem(seenKey('daorong'))) localStorage.setItem(seenKey('daorong'),old);
+    // Tiến Lên & Mậu Binh là game nền — người chơi cũ coi như đã biết bản hiện tại (khỏi báo "ra mắt").
+    if(isReturningPlayer()){
+      ['tienlen','maubinh'].forEach(g=>{ if(!localStorage.getItem(seenKey(g))) localStorage.setItem(seenKey(g),gameVersion(g)); });
+    }
+  }catch(_){}
+}
 function initVersionUI(){
+  migrateSeen();
   const badge=$('versionBadge');
-  if(badge){ badge.textContent='v'+APP_VERSION; badge.onclick=showWhatsNew; }
-  // Huy hiệu chỉ hiện ở màn hình menu (overlay đang mở) — ẩn khi vào ván cho khỏi đè bài.
+  if(badge){ badge.textContent='v'+gameVersion(wnGame); badge.onclick=()=>showWhatsNew(wnGame); }
+  // Huy hiệu chỉ hiện khi overlay (sảnh/menu bài) đang mở; trong game đã có bảng tự bật khi vào.
   const ov=$('overlay');
   const syncBadge=()=>{ if(badge) badge.style.display=(ov&&ov.style.display!=='none')?'':'none'; };
   if(ov){ new MutationObserver(syncBadge).observe(ov,{attributes:true,attributeFilter:['style']}); }
@@ -393,14 +420,6 @@ function initVersionUI(){
   $('wnClose').onclick=closeWhatsNew;
   $('wnOk').onclick=closeWhatsNew;
   $('whatsnew').addEventListener('click',e=>{ if(e.target===$('whatsnew')) closeWhatsNew(); });
-  if(shouldAnnounceUpdate()){
-    if(badge) badge.classList.add('pulse');
-    // Đợi màn hình đầu ổn định rồi mới bật bảng cho gọn gàng.
-    setTimeout(()=>{ if(!roomRef) showWhatsNew(); },1100);
-  }else{
-    // Người mới cài (chưa có mốc): ghi nhận âm thầm, không làm phiền.
-    try{ if(!localStorage.getItem(SEEN_VER_KEY)) localStorage.setItem(SEEN_VER_KEY,APP_VERSION); }catch(_){}
-  }
 }
 
 // PWA: luôn kiểm tra bản mới khi mở/lật lại app; service worker mới sẽ tự nhận quyền
@@ -425,8 +444,8 @@ if('serviceWorker' in navigator){
 }
 if(sessionStorage.getItem('tienlen-just-updated')){
   sessionStorage.removeItem('tienlen-just-updated');
-  // Nếu sắp bật bảng "Có gì mới" thì thôi toast cho khỏi trùng thông báo.
-  if(!shouldAnnounceUpdate()) setTimeout(()=>toast('Đã cập nhật bản mới ✓'),900);
+  // Bảng "Có gì mới" giờ bật khi VÀO từng game, không trùng với toast lúc mở app.
+  setTimeout(()=>toast('Đã cập nhật bản mới ✓'),900);
 }
 initVersionUI();
 

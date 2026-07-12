@@ -7,6 +7,9 @@
    Dùng chung: newDeck/cid/rlabel/SUITS/RED/cardHTML/$/esc/toast/fmtCoin/addCoins.
    ========================================================================= */
 let mbState=null, mbActive=false, mbBuilt=false;
+let mbMode='solo';          // 'solo' | 'online'
+let mbNet=null;             // (dành cho bàn online — làm sau)
+let mbSuppressClick=false;  // chặn click ảo ngay sau khi kéo-thả
 
 const MB_BOTS=[ null, {name:'An',emoji:'🐱'}, {name:'Bo',emoji:'🐼'}, {name:'Cường',emoji:'🦊'} ];
 const MB_CAP={front:3, mid:5, back:5};
@@ -145,11 +148,11 @@ function mbSpecial(all13,flags){
   return null;
 }
 
-/* ---------- Tính điểm cả bàn (4 người) ---------- */
-// arrs[p] = {ef,em,eb,foul,special}. Trả mảng điểm 4 người (tổng đại số).
+/* ---------- Tính điểm cả bàn (2–4 người) ---------- */
+// arrs[p] = {ef,em,eb,foul,special}. Trả mảng điểm (tổng đại số) theo số người thực tế.
 function mbScoreAll(arrs){
-  const pts=[0,0,0,0];
-  for(let i=0;i<4;i++) for(let j=i+1;j<4;j++){
+  const n=arrs.length, pts=new Array(n).fill(0);
+  for(let i=0;i<n;i++) for(let j=i+1;j<n;j++){
     const A=arrs[i], B=arrs[j], si=A.special, sj=B.special;
     let di=0;                                                    // điểm i lấy của j
     if(si||sj){
@@ -181,6 +184,7 @@ function mbBuild(){
       <button class="mb-back" id="mbBack" type="button" aria-label="Về sảnh">←</button>
       <div class="mb-title">🀄 Mậu Binh</div>
       <button class="mb-help" id="mbHelp" type="button" aria-label="Luật chơi">?</button>
+      <button class="mb-help" id="mbSfx" type="button" aria-label="Bật/tắt âm thanh"></button>
       <span class="mb-bet" id="mbBet"></span>
       <span class="mb-coin"><span aria-hidden="true">🪙</span> <b id="mbCoin">--</b></span>
     </div>
@@ -205,11 +209,11 @@ function mbBuild(){
     <div class="mb-foul" id="mbFoul"></div>
     <div class="mb-tray-wrap"><div class="mb-tray" id="mbTray" data-slot="tray"></div></div>
     <div class="mb-actions">
-      <button class="btn ghost sm" id="mbAuto" type="button">✨ Xếp tự động</button>
-      <button class="btn ghost sm" id="mbClear" type="button">↺ Xếp lại</button>
+      <button class="btn ghost sm" id="mbAuto" type="button">✨ Tối ưu</button>
+      <button class="btn ghost sm" id="mbClear" type="button">↺ Xếp tay</button>
       <button class="btn" id="mbGo" type="button">Binh xong 🎴</button>
     </div>
-    <div class="mb-hint">Chạm 1 lá để chọn · chạm vào một CHI hoặc khay để đặt lá vào đó. Chi dưới phải mạnh hơn chi trên.</div>
+    <div class="mb-hint">Đã xếp sẵn! Chạm <b>2 lá</b> để đổi chỗ · hoặc bấm <b>Binh xong</b> ngay. Bấm ✨ Tối ưu nếu muốn máy xếp lại.</div>
     <div class="mb-modal" id="mbResult" aria-hidden="true"></div>
     <div class="mb-modal" id="mbRules" aria-hidden="true"></div>`;
   document.body.appendChild(app);
@@ -217,17 +221,21 @@ function mbBuild(){
 
   $('mbBack').onclick=()=>leaveMauBinh();
   $('mbHelp').onclick=mbShowRules;
+  const setSfxIc=()=>{ const b=$('mbSfx'); if(b) b.textContent=(typeof sfxOn==='function'&&sfxOn())?'🔊':'🔇'; };
+  setSfxIc();
+  $('mbSfx').onclick=()=>{ if(typeof sfxToggle==='function') sfxToggle(); setSfxIc(); };
   $('mbAuto').onclick=mbAutoArrange;
   $('mbClear').onclick=mbClearArrange;
   $('mbGo').onclick=mbConfirm;
-  // Chạm lá / chạm chi
+  // Chạm lá / chạm chi (giữ lại cho cách chạm; KÉO-THẢ xử lý ở mbInitDrag)
   app.addEventListener('click',e=>{
+    if(mbSuppressClick) return;                                       // vừa kéo-thả xong -> bỏ qua click ảo
     if($('mbResult').getAttribute('aria-hidden')==='false') return;
     if($('mbRules').getAttribute('aria-hidden')==='false') return;
     const cardEl=e.target.closest('.card');
     if(cardEl && cardEl.closest('#mbBoard, #mbTray')){
       const id=+cardEl.dataset.id;
-      if(mbState.sel==null){ mbState.sel=id; mbRenderMe(); }          // chọn lá đầu
+      if(mbState.sel==null){ mbState.sel=id; mbRenderMe(); if(typeof sfx==='function') sfx('tap'); }  // chọn lá đầu
       else if(mbState.sel===id){ mbState.sel=null; mbRenderMe(); }    // chạm lại -> bỏ chọn
       else { mbSwap(mbState.sel, id); mbState.sel=null; }             // chạm lá 2 -> ĐỔI CHỖ 2 lá
       return;
@@ -235,18 +243,76 @@ function mbBuild(){
     const zoneEl=e.target.closest('[data-slot]');
     if(zoneEl && mbState.sel!=null){ mbMove(mbState.sel, zoneEl.dataset.slot); }
   });
+  mbInitDrag(app);
 }
 
+/* ---------- Kéo-thả lá bài (nhanh hơn chạm từng lá) — pointer events, chạy cả mobile & PC ---------- */
+function mbInitDrag(app){
+  let d=null;
+  const rowEls=()=>['front','mid','back'].map(s=>$('mbBoard').querySelector(`.mb-row[data-slot="${s}"]`));
+  const clearHints=()=>{ rowEls().forEach(r=>r&&r.classList.remove('mb-can','mb-over')); const tw=$('mbTray'); if(tw) tw.classList.remove('mb-over'); };
+  const zoneUnder=(x,y)=>{ const el=document.elementFromPoint(x,y); return el&&el.closest('[data-slot]'); };
+  const cardUnder=(x,y)=>{ const el=document.elementFromPoint(x,y); const c=el&&el.closest('.card'); return (c&&c.closest('#mbBoard,#mbTray'))?c:null; };
+  app.addEventListener('pointerdown',e=>{
+    if(e.button&&e.button!==0) return;
+    if($('mbResult').getAttribute('aria-hidden')==='false') return;
+    if($('mbRules').getAttribute('aria-hidden')==='false') return;
+    const card=e.target.closest('.card'); if(!card||!card.closest('#mbBoard,#mbTray')) return;
+    const fz=mbFindZone(+card.dataset.id); if(!fz) return;
+    d={ id:+card.dataset.id, fromZone:fz.z, el:card, x0:e.clientX, y0:e.clientY, moved:false, clone:null, offx:0, offy:0 };
+  });
+  app.addEventListener('pointermove',e=>{
+    if(!d) return;
+    if(!d.moved){
+      if(Math.hypot(e.clientX-d.x0, e.clientY-d.y0)<7) return;        // chưa quá ngưỡng -> vẫn là "chạm"
+      d.moved=true;
+      try{ app.setPointerCapture(e.pointerId); }catch(_){}
+      const r=d.el.getBoundingClientRect();
+      const cl=d.el.cloneNode(true); cl.classList.add('mb-drag'); cl.classList.remove('sel');
+      cl.style.width=r.width+'px'; cl.style.height=r.height+'px';
+      document.body.appendChild(cl);
+      d.clone=cl; d.offx=d.x0-r.left; d.offy=d.y0-r.top;
+      d.el.classList.add('mb-ghost');
+      rowEls().forEach(r2=>{ const slot=r2.dataset.slot; r2.classList.toggle('mb-can', slot!==d.fromZone && mbState.zones[slot].length<MB_CAP[slot]); });
+      if(typeof sfx==='function') sfx('tap');
+    }
+    d.clone.style.left=(e.clientX-d.offx)+'px'; d.clone.style.top=(e.clientY-d.offy)+'px';
+    rowEls().forEach(r=>r&&r.classList.remove('mb-over')); const tw=$('mbTray'); if(tw) tw.classList.remove('mb-over');
+    const z=zoneUnder(e.clientX,e.clientY);
+    if(z){ if(z.dataset.slot==='tray'){ tw&&tw.classList.add('mb-over'); }
+      else { const row=$('mbBoard').querySelector(`.mb-row[data-slot="${z.dataset.slot}"]`); row&&row.classList.add('mb-over'); } }
+  });
+  const finish=e=>{
+    if(!d) return;
+    if(d.moved){
+      if(d.clone) d.clone.remove();
+      const tgt=cardUnder(e.clientX,e.clientY), z=zoneUnder(e.clientX,e.clientY);
+      if(tgt && +tgt.dataset.id!==d.id){ mbSwap(d.id, +tgt.dataset.id); }        // thả lên 1 lá -> đổi chỗ
+      else if(z && z.dataset.slot!==d.fromZone){ mbMove(d.id, z.dataset.slot); } // thả vào chi/khay khác -> chuyển
+      else { mbState.sel=null; mbRenderMe(); }                                   // thả chỗ cũ -> huỷ
+      clearHints();
+      mbSuppressClick=true; setTimeout(()=>{ mbSuppressClick=false; },60);
+    }
+    d=null;
+  };
+  app.addEventListener('pointerup',finish);
+  app.addEventListener('pointercancel',()=>{ if(!d) return; if(d.clone) d.clone.remove();
+    if(d.el) d.el.classList.remove('mb-ghost'); clearHints(); mbState.sel=null; if(mbState) mbRenderMe(); d=null; });
+}
 /* ---------- Vào / ra màn ---------- */
 function showMauBinh(){
+  mbMode='solo';
   mbBuild(); hideOverlay();
   const cb=$('coinBar'); if(cb) cb.style.display='none';
   $('mbApp').style.display='flex';
   mbActive=true;
   mbDeal();
+  if(typeof announceGameUpdate==='function') announceGameUpdate('maubinh');   // bảng "Có gì mới" của Mậu Binh
 }
 function leaveMauBinh(silent){
   mbActive=false;
+  mbRevealToken++;
+  mbMode='solo';
   if($('mbApp')) $('mbApp').style.display='none';
   const cb=$('coinBar'); if(cb&&profile) cb.style.display='inline-flex';
   if(!silent) showGameSelect();
@@ -293,17 +359,28 @@ function mbFindZone(id){
 function mbMove(id,target){
   const cur=mbFindZone(id); if(!cur) return;
   if(cur.z===target){ mbState.sel=null; mbRenderMe(); return; }
-  if(target!=='tray' && mbState.zones[target].length>=MB_CAP[target]){ toast('Chi này đã đủ lá'); return; }
+  if(target!=='tray' && mbState.zones[target].length>=MB_CAP[target]){ toast('Chi này đã đủ lá — chạm 1 lá trong chi đó để ĐỔI CHỖ'); return; }
   mbState.zones[cur.z].splice(cur.i,1);
   mbState.zones[target].push(cur.card);
   mbState.sel=null;
   mbRenderMe();
+  if(typeof sfx==='function') sfx('place');
+}
+// Đổi chỗ 2 lá (cùng chi hoặc khác chi) — giữ nguyên số lá mỗi chi, chỉnh binh cực nhanh.
+function mbSwap(idA,idB){
+  const a=mbFindZone(idA), b=mbFindZone(idB); if(!a||!b) return;
+  mbState.zones[a.z][a.i]=b.card;
+  mbState.zones[b.z][b.i]=a.card;
+  mbState.sel=null;
+  mbRenderMe();
+  if(typeof sfx==='function') sfx('swap');
 }
 function mbAutoArrange(){
   const all=[...mbState.zones.tray,...mbState.zones.front,...mbState.zones.mid,...mbState.zones.back];
   const a=mbBestArrange(all);
   mbState.zones={ tray:[], front:a.front.slice(), mid:a.mid.slice(), back:a.back.slice() };
   mbState.sel=null; mbRenderMe();
+  if(typeof sfx==='function') sfx('deal');
   toast('Đã xếp tự động — chỉnh lại nếu muốn ✨');
 }
 function mbClearArrange(){
@@ -319,6 +396,8 @@ function mbRenderMe(){
   // Khay
   $('mbTray').innerHTML = z.tray.map(c=>cardHTML(c, cid(c)===mbState.sel?'sel':'')).join('')
     || '<span class="mb-empty">— Đã đặt hết lá vào các chi —</span>';
+  // Lá đang chọn nằm ở chi nào (để không tự tô "đặt được" chính chi đó)
+  const selZone = mbState.sel!=null ? (mbFindZone(mbState.sel)||{}).z : null;
   // 3 chi
   ['front','mid','back'].forEach(slot=>{
     const wrap=$('mbBoard').querySelector(`.mb-cards[data-slot="${slot}"]`);
@@ -327,6 +406,8 @@ function mbRenderMe(){
     row.querySelector('.mb-rowcap').textContent=`${z[slot].length}/${MB_CAP[slot]}`;
     const evalEl=row.querySelector('.mb-roweval');
     evalEl.textContent = z[slot].length===MB_CAP[slot] ? mbEval(z[slot]).name : '';
+    // Gợi ý chi CÒN CHỖ để đặt khi đang chọn 1 lá (giúp xếp tay dễ nhắm)
+    row.classList.toggle('mb-can', mbState.sel!=null && slot!==selZone && z[slot].length<MB_CAP[slot]);
   });
   mbUpdateFoul();
 }
@@ -356,6 +437,7 @@ function mbConfirm(){
   if(z.front.length!==3||z.mid.length!==5||z.back.length!==5){ toast('Chưa đặt đủ lá vào 3 chi'); return; }
   const ef=mbEval(z.front), em=mbEval(z.mid), eb=mbEval(z.back);
   if(mbFoul(ef,em,eb)){ toast('Binh lủng — sửa lại đi nào'); return; }
+  if(typeof sfx==='function') sfx('confirm');
   // Bảo đảm 3 máy đã có kế hoạch
   for(let p=1;p<=3;p++) if(!mbState.bots[p]) mbState.bots[p]=mbBotPlan(mbState.hands[p]);
   const me={ front:z.front, mid:z.mid, back:z.back, ef, em, eb, foul:false,
@@ -389,9 +471,9 @@ function mbShowResult(arrs, pts, delta){
     const sp=a.special?`<span class="mb-badge mb-pop" style="--d:${pStart+500}ms">${a.special.name}</span>`:'';
     const pc=pts[p]>0?'pos':pts[p]<0?'neg':'zero';
     return `<div class="mb-resrow${p===0?' me':''} mb-fade" style="--d:${pStart}ms">
-      <div class="mb-reshead"><span class="mb-resava">${avas[p]}</span><b>${esc(names[p])}</b>${sp}
-        <span class="mb-respts ${pc} mb-pop" style="--d:${pStart+500}ms">${pts[p]>0?'+':''}${pts[p]}</span></div>
+      <div class="mb-reshead"><span class="mb-resava">${avas[p]}</span><b>${esc(names[p])}</b>${sp}</div>
       <div class="mb-reschis">${chis}</div>
+      <span class="mb-respts ${pc} mb-pop" style="--d:${pStart+500}ms">${pts[p]>0?'+':''}${pts[p]}</span>
     </div>`;
   }).join('');
   const endT=BASE + 4*PGAP;                        // lúc tất cả đã lật xong -> hiện tổng kết
@@ -411,6 +493,8 @@ function mbShowResult(arrs, pts, delta){
   $('mbCoin').textContent = profile&&profile.coins!=null? fmtCoin(profile.coins) : '--';
   $('mbAgain').onclick=()=>{ mbRevealToken++; $('mbResult').setAttribute('aria-hidden','true'); mbDeal(); };
   $('mbLeave').onclick=()=>{ mbRevealToken++; leaveMauBinh(); };
+  // Tiếng lật bài theo nhịp mỗi người (0..3)
+  for(let p=0;p<4;p++) setTimeout(()=>{ if(tok===mbRevealToken && typeof sfx==='function') sfx('flip'); }, BASE + p*PGAP);
   // Cập nhật dải đối thủ theo nhịp lật (mỗi người tới lượt mới hiện điểm)
   const topPts=Math.max(...pts);
   for(let p=1;p<=3;p++){
@@ -420,10 +504,12 @@ function mbShowResult(arrs, pts, delta){
       const opp=s.closest('.mb-opp'); if(opp) opp.classList.toggle('win', pts[p]===topPts && topPts>0);
     }, BASE + p*PGAP + 520);
   }
-  // Ăn mừng khi tất cả đã lật xong
+  // Ăn mừng khi tất cả đã lật xong (dùng profile.streak — lúc này giao dịch xu đã xong)
   setTimeout(()=>{ if(tok!==mbRevealToken) return;
-    if(delta>0){ if(typeof confetti==='function') confetti(); if(typeof flash==='function') flash('THẮNG! 🎉'); }
-    else if(delta<0 && typeof flash==='function') flash('Thua rồi 😅');
+    if(delta>0){ if(typeof confetti==='function') confetti(); if(typeof sfx==='function'){ sfx('win'); setTimeout(()=>sfx('coin'),320); }
+      const st=(profile&&profile.streak)||0;
+      if(typeof flash==='function') flash(st>=2?`🔥 THẮNG CHUỖI x${st}!`:'THẮNG! 🎉'); }
+    else if(delta<0){ if(typeof sfx==='function') sfx('lose'); if(typeof flash==='function') flash('Thua rồi 😅'); }
   }, endT+60);
 }
 /* ---------- Luật chơi (nút ?) ---------- */

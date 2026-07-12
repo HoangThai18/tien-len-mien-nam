@@ -18,11 +18,13 @@ function onPlay(){
     selected.clear();
     syncSelection();
     guestSend('play',cards.map(cid));
+    sfx('place');
     return;
   }
   const res=applyPlay(S,myIdx,cards);
   if(!res.ok){ toast(res.err); shakeHand(); return; }
   selected.clear();
+  sfx('place');
   postApply();
 }
 function onPass(){
@@ -223,6 +225,39 @@ function confetti(){
     setTimeout(()=>s.remove(),4200);
   }
 }
+/* ---------- Âm thanh (WebAudio — tự tổng hợp, KHÔNG cần file nhạc) ---------- */
+let _sfxOn=(()=>{ try{ return localStorage.getItem('sfxOff')!=='1'; }catch(_){ return true; } })();
+let _actx=null;
+function sfxOn(){ return _sfxOn; }
+function sfxToggle(on){ _sfxOn=(on==null?!_sfxOn:!!on); try{ localStorage.setItem('sfxOff',_sfxOn?'0':'1'); }catch(_){}
+  if(_sfxOn) sfx('tap'); return _sfxOn; }
+function _actxGet(){ if(_actx) return _actx; try{ _actx=new (window.AudioContext||window.webkitAudioContext)(); }catch(_){ _actx=null; } return _actx; }
+// 1 nốt: f0→f1 (Hz), thời lượng, dạng sóng, âm lượng, mốc bắt đầu
+function _blip(ctx,f0,f1,dur,type,vol,t0){
+  const o=ctx.createOscillator(), g=ctx.createGain();
+  o.type=type||'sine'; o.frequency.setValueAtTime(f0,t0);
+  if(f1&&f1!==f0) o.frequency.exponentialRampToValueAtTime(Math.max(1,f1),t0+dur);
+  g.gain.setValueAtTime(0.0001,t0); g.gain.linearRampToValueAtTime(vol,t0+0.008);
+  g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
+  o.connect(g); g.connect(ctx.destination); o.start(t0); o.stop(t0+dur+0.03);
+}
+const SFX={
+  tap:  c=>{ const t=c.currentTime; _blip(c,520,520,0.05,'triangle',0.13,t); },
+  place:c=>{ const t=c.currentTime; _blip(c,340,200,0.09,'square',0.12,t); },
+  swap: c=>{ const t=c.currentTime; _blip(c,480,760,0.07,'triangle',0.12,t); _blip(c,760,480,0.07,'triangle',0.09,t+0.06); },
+  flip: c=>{ const t=c.currentTime; _blip(c,880,560,0.05,'triangle',0.11,t); },
+  confirm:c=>{ const t=c.currentTime; _blip(c,523,523,0.11,'sine',0.14,t); _blip(c,784,784,0.13,'sine',0.14,t+0.08); },
+  coin: c=>{ const t=c.currentTime; _blip(c,1170,1170,0.05,'square',0.10,t); _blip(c,1560,1560,0.10,'square',0.09,t+0.05); },
+  win:  c=>{ const t=c.currentTime; [523,659,784,1047].forEach((f,i)=>_blip(c,f,f,0.16,'triangle',0.15,t+i*0.11)); },
+  lose: c=>{ const t=c.currentTime; [440,392,311].forEach((f,i)=>_blip(c,f,f,0.20,'sawtooth',0.09,t+i*0.12)); },
+  deal: c=>{ const t=c.currentTime; _blip(c,700,380,0.06,'triangle',0.08,t); },
+};
+function sfx(name){
+  if(!_sfxOn) return;
+  const c=_actxGet(); if(!c) return;
+  if(c.state==='suspended') c.resume().catch(()=>{});
+  const p=SFX[name]; if(p){ try{ p(c); }catch(_){} }
+}
 
 /* =========================================================================
    MÀN HÌNH
@@ -254,12 +289,18 @@ function showGameSelect(){
       <span class="g-go" aria-hidden="true">${g.ready?'▶':''}</span>
     </button>`;
   }).join('');
+  const _tr=eloTier(profile&&profile.elo), _el=(profile&&profile.elo!=null)?profile.elo:1000;
+  const rankChip = profile ? `<div class="hub-rank" style="--rk:${_tr.color}">
+      <span class="hr-ic">${_tr.icon}</span>
+      <span class="hr-col"><b>${_tr.name}</b><small>${_el} ELO${(profile.streak||0)>=2?` · 🔥 chuỗi ${profile.streak}`:''}</small></span>
+    </div>` : '';
   $('panel').innerHTML=`
     <div class="logo">Sảnh bài</div>
     <h1 style="font-size:30px">Chọn loại bài</h1>
-    <p class="sub">Chọn trò muốn chơi · <span class="hl">Tiến Lên</span> &amp; <span class="hl">Đảo Rồng</span> đang mở, thêm trò sắp ra mắt.</p>
+    ${rankChip}
     <div class="game-list">${cards}</div>
     <div class="hub-row">
+      <button class="btn block ghost hub-daily" id="gsDaily">🎁 Điểm danh${(typeof dailyClaimable==='function'&&dailyClaimable())?'<span class="hub-dot"></span>':''}</button>
       <button class="btn block ghost" id="gsQuest">🎯 Nhiệm vụ</button>
       <button class="btn block ghost" id="gsBxh">🏆 Xếp hạng</button>
     </div>
@@ -268,8 +309,10 @@ function showGameSelect(){
   $('overlay').style.display='flex';
   renderCoinBar();
   // Bọc an toàn: 1 hàm phụ thiếu (bản cache cũ…) cũng KHÔNG được làm hỏng cả sảnh chọn game.
+  $('gsDaily').onclick=()=>{ if(typeof showDaily==='function') showDaily(); };
   $('gsQuest').onclick=()=>{ if(typeof showQuests==='function') showQuests(); };
   $('gsBxh').onclick=()=>{ if(typeof showLeaderboard==='function') showLeaderboard(); };
+  if(typeof dailyClaimable==='function' && dailyClaimable() && !dailyAutoShown){ dailyAutoShown=true; setTimeout(()=>{ if(typeof showDaily==='function') showDaily(); }, 450); }
   document.querySelectorAll('.game-card').forEach(btn=>btn.onclick=()=>{
     if(Date.now()-gsOpenAt<450) return;   // vừa mở sảnh <0.45s -> là cú chạm dội của nút back, bỏ qua
     const g=GAME_TYPES.find(x=>x.id===btn.dataset.game);
@@ -278,9 +321,63 @@ function showGameSelect(){
     gameType=g.id;
     if(g.id==='daorong'){ showDragonIsland(); return; }
     if(g.id==='maubinh'){ showBetSetup(()=>showMauBinh()); return; }
+    if(typeof announceGameUpdate==='function') announceGameUpdate('tienlen');   // bảng "Có gì mới" của Tiến Lên
     showMenu();
   });
   $('gsSignOut').onclick=signOut;
+}
+/* ---------- Mùa giải: bảng "Mùa mới" (thưởng cuối mùa + reset ELO) ---------- */
+function showSeasonReward(s){
+  const ot=eloTier(s.oldElo), nt=eloTier(s.newElo);
+  $('panel').innerHTML=`
+    <div class="logo">Mùa giải</div>
+    <h1 style="font-size:24px">🏆 Mùa mới bắt đầu!</h1>
+    <p class="sub">Mùa <b>${esc(s.season||'')}</b> đã khép lại — nhận thưởng theo hạng bạn đạt được:</p>
+    <div class="season-box">
+      <div class="sb-row"><span>Hạng mùa cũ</span><span class="rank-badge" style="--rk:${ot.color}">${ot.icon} ${ot.name}</span></div>
+      <div class="sb-reward">+${fmtCoin(s.reward)} 🪙</div>
+      <div class="sb-row"><span>ELO mùa mới</span><b>${s.newElo} <span class="rank-badge" style="--rk:${nt.color}">${nt.icon} ${nt.name}</span></b></div>
+    </div>
+    <p class="sub" style="font-size:11px; margin-top:8px">ELO kéo về gần mốc để ai cũng có cơ hội — leo lại giành hạng cao mùa này!</p>
+    <div class="menu-gap"><button class="btn block" id="seasonOk">Tuyệt! Vào chơi 🎮</button></div>`;
+  $('overlay').style.display='flex'; renderCoinBar();
+  if(s.reward>0){ confetti(); sfx('coin'); }
+  $('seasonOk').onclick=showGameSelect;
+}
+/* ---------- Quà đăng nhập (điểm danh 7 ngày) ---------- */
+let dailyAutoShown=false;
+function showDaily(){
+  const streak=(profile&&profile.dailyStreak)||0;
+  const claimedToday = !!(profile && profile.dailyDay===todayKey());
+  const nextIdx = (typeof dailyNextIndex==='function')?dailyNextIndex():1;
+  const tiles = DAILY_REWARDS.map((rw,i)=>{
+    const day=i+1;
+    const done = claimedToday ? day<=streak : day<nextIdx;
+    const isNext = !claimedToday && day===nextIdx;
+    return `<div class="daily-tile${done?' done':''}${isNext?' next':''}">
+      <span class="dt-day">Ngày ${day}${day===7?' 👑':''}</span>
+      <span class="dt-rw">${fmtCoin(rw)} <small>🪙</small></span>
+      ${done?'<span class="dt-tick">✓</span>':''}</div>`;
+  }).join('');
+  const btn = claimedToday
+    ? `<button class="btn block" disabled>✓ Đã điểm danh — mai quay lại</button>`
+    : `<button class="btn block" id="dailyGo">🎁 Nhận ${fmtCoin(DAILY_REWARDS[nextIdx-1])} 🪙</button>`;
+  $('panel').innerHTML=`
+    <div class="logo">Điểm danh</div>
+    <h1 style="font-size:24px">🎁 Quà đăng nhập</h1>
+    <p class="sub">Vào mỗi ngày nhận xu · <b>7 ngày liên tục</b> thưởng càng lớn. Bỏ 1 ngày về Ngày 1.</p>
+    <div class="daily-grid">${tiles}</div>
+    <div class="menu-gap">${btn}</div>
+    <button class="linkish" id="dailyBack">← Về sảnh</button>`;
+  $('overlay').style.display='flex'; renderCoinBar();
+  const go=$('dailyGo');
+  if(go) go.onclick=async()=>{ go.disabled=true;
+    const res=await claimDaily();
+    if(res.ok){ if(res.val) profile=res.val; renderCoinBar(); sfx('coin'); confetti();
+      toast('Điểm danh +'+fmtCoin(res.reward||0)+' 🪙'); showDaily(); }
+    else{ go.disabled=false; toast('Chưa nhận được — thử lại'); }
+  };
+  $('dailyBack').onclick=showGameSelect;
 }
 /* ---------- Nhiệm vụ ngày (kiếm xu) ---------- */
 function showQuests(){
@@ -306,7 +403,7 @@ function showQuests(){
   document.querySelectorAll('[data-claim]').forEach(b=>b.onclick=async()=>{
     b.disabled=true;
     const res=await claimQuest(b.dataset.claim);
-    if(res.ok){ if(res.val) profile=res.val; renderCoinBar(); toast('Đã nhận thưởng! 🪙'); showQuests(); }
+    if(res.ok){ if(res.val) profile=res.val; renderCoinBar(); sfx('coin'); toast('Đã nhận thưởng! 🪙'); showQuests(); }
     else{ b.disabled=false; toast('Chưa nhận được — thử lại'); }
   });
   $('qBack').onclick=showGameSelect;
@@ -316,6 +413,7 @@ function showLeaderboard(){
   $('panel').innerHTML=`
     <div class="logo">Xếp hạng</div>
     <h1 style="font-size:24px">🏆 Bảng xếp hạng</h1>
+    <p class="sub" style="margin:-2px 0 8px">Mùa <b>${typeof currentSeason==='function'?currentSeason():''}</b> · còn <b>${typeof seasonDaysLeft==='function'?seasonDaysLeft():'—'} ngày</b> · cuối tháng reset + thưởng theo hạng</p>
     <div class="bxh-tabs"><button class="bxh-tab sel" data-by="elo">Trình độ (ELO)</button>
       <button class="bxh-tab" data-by="coins">Giàu nhất 🪙</button></div>
     <div class="bxh-list" id="bxhList">Đang tải…</div>
@@ -330,8 +428,10 @@ function showLeaderboard(){
     $('bxhList').innerHTML=rows.map((u,i)=>{
       const medal=['🥇','🥈','🥉'][i]||(i+1);
       const val=by==='elo'?`${u.elo??1000} <small>ELO</small>`:`${fmtCoin(u.coins||0)} 🪙`;
+      const t=eloTier(u.elo);
       return `<div class="rank-row${u.uid===myUid?' you':''}"><div class="pos">${medal}</div>
-        <div class="who">${esc(u.name||'Bạn')}<span class="sub" style="display:block;margin:0;font-weight:600">${u.wins||0} thắng · ${u.games||0} ván</span></div>
+        <div class="who">${esc(u.name||'Bạn')} <span class="rank-badge" style="--rk:${t.color}">${t.icon} ${t.name}</span>
+          <span class="sub" style="display:block;margin:0;font-weight:600">${u.wins||0} thắng · ${u.games||0} ván</span></div>
         <div class="hl">${val}</div></div>`;
     }).join('')||'<p class="sub">Chưa có dữ liệu.</p>';
   };
@@ -399,15 +499,20 @@ function showAccount(){
     <div class="rank-row you"><div class="pos">🪙</div>
       <div class="who">Số xu<span class="sub" style="display:block;margin:0;font-weight:600">Thắng ${wins} · Đã chơi ${games} ván</span></div>
       <div class="hl">${coins}</div></div>
-    <div class="rank-row"><div class="pos">🏅</div>
-      <div class="who">Điểm trình độ<span class="sub" style="display:block;margin:0;font-weight:600">Càng thắng càng lên hạng</span></div>
-      <div class="hl">${(profile&&profile.elo!=null)?profile.elo:1000} ELO</div></div>
+    ${(()=>{ const el=(profile&&profile.elo!=null)?profile.elo:1000, tr=eloTier(el), nx=eloNext(el);
+      const bs=(profile&&profile.bestStreak)||0;
+      return `<div class="rank-row"><div class="pos">${tr.icon}</div>
+      <div class="who"><span class="rank-badge" style="--rk:${tr.color}">${tr.name}</span>
+        <span class="sub" style="display:block;margin:0;font-weight:600">${nx?`Còn ${nx.min-el} ELO lên ${nx.name}`:'Hạng cao nhất!'}${bs>=2?` · 🔥 chuỗi dài nhất ${bs}`:''}</span></div>
+      <div class="hl">${el} ELO</div></div>`; })()}
     <div class="class-title" style="margin-top:12px">Tên hiển thị</div>
     <input class="field" id="acName" maxlength="12" placeholder="Tên của bạn" value="${esc(name)}">
     <div class="field-err" id="acMsg"></div>
-    <div class="menu-gap"><button class="btn block" id="acSave">💾 Lưu tên</button></div>
+    <div class="menu-gap"><button class="btn block" id="acSave">💾 Lưu tên</button>
+      <button class="btn block ghost" id="acSfx">${sfxOn()?'🔊 Âm thanh: BẬT':'🔇 Âm thanh: TẮT'}</button></div>
     <button class="linkish" id="acBack">← Về menu</button>`;
   $('overlay').style.display='flex';
+  $('acSfx').onclick=()=>{ const on=sfxToggle(); $('acSfx').textContent=on?'🔊 Âm thanh: BẬT':'🔇 Âm thanh: TẮT'; };
   const msg=$('acMsg');
   const doSave=async()=>{
     const btn=$('acSave'); btn.disabled=true; msg.textContent='';
@@ -588,7 +693,8 @@ function showResult(){
   }).join('');
   const meWin=st&&st.winner===myIdx;
   const meRow=st&&st.rows.find(r=>r.seat===myIdx);
-  if(meWin) confetti();
+  if(meWin){ confetti(); sfx('win'); setTimeout(()=>sfx('coin'),320); }
+  else if(meRow&&meRow.delta<0) sfx('lose');
   const head=meWin?'TỚI! Nhất rồi 🎉':(meRow?`Bạn ${meRow.delta>=0?'+':''}${fmtCoin(meRow.delta)} 🪙`:'Kết thúc');
   const potLine=st?`<p class="sub">Mệnh giá ${fmtCoin(st.bet)} 🪙/lá · Pot ${fmtCoin(st.pot)} 🪙</p>`:'';
   const again = mode==='guest'

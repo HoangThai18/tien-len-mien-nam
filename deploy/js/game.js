@@ -162,9 +162,13 @@ function addCoins(delta,gameId,isWinner,meta){
     u.games=(u.games||0)+1;
     if(isWinner) u.wins=(u.wins||0)+1;
     u.lastSettled=gameId;
-    if(meta&&meta.game){                          // ván bài thật -> cập nhật ELO + nhiệm vụ
+    if(meta&&meta.game){                          // ván bài thật -> cập nhật ELO + nhiệm vụ + chuỗi thắng
       u.elo=eloAfter(u.elo||1000, !!isWinner);
       u.quests=questTick(u.quests, !!isWinner, meta.game);
+      if(isWinner){ u.streak=(u.streak||0)+1;
+        u.coins += Math.min(Math.max(u.streak-1,0),6)*30;   // chuỗi thắng: thưởng tăng dần (x2→+30 … x7+→+180)
+        u.bestStreak=Math.max(u.bestStreak||0, u.streak);
+      } else u.streak=0;
     }
     return u;
   }).catch(e=>{ console.error('addCoins',e);
@@ -175,6 +179,44 @@ function addCoins(delta,gameId,isWinner,meta){
 function eloAfter(cur,won){
   const K=24, base=1000, E=1/(1+Math.pow(10,(base-cur)/400));
   return Math.max(100, Math.round(cur + K*((won?1:0)-E)));
+}
+// Hạng đấu theo ELO — mốc mục tiêu để leo, mỗi hạng 1 màu + huy hiệu.
+const ELO_TIERS=[
+  {min:1700, name:'Cao Thủ',   icon:'👑', color:'#e05a8a'},
+  {min:1500, name:'Kim Cương', icon:'💠', color:'#4c9fe8'},
+  {min:1350, name:'Bạch Kim',  icon:'💎', color:'#3fc9c0'},
+  {min:1200, name:'Vàng',      icon:'🥇', color:'#e0a52a'},
+  {min:1050, name:'Bạc',       icon:'🥈', color:'#9aa7b3'},
+  {min:900,  name:'Đồng',      icon:'🥉', color:'#c8823c'},
+  {min:0,    name:'Tân Thủ',   icon:'🌱', color:'#6faf6f'},
+];
+function eloTier(elo){ elo=(elo==null?1000:elo); return ELO_TIERS.find(t=>elo>=t.min); }
+function eloNext(elo){ elo=(elo==null?1000:elo); const above=ELO_TIERS.filter(t=>t.min>elo); return above.length?above[above.length-1]:null; }
+/* ---------- Mùa giải (theo tháng, tự chạy — không cần server) ---------- */
+function currentSeason(){ return new Date().toISOString().slice(0,7); }    // 'YYYY-MM'
+function seasonDaysLeft(){ const n=new Date(); const end=Date.UTC(n.getUTCFullYear(), n.getUTCMonth()+1, 1); return Math.max(1, Math.ceil((end-Date.now())/86400000)); }
+// Thưởng cuối mùa theo HẠNG đạt được (hạng cao = ít người = thưởng lớn ~ "thưởng top").
+const SEASON_REWARDS={'Cao Thủ':50000,'Kim Cương':20000,'Bạch Kim':10000,'Vàng':5000,'Bạc':2500,'Đồng':1000,'Tân Thủ':0};
+function seasonRewardFor(elo){ return SEASON_REWARDS[eloTier(elo).name]||0; }
+// Kiểm tra sang mùa mới: phát thưởng theo hạng mùa cũ + reset MỀM ELO (kéo về 1000, giữ 40% chênh lệch).
+function processSeason(){
+  const cs=currentSeason();
+  if(!auth||!auth.currentUser||!db||!profile) return Promise.resolve(null);
+  if(profile.seasonId===cs) return Promise.resolve(null);
+  const first=!profile.seasonId;                       // lần đầu có mùa -> chỉ đóng dấu, không thưởng/không reset
+  return db.ref('users/'+auth.currentUser.uid).transaction(u=>{
+    if(!u) return u;
+    if(u.seasonId===cs) return;                        // đã xử lý (chống trùng)
+    if(!u.seasonId){ u.seasonId=cs; return u; }        // lần đầu
+    const oldElo=u.elo||1000;
+    u.coins=(u.coins||0)+seasonRewardFor(oldElo);
+    u.elo=Math.round(1000+(oldElo-1000)*0.4);
+    u.lastSeasonElo=oldElo; u.lastSeasonReward=seasonRewardFor(oldElo); u.lastSeason=u.seasonId;
+    u.seasonId=cs; return u;
+  }).then(r=>{ const v=r.snapshot&&r.snapshot.val(); if(v) profile=v;
+    if(first||!r.committed||!v) return null;
+    return {reward:v.lastSeasonReward||0, oldElo:v.lastSeasonElo||1000, newElo:v.elo||1000, season:v.lastSeason||''};
+  }).catch(()=>null);
 }
 /* ---------- Nhiệm vụ ngày ---------- */
 const QUESTS=[
@@ -206,6 +248,29 @@ function claimQuest(qid){
     u.coins=(u.coins||0)+def.reward;
     return u;
   }).then(r=>({ok:r.committed, val:r.snapshot&&r.snapshot.val()})).catch(e=>{ console.error('claimQuest',e); return {ok:false}; });
+}
+/* ---------- Quà đăng nhập (điểm danh 7 ngày) ---------- */
+const DAILY_REWARDS=[500,800,1200,2000,3000,5000,10000];   // ngày 1→7, sau đó lặp ở mức ngày 7
+function _ydayKey(){ const d=new Date(); d.setDate(d.getDate()-1); return d.toISOString().slice(0,10); }
+function dailyClaimable(){ return !!(profile && profile.dailyDay!==todayKey()); }
+// Ngày điểm danh sắp tới (1..7) để hiện thưởng trước khi nhận
+function dailyNextIndex(){
+  if(!profile) return 1;
+  if(profile.dailyDay===todayKey()) return Math.min(profile.dailyStreak||1,7);
+  return Math.min((profile.dailyDay===_ydayKey()?(profile.dailyStreak||0):0)+1,7);
+}
+function claimDaily(){
+  if(!auth||!auth.currentUser||!db) return Promise.resolve({ok:false});
+  const today=todayKey(), yday=_ydayKey();
+  return db.ref('users/'+auth.currentUser.uid).transaction(u=>{
+    if(!u) return u;
+    if(u.dailyDay===today) return;                 // đã điểm danh hôm nay
+    const streak = (u.dailyDay===yday) ? Math.min((u.dailyStreak||0)+1,7) : 1;
+    const reward = DAILY_REWARDS[Math.min(streak,7)-1];
+    u.coins=(u.coins||0)+reward; u.dailyDay=today; u.dailyStreak=streak; u.dailyLast=reward;
+    return u;
+  }).then(r=>({ok:r.committed, val:r.snapshot&&r.snapshot.val(),
+                reward:(r.snapshot&&r.snapshot.val()||{}).dailyLast})).catch(()=>({ok:false}));
 }
 // Áp kết quả tiền của ván vào ví mình (host=seat0, khách online=ghế được cấp); bot không lưu
 function settleMyWallet(S){
@@ -386,7 +451,11 @@ function boot(){
       attachProfile(user.uid);
       let resume=null; try{ resume=localStorage.getItem('lastGame'); }catch(_){}
       if(resume==='daorong' && typeof showDragonIsland==='function') showDragonIsland();  // reload -> vào lại đảo
-      else showGameSelect();
+      else{
+        showGameSelect();
+        // Sang mùa mới -> phát thưởng cuối mùa + reset mềm ELO, rồi hiện bảng "Mùa mới"
+        try{ processSeason().then(s=>{ if(s && typeof showSeasonReward==='function') showSeasonReward(s); }); }catch(_){}
+      }
     }else{
       if(typeof drActive!=='undefined'&&drActive) leaveDragonIsland(true);   // đang ở đảo -> thoát
       if(typeof mbActive!=='undefined'&&mbActive) leaveMauBinh(true);        // đang binh -> thoát
