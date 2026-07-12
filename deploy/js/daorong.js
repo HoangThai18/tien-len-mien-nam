@@ -5,7 +5,7 @@
    File CHỈ khai báo; mọi wiring nằm trong hàm (không chạy code top-level).
    ========================================================================= */
 let drState=null, drActive=false, drBuilt=false, drReduce=false;
-let drSaveT=null, drCoinTimer=null, drTick=null, drServerOffset=0;
+let drSaveT=null, drCoinTimer=null, drTick=null, drServerOffset=0, drBreedTimer=null;
 // Giờ server ước lượng — timer lai rồng dùng cái này, KHÔNG dùng Date.now() thuần
 // để đổi đồng hồ máy không tua được timer. (Không có sinh-vàng-offline nên vàng an toàn.)
 function drNow(){ return Date.now()+drServerOffset; }
@@ -832,6 +832,7 @@ function drSell(i){
 /* ---------- Lai rồng ---------- */
 let drBreedPick=[];
 function drShowBreed(preIdx){
+  clearInterval(drBreedTimer);
   // đang lai dở?
   if(drState.breed&&drState.breed.readyAt){
     const left=Math.max(0,Math.round((drState.breed.readyAt-drNow())/1000));
@@ -844,8 +845,18 @@ function drShowBreed(preIdx){
         <button class="dr-btn go" id="drHatch">Nở rồng 🎉</button>`}
       <p class="dr-note">Đưa 2 rồng vào để ra trứng theo cặp nguyên tố.</p></div>`;
     drModal('Lai Rồng', body);
-    if($('drSkip')) $('drSkip').onclick=()=>{ const need=Math.max(1,Math.ceil(left/60)); if(drState.gems<need){toast('Thiếu 💎');return;} drState.gems-=need; drState.breed.readyAt=drNow(); drRenderHud(); drSave(); drShowBreed(); };
+    const skipCost=()=>Math.max(1,Math.ceil(Math.max(0,(drState.breed.readyAt-drNow())/1000)/60));
+    if($('drSkip')) $('drSkip').onclick=()=>{ const need=skipCost(); if(drState.gems<need){toast('Thiếu 💎');return;} drState.gems-=need; drState.breed.readyAt=drNow(); drRenderHud(); drSave(); drShowBreed(); };
     if($('drHatch')) $('drHatch').onclick=drHatch;
+    // Đếm giây LIVE ngay trong modal (trước đây đứng yên "Còn 30s")
+    drBreedTimer=setInterval(()=>{
+      if(!$('drModal')||!drState.breed||!drState.breed.readyAt){ clearInterval(drBreedTimer); return; }
+      const l=Math.max(0,Math.round((drState.breed.readyAt-drNow())/1000));
+      if(l>0){
+        const tm=document.querySelector('#drModal .dr-timer'); if(tm) tm.textContent='⏳ Còn '+drFmtTime(l);
+        const sk=$('drSkip'); if(sk) sk.textContent='Tua nhanh · '+skipCost()+' 💎';
+      }else{ clearInterval(drBreedTimer); drShowBreed(); }   // hết giờ -> tự chuyển sang nút Nở rồng
+    },1000);
     return;
   }
   drBreedPick=[]; if(Number.isInteger(preIdx)) drBreedPick=[preIdx];

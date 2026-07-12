@@ -1,7 +1,7 @@
-const CACHE = 'tienlen-v59-star-tier-fx';
+const CACHE = 'tienlen-v62-maubinh';
 const ASSETS = [
   './', './index.html', './styles.css', './manifest.webmanifest', './icon-192.png', './icon-512.png',
-  './js/config.js', './js/engine.js', './js/state.js', './js/game.js', './js/ui.js', './js/daorong.js', './js/social.js',
+  './js/config.js', './js/engine.js', './js/state.js', './js/game.js', './js/ui.js', './js/daorong.js', './js/maubinh.js', './js/social.js',
   './assets/characters/captain.webp', './assets/characters/mage.webp',
   './assets/characters/guardian.webp', './assets/characters/trickster.webp',
   './assets/items/luck.webp', './assets/items/hint.webp', './assets/items/bomb.webp', './assets/items/pass.webp',

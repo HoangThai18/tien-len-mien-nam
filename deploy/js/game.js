@@ -29,6 +29,9 @@ const GAME_TYPES=[
    pips:[{r:'3',s:'♠'},{r:'A',s:'♥',red:true},{r:'2',s:'♦',red:true}]},
   {id:'daorong', name:'Đảo Rồng', accent:'#2f8fce', ready:true, icon:'🐉',
    tag:'Mới', desc:'Nuôi rồng trên đảo · rồng sinh vàng, chạm để thu. Lưu theo tài khoản.'},
+  {id:'maubinh', name:'Mậu Binh', accent:'#7a4fd0', ready:true, icon:'🀄',
+   tag:'Mới', desc:'Binh Xập Xám 13 lá · xếp 3 chi, so từng chi ăn xu. Chơi với 3 máy.',
+   pips:[{r:'A',s:'♠'},{r:'K',s:'♦',red:true},{r:'Q',s:'♣'}]},
   {id:'bacay', name:'Ba Cây', accent:'#e0663a', ready:false,
    tag:'Sắp ra mắt', desc:'Bài cào 3 lá · cộng nút, ai to hơn ăn.',
    pips:[{r:'9',s:'♣'},{r:'K',s:'♦',red:true},{r:'8',s:'♠'}]},
@@ -320,6 +323,7 @@ function boot(){
       else showGameSelect();
     }else{
       if(typeof drActive!=='undefined'&&drActive) leaveDragonIsland(true);   // đang ở đảo -> thoát
+      if(typeof mbActive!=='undefined'&&mbActive) leaveMauBinh(true);        // đang binh -> thoát
       if(mode!=='solo'||S){ cleanupRoom(); render(); }   // đăng xuất giữa chừng -> dọn phòng
       detachProfile(); profile=null; renderCoinBar();
       showLogin();

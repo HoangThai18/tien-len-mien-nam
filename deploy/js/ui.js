@@ -266,6 +266,7 @@ function showGameSelect(){
     if(!g.ready){ toast(`${g.name} đang phát triển — sắp ra mắt! 🔜`); return; }
     gameType=g.id;
     if(g.id==='daorong'){ showDragonIsland(); return; }
+    if(g.id==='maubinh'){ showBetSetup(()=>showMauBinh()); return; }
     showMenu();
   });
   $('gsSignOut').onclick=signOut;
@@ -413,7 +414,7 @@ function showBetSetup(next){
     c.classList.add('sel');
   });
   $('betGo').onclick=()=>{ gameBet=Math.max(0,Math.floor(+$('inBet').value||0)); next(); };
-  $('betBack').onclick=showMenu;
+  $('betBack').onclick=()=>{ if(gameType&&gameType!=='tienlen') showGameSelect(); else showMenu(); };
 }
 function showOnlineSetup(next){
   const countButtons=[2,3,4].map(n=>`<button class="bet-chip${n===roomMaxPlayers?' sel':''}" data-count="${n}">${n} người</button>`).join('');
