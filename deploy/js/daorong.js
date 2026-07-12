@@ -597,7 +597,7 @@ function drRenderDragons(){
     bob.style.setProperty('--acc',(DR_PAL[s.el]||{}).body||'#8fe0ff');
     bob.style.setProperty('--tcol',drStarCol(st));
     const scale=(evo.scale+Math.max(0,(d.lv||1)-evo.minLv)*0.012).toFixed(3);
-    bob.innerHTML=`<span class="dr-aura"></span>`
+    bob.innerHTML=`<span class="dr-aura"></span><span class="dr-orbit"></span>`
       +`<div class="dr-artwrap dr-facing" style="--dScale:${scale}">${drDragonArt(d)}</div>`
       +`<span class="dr-starbadge">★${st}</span>`
       +`<span class="dr-lvtag">Lv${d.lv} · ${evo.name}</span>`;
