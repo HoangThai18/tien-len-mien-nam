@@ -703,8 +703,10 @@
   .dr-stars{color:var(--gold); letter-spacing:2px; font-size:15px; text-shadow:0 1px 1px rgba(0,0,0,.15);}
   .dr-btn.block{display:block; width:100%; margin:2px 0 8px;}
   .dr-star-max{text-align:center; font-weight:900; color:var(--orange-3); font-size:13px; margin:4px 0 10px;}
-  .dr-cardstar{display:block; color:var(--gold); font-size:10px; letter-spacing:1px; line-height:1; margin-top:2px;
-    text-shadow:0 1px 1px rgba(0,0,0,.15);}
+  .dr-cardstar{display:block; font-size:10px; line-height:1; margin-top:2px;}
+  .dr-starnum{display:inline-flex; align-items:center; gap:1px; font-weight:900; font-size:12px;
+    color:var(--sc,#ffd24a); text-shadow:0 1px 1px rgba(0,0,0,.35), 0 0 5px color-mix(in srgb, var(--sc,#ffd24a) 55%, transparent);}
+  .dr-star-tier{font-weight:800; font-size:11px; opacity:.8;}
 
   /* Chúc phúc khi lai */
   .dr-bless{display:flex; align-items:center; gap:8px; justify-content:center; margin:8px 0; cursor:pointer;

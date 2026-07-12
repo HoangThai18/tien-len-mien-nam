@@ -16,6 +16,7 @@ RỒNG CUTE ĐÃ CÓ ẢNH + ATLAS TIẾN HOÁ 4×8:
   • peach   "Rồng Đào Hồng"   → peach.png + evolution/peach.png
   • candy   "Rồng Kẹo Ngọt"   → candy.png + evolution/candy.png
 RỒNG CUTE ĐANG DÙNG SVG TẠM — CẦN ẢNH:
+  • sakura  "Rồng Anh Đào"    HỒNG anh đào #ff8fc7 → sakura.png   (MỚI · rare · lai plant+plant)
   • mint    "Rồng Bạc Hà"     XANH MINT  #9be7c4  → mint.png
   • lemon   "Rồng Chanh"      VÀNG chanh #ffe37a  → lemon.png
   • berry   "Rồng Việt Quất"  XANH-TÍM   #8aa0ff  → berry.png

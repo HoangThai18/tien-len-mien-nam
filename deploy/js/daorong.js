@@ -98,9 +98,9 @@ function drModalFeature(title){
    CHUẨN ẢNH (giống fire.png / water.png): 1 dải NGANG 8 khung đi bộ 4 chân, NỀN TRONG SUỐT,
    nhìn nghiêng 3/4, cùng nhân vật + cỡ ở mọi khung, style chibi mắt to má hồng.
 
-   ĐÃ THÊM (chờ ảnh — bỏ file .png vào assets/dragons/ rồi bảo mình gắn 'sheet'):
-     • peach → "Rồng Đào Hồng"  — HỒNG đào #ff9ec4, má hồng, cực dễ thương   → assets/dragons/peach.png
-     • candy → "Rồng Kẹo Ngọt"  — TÍM pastel/oải hương #c89bf0, lấp lánh kẹo → assets/dragons/candy.png
+   ĐÃ TẠO ẢNH + GẮN ATLAS TIẾN HOÁ 4×8:
+     • peach → "Rồng Đào Hồng"  → assets/dragons/peach.png + evolution/peach.png
+     • candy → "Rồng Kẹo Ngọt"  → assets/dragons/candy.png + evolution/candy.png
 
    Ý TƯỞNG MÀU DỄ THƯƠNG THÊM (tạo ảnh xong nói tên+màu, mình thêm data mỗi con 1 dòng):
      • mint   "Rồng Bạc Hà"    — XANH MINT pastel #9be7c4
@@ -125,6 +125,7 @@ const DR_SPECIES={
   coral:   {name:'Rồng San Hô',     el:'fire',    els:['fire'],           rar:'rare',   gold:20, atk:54, hp:118, range:4, spd:7, pal:{body:'#ff9e7a',bd:'#ffe6dc',wg:'#ffc2ac',st:'#e8663f',horn:'#c24a25'}},
   cloud:   {name:'Rồng Mây',        el:'water',   els:['water'],          rar:'rare',   gold:19, atk:48, hp:126, range:4, spd:6, pal:{body:'#cfe3ff',bd:'#f0f7ff',wg:'#e0eeff',st:'#8fa8c8',horn:'#6f88a8'}},
   rainbow: {name:'Rồng Cầu Vồng',   el:'light',   els:['light'],          rar:'epic',   gold:40, atk:80, hp:150, range:5, spd:8, pal:{body:'#ff9ec4',bd:'#fff0f8',wg:'#c9b3ff',st:'#b0569f',horn:'#8f3f86'}},
+  sakura:  {name:'Rồng Anh Đào',    el:'plant',   els:['plant'],          rar:'rare',   gold:19, atk:50, hp:124, range:4, spd:6, pal:{body:'#ff8fc7',bd:'#ffe3f1',wg:'#ffb3d9',st:'#e84f95',horn:'#c93a7a'}},
   fire:    {name:'Rồng Lửa',       el:'fire',    els:['fire'],           rar:'common', gold:10, atk:42, hp:100, range:3, spd:6, evo:'assets/dragons/evolution/fire.png',       sheet:{url:'assets/dragons/fire.png', frames:8, fps:7, act:1.25}},
   water:   {name:'Rồng Nước',      el:'water',   els:['water'],          rar:'common', gold:10, atk:38, hp:112, range:4, spd:5, evo:'assets/dragons/evolution/water.png',      sheet:{url:'assets/dragons/water.png', frames:8, fps:9, act:1.3}},
   plant:   {name:'Rồng Cây',       el:'plant',   els:['plant'],          rar:'common', gold:10, atk:36, hp:118, range:3, spd:5, evo:'assets/dragons/evolution/plant.png',      sheet:{url:'assets/dragons/plant.png', frames:8, fps:6, act:1.45}},
@@ -138,7 +139,12 @@ const DR_SPECIES={
   dark:    {name:'Hắc Long',       el:'dark',    els:['dark'],           rar:'epic',   gold:40, atk:86, hp:150, range:4, spd:7, evo:'assets/dragons/evolution/dark.png',       sheet:{url:'assets/dragons/dark.png', frames:8, fps:7, act:1.45}},
   light:   {name:'Thần Long',      el:'light',   els:['light'],          rar:'legendary',gold:70,atk:110,hp:180, range:5, spd:8, evo:'assets/dragons/evolution/light.png',      sheet:{url:'assets/dragons/light.png', frames:8, fps:7, act:1.6}},
 };
-const DR_SP_ORDER=['peach','candy','mint','lemon','berry','coral','cloud','rainbow','fire','water','plant','earth','electric','ice','lava','steam','swamp','storm','dark','light'];
+const DR_SP_PRIORITY=['peach','sakura','candy','mint','lemon','berry','coral','cloud','rainbow','fire','water','plant','earth','electric','ice','lava','steam','swamp','storm','dark','light'];
+// DR_SP_ORDER LUÔN gồm mọi loài trong DR_SPECIES: chỉ cần thêm rồng mới vào DR_SPECIES
+// là nó TỰ có trong Sách rồng + Vòng quay + đối thủ Đấu, không cần đụng danh sách này.
+const DR_SP_ORDER=(function(){ const o=DR_SP_PRIORITY.filter(sp=>DR_SPECIES[sp]);
+  for(const sp in DR_SPECIES) if(o.indexOf(sp)<0) o.push(sp);
+  return o; })();
 // Bốn giai đoạn vẫn dùng cùng một nhân vật/sprite; chỉ tăng vóc dáng và hiệu ứng.
 const DR_EVOLUTIONS=[
   {id:'baby',   name:'Baby',   minLv:1,  maxLv:4,  scale:1.00},
@@ -160,7 +166,7 @@ function drEvolutionNext(lv){
 const DR_BREED={
   'fire+fire':['fire','fire','lava','coral'],
   'water+water':['water','water','steam','candy','cloud'],
-  'plant+plant':['plant','plant','swamp','peach','mint'],
+  'plant+plant':['plant','plant','swamp','peach','mint','sakura'],
   'earth+earth':['earth','earth','lava'],
   'earth+fire':['lava','fire','earth'],
   'fire+water':['steam','fire','water'],
@@ -350,17 +356,32 @@ function drForgeGoldMult(){ return 1 + 0.05*(((drState&&drState.forge)?drState.f
 function drForgePowerMult(){ return 1 + 0.05*(((drState&&drState.forge)?drState.forge.power:0)||0); }
 function drForgeCost(level){ return {gems:3+level*2, ore:5+level*4}; }   // Lv0→1:3💎/5⛏️ … Lv9→10:21💎/41⛏️
 /* ---------- Hệ sao rồng: nâng sao -> tăng sinh vàng & sức mạnh ---------- */
-const DR_STAR_MAX=5;
+const DR_STAR_MAX=25;
 function drStar(d){ return Math.min(DR_STAR_MAX, Math.max(1, (d&&d.star)||1)); }
-function drStarMult(d){ return 1 + 0.25*(drStar(d)-1); }                    // 1★=1.0 → 5★=2.0
-function drStarCost(star){ return {gold:400*star*(star+1), gems:2*star}; }  // 1→2:800🪙/2💎 … 4→5:8000🪙/8💎
-function drStarPips(d){ const s=drStar(d); return '★'.repeat(s)+'☆'.repeat(DR_STAR_MAX-s); }
+// Piecewise: giữ nguyên 1★=1.0 → 5★=2.0 (tương thích save cũ), rồi +0.10/sao tới 25★=4.0x
+function drStarMult(d){ const s=drStar(d); return (1 + 0.25*(Math.min(s,5)-1)) + (s>5?0.10*(s-5):0); }
+function drStarCost(star){ return {gold:400*star*(star+1), gems:1+Math.floor(star/2)}; }  // vàng bậc 2; 💎 tăng nhẹ
+// Bậc sao (mỗi 5 sao đổi màu + tên độ hiếm) — hiển thị gọn "★N" thay vì 25 dấu sao
+function drStarTier(s){ return Math.min(4, Math.floor((((s||1)-1))/5)); }
+const DR_STAR_COL=['#e8a06a','#dfe6ee','#ffd24a','#c89bf0','#8ef0ff'];
+const DR_STAR_TIERNAME=['Thường','Hiếm','Quý','Sử thi','Cực hiếm'];
+function drStarCol(s){ return DR_STAR_COL[drStarTier(s)]; }
+function drStarBadge(d){ const s=drStar(d); return `<span class="dr-starnum" style="--sc:${drStarCol(s)}">★${s}</span>`; }
+function drStarPips(d){ const s=drStar(d); return `${drStarBadge(d)} <small class="dr-star-tier">${DR_STAR_TIERNAME[drStarTier(s)]}</small>`; }
 const DR_BLESS_COST=5;                                   // 💎 để "chúc phúc" khi lai
 function drRarRank(sp){ return ['common','rare','epic','legendary'].indexOf((DR_SPECIES[sp]||DR_SPECIES.fire).rar); }
 const DR_PITY_MAX=4;                                      // lai 4 lần liền ra rồng thường -> lần sau CHẮC CHẮN ra hiếm
+// Gom loài có thể ra từ 1 cặp hệ. Cùng hệ -> TỰ thêm mọi loài hiếm cùng hệ (kể cả
+// rồng mới thêm sau), nên rồng mới chỉ cần gắn 'el' là auto lai được từ cặp cùng hệ.
+function drBreedPool(elA,elB){
+  let pool=(DR_BREED[[elA,elB].sort().join('+')]||[]).slice();
+  if(!pool.length) pool=[elA===elB?elA:(Math.random()<.5?elA:elB)];
+  if(elA===elB){ for(const sp in DR_SPECIES){ const s=DR_SPECIES[sp];
+    if(s.el===elA && drRarRank(sp)>=1 && pool.indexOf(sp)<0) pool.push(sp); } }
+  return pool;
+}
 function drBreedResult(elA,elB,blessed){
-  const key=[elA,elB].sort().join('+');
-  const pool=DR_BREED[key]|| [elA===elB?elA:(Math.random()<.5?elA:elB)];
+  const pool=drBreedPool(elA,elB);
   const rarest=pool.slice().sort((x,y)=>drRarRank(y)-drRarRank(x))[0];
   if(blessed) return rarest;                              // chúc phúc: CHẮC CHẮN ra con hiếm nhất
   if((drState.pity||0)>=DR_PITY_MAX && drRarRank(rarest)>=1) return rarest;   // đủ pity -> ép ra hiếm
@@ -571,13 +592,13 @@ function drRenderDragons(){
     const slot=DR_SLOTS[i%DR_SLOTS.length];
     const roam=document.createElement('div'); roam.className='dr-roam'; roam.dataset.idx=i;
     roam.style.left=slot[0]+'%'; roam.style.top=slot[1]+'%'; roam.style.zIndex=10+Math.round(slot[1]);
-    const bob=document.createElement('div'); bob.className=`dr-bob dr-star-${st} dr-stage-${evo.id}`;
+    const bob=document.createElement('div'); bob.className=`dr-bob dr-star-${Math.min(st,5)} dr-stage-${evo.id}`;
     bob.style.animationDelay=(-Math.random()*2.6).toFixed(2)+'s';
     bob.style.setProperty('--acc',(DR_PAL[s.el]||{}).body||'#8fe0ff');
     const scale=(evo.scale+Math.max(0,(d.lv||1)-evo.minLv)*0.012).toFixed(3);
     bob.innerHTML=`<span class="dr-aura"></span>`
       +`<div class="dr-artwrap dr-facing" style="--dScale:${scale}">${drDragonArt(d)}</div>`
-      +(st>1?`<span class="dr-starbadge">${'★'.repeat(st)}</span>`:'')
+      +(st>1?`<span class="dr-starbadge" style="color:${drStarCol(st)}">★${st}</span>`:'')
       +`<span class="dr-lvtag">Lv${d.lv} · ${evo.name}</span>`;
     roam.appendChild(bob); wrap.appendChild(roam);
     drScheduleDragonAction(bob,d.sp);
@@ -707,7 +728,7 @@ function drOpen(act){
 function drDragonCard(d,i,extra){
   const s=DR_SPECIES[d.sp], evo=drEvolution(d.lv);
   return `<button class="dr-dcard" data-idx="${i}" ${extra||''}><span class="dr-dcard-mini">${drDragonArt(d)}</span>`
-    +`<b>${esc(s.name)}</b><span class="dr-lv">Lv${d.lv} · ${evo.name}</span>${drRarChip(s.rar)}<span class="dr-cardstar">${'★'.repeat(drStar(d))}</span></button>`;
+    +`<b>${esc(s.name)}</b><span class="dr-lv">Lv${d.lv} · ${evo.name}</span>${drRarChip(s.rar)}<span class="dr-cardstar">${drStarBadge(d)}</span></button>`;
 }
 
 /* ---------- Chi tiết rồng: cho ăn / bán / lai ---------- */
@@ -2072,4 +2093,25 @@ function drShowRebirth(keepConfirm){
   const bd=drModal('🔮 Chuyển Sinh', body, true);
   const go=$('drRebGo'); if(go) go.onclick=()=>{ if(!drRebConfirm){ drRebConfirm=true; drShowRebirth(true); return; } drRebConfirm=false; drDoRebirth(); };
   bd.addEventListener('click',e=>{ const b=e.target.closest('[data-rebup]'); if(b) drBuyRebUp(b.dataset.rebup); });
+}
+
+/* ---------- Tự kiểm tra loài rồng (chạy drSpeciesAudit() trong console) ----------
+   Báo loài nào CHƯA thể sở hữu (không lai được & không phải rồng thường khởi đầu &
+   không quay được), và công thức lai tham chiếu loài/hệ lạ. Rồng mới thêm vào
+   DR_SPECIES sẽ tự vào Sách rồng/Vòng quay; nếu có 'el' thì tự lai được cặp cùng hệ. */
+function drSpeciesAudit(){
+  const problems=[];
+  const allEls=new Set(Object.values(DR_SPECIES).map(s=>s.el));
+  // loài nào ra được từ bảng lai (mọi cặp hệ)?
+  const els=[...allEls]; const breedable=new Set();
+  for(const a of els) for(const b of els){ try{ drBreedPool(a,b).forEach(sp=>breedable.add(sp)); }catch(_){}}
+  for(const sp in DR_SPECIES){ const s=DR_SPECIES[sp], rr=drRarRank(sp);
+    const canSpin=rr>=1, canBreed=breedable.has(sp), isStarter=(rr===0);
+    if(!canSpin && !canBreed && !isStarter) problems.push('KHÔNG SỞ HỮU ĐƯỢC: '+sp+' ('+s.name+')');
+    if(DR_SP_ORDER.indexOf(sp)<0) problems.push('THIẾU trong DR_SP_ORDER: '+sp);
+  }
+  for(const key in DR_BREED) DR_BREED[key].forEach(sp=>{ if(!DR_SPECIES[sp]) problems.push('Công thức "'+key+'" ra loài lạ: '+sp); });
+  if(problems.length){ console.warn('⚠️ drSpeciesAudit — '+problems.length+' vấn đề:'); problems.forEach(p=>console.warn('  • '+p)); }
+  else console.log('✅ drSpeciesAudit: '+Object.keys(DR_SPECIES).length+' loài rồng đều sở hữu được (lai/quay) và có trong Sách rồng.');
+  return problems;
 }

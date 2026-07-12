@@ -1,4 +1,4 @@
-const CACHE = 'tienlen-v51-float-dock';
+const CACHE = 'tienlen-v54-25stars';
 const ASSETS = [
   './', './index.html', './styles.css', './manifest.webmanifest', './icon-192.png', './icon-512.png',
   './js/config.js', './js/engine.js', './js/state.js', './js/game.js', './js/ui.js', './js/daorong.js', './js/social.js',
