@@ -598,8 +598,12 @@ function drRenderDragons(){
     bob.style.setProperty('--tcol',drStarCol(st));
     bob.style.setProperty('--au',(0.22+st*0.026).toFixed(3));      // độ sáng quầng: tăng liên tục theo sao (★1≈.25 → ★25≈.87)
     bob.style.setProperty('--asz',(114+st*2.4).toFixed(0)+'%');    // kích thước quầng theo sao
+    bob.style.setProperty('--odur',(Math.max(2.6, 7-st*0.17)).toFixed(2)+'s'); // xoay nhanh dần theo sao
+    let orbit='';                                                  // hạt sáng bay quanh: cứ ~2 sao +1 hạt (mỗi cấp sao đều khác)
+    const pc=Math.min(10, Math.floor(st/2)+1);
+    for(let k=0;k<pc;k++) orbit+=`<i style="transform:rotate(${Math.round(k/pc*360)}deg) translateY(-44px)"></i>`;
     const scale=(evo.scale+Math.max(0,(d.lv||1)-evo.minLv)*0.012).toFixed(3);
-    bob.innerHTML=`<span class="dr-aura"></span><span class="dr-orbit"></span>`
+    bob.innerHTML=`<span class="dr-aura"></span><span class="dr-orbit">${orbit}</span>`
       +`<div class="dr-artwrap dr-facing" style="--dScale:${scale}">${drDragonArt(d)}</div>`
       +`<span class="dr-starbadge">★${st}</span>`
       +`<span class="dr-lvtag">Lv${d.lv} · ${evo.name}</span>`;
@@ -1125,7 +1129,7 @@ function drShowFeed(){
       <div class="dr-feed-mid"><b>${esc(s.name)} · Lv${d.lv} · ${drEvolution(d.lv).name}</b><div class="dr-feedbar sm"><i style="width:${pct}%"></i></div></div>
       <button class="dr-btn sm" data-feed="${i}" ${d.lv>=15?'disabled':''}>🍖 +10</button></div>`; }).join('');
   const body=`<div class="dr-feed-top">Bạn có <b>${fmtCoin(drState.food)} 🍖</b> · <button class="dr-linkbtn" id="drGetFood">＋ Mua thức ăn</button></div>
-    <div class="dr-dlist">${list}</div>`;
+    <div class="dr-feedlist">${list}</div>`;
   drModal('Cho ăn', body);
   $('drGetFood').onclick=drShowShop;
   $('drModal').querySelectorAll('[data-feed]').forEach(b=>b.onclick=()=>drFeedInline(+b.dataset.feed));

@@ -948,16 +948,13 @@
   .dr-tier-4 .dr-aura::after{opacity:.8; animation-duration:2.4s;
     background:conic-gradient(from 0deg,#ff6b9d,#ffd24a,#8ef0ff,#c89bf0,#ff6b9d);}   /* vòng cầu vồng cho Cực hiếm */
   @keyframes drRingSpin{to{transform:translate(-50%,-50%) rotate(360deg);}}
-  /* Hạt sáng bay quanh cho bậc Sử thi (≥3) trở lên */
-  .dr-orbit{position:absolute; left:50%; top:50%; width:104%; height:80%; z-index:2; pointer-events:none; opacity:0;
-    transform:translate(-50%,-50%);}
-  .dr-tier-2 .dr-orbit,.dr-tier-3 .dr-orbit,.dr-tier-4 .dr-orbit{opacity:1; animation:drOrbit 5s linear infinite;}
-  .dr-tier-4 .dr-orbit{animation-duration:3.4s;}
-  .dr-orbit::before,.dr-orbit::after{content:''; position:absolute; left:50%; width:7px; height:7px; margin-left:-3.5px;
-    border-radius:50%; background:#fff; box-shadow:0 0 8px 1.5px var(--tcol,#fff);}
-  .dr-orbit::before{top:-3px;} .dr-orbit::after{bottom:-3px;}
-  .dr-tier-4 .dr-orbit::before,.dr-tier-4 .dr-orbit::after{width:8px; height:8px; margin-left:-4px;}
-  @keyframes drOrbit{to{transform:translate(-50%,-50%) rotate(360deg);}}
+  /* Hạt sáng bay quanh — SỐ LƯỢNG tăng theo TỪNG cấp sao (JS sinh), xoay nhanh dần */
+  .dr-orbit{position:absolute; left:50%; top:50%; width:0; height:0; z-index:2; pointer-events:none;
+    animation:drOrbit var(--odur,5s) linear infinite;}
+  .dr-orbit i{position:absolute; left:0; top:0; width:6px; height:6px; margin:-3px 0 0 -3px; border-radius:50%;
+    background:#fff; box-shadow:0 0 7px 1.5px var(--tcol,#ffd24a); animation:drSpark 1.6s ease-in-out infinite;}
+  .dr-tier-3 .dr-orbit i,.dr-tier-4 .dr-orbit i{width:7px; height:7px; margin:-3.5px 0 0 -3.5px; box-shadow:0 0 9px 2px var(--tcol,#fff);}
+  @keyframes drOrbit{to{transform:rotate(360deg);}}
   /* Badge sao: pill nổi bật, viền + glow theo màu bậc; càng bậc cao càng to */
   .dr-starbadge{position:absolute; top:-7px; left:50%; transform:translateX(-50%); z-index:4; pointer-events:none;
     font:900 10px/1 'Baloo 2','Nunito',sans-serif; color:#fff; background:rgba(10,26,28,.92);
