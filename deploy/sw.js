@@ -1,4 +1,4 @@
-const CACHE = 'tienlen-v42-runes';
+const CACHE = 'tienlen-v44-tower';
 const ASSETS = [
   './', './index.html', './styles.css', './manifest.webmanifest', './icon-192.png', './icon-512.png',
   './js/config.js', './js/engine.js', './js/state.js', './js/game.js', './js/ui.js', './js/daorong.js', './js/social.js',

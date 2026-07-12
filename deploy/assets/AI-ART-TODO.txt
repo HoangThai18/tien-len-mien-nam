@@ -36,7 +36,7 @@ B) ICON CHỨC NĂNG (đang là emoji trên thanh dock)  →  deploy/assets/drag
 ────────────────────────────────────────────────────────────────────────
 Tuỳ chọn. Muốn icon đẹp thay emoji thì tạo PNG VUÔNG ~128px, nền trong suốt:
   🏝️ Khu đảo · 🌾 Nông trại · 🗺️ Phiêu lưu · 👹 Boss · 📅 Điểm danh
-  🏆 Thành tựu · 👑 BXH · 👫 Bạn bè · 🌴 Trang trí · 🎉 Sự kiện · 💎 Cường hóa
+  🏆 Thành tựu · 👑 BXH · 👫 Bạn bè · 🌴 Trang trí · 🎉 Sự kiện · 💎 Cường hóa · 🏅 Đấu hạng
   Đá cường hóa (3 loại, mỗi loại 3 bậc T1/T2/T3): 🔴 Đá Công · 🟢 Đá Thủ · 🔵 Đá Tốc
 (Đã có sẵn: shop, quest, breed, food, arena, codex, egg, gem, gold, rock, star, gift)
 
