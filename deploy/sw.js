@@ -1,4 +1,4 @@
-const CACHE = 'tienlen-v68-shop-plus';
+const CACHE = 'tienlen-v70-new-dragons';
 const ASSETS = [
   './', './index.html', './styles.css', './manifest.webmanifest', './icon-192.png', './icon-512.png',
   './js/config.js', './js/engine.js', './js/state.js', './js/game.js', './js/ui.js', './js/daorong.js', './js/maubinh.js', './js/social.js',
@@ -10,6 +10,10 @@ const ASSETS = [
   './assets/dragons/lava.webp', './assets/dragons/steam.webp', './assets/dragons/swamp.webp',
   './assets/dragons/storm.webp', './assets/dragons/dark.webp', './assets/dragons/light.webp',
   './assets/dragons/peach.webp', './assets/dragons/candy.webp', './assets/dragons/sakura.webp',
+  './assets/dragons/rose.webp', './assets/dragons/lotus.webp', './assets/dragons/peony.webp',
+  './assets/dragons/bubblegum.webp', './assets/dragons/starlight.webp', './assets/dragons/aurora.webp',
+  './assets/dragons/carnival.webp', './assets/dragons/prism.webp', './assets/dragons/kaleidoscope.webp',
+  './assets/dragons/rainbow.webp',
   './assets/dragons/evolution/fire.webp', './assets/dragons/evolution/water.webp',
   './assets/dragons/evolution/plant.webp', './assets/dragons/evolution/earth.webp',
   './assets/dragons/evolution/electric.webp', './assets/dragons/evolution/ice.webp',

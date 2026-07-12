@@ -119,12 +119,17 @@ function drModalFeature(title){
 const DR_SPECIES={
   peach:   {name:'Rồng Đào Hồng',   el:'plant',   els:['plant'],          rar:'rare',   gold:18, atk:48, hp:125, range:4, spd:6, evo:'assets/dragons/evolution/peach.webp', sheet:{url:'assets/dragons/peach.webp',frames:8,fps:7,act:1.35}, pal:{body:'#ff9ec4',bd:'#ffe0ee',wg:'#ffc2dc',st:'#e85b93',horn:'#d43f7a'}},
   candy:   {name:'Rồng Kẹo Ngọt',   el:'water',   els:['water'],          rar:'rare',   gold:20, atk:52, hp:120, range:4, spd:7, evo:'assets/dragons/evolution/candy.webp', sheet:{url:'assets/dragons/candy.webp',frames:8,fps:8,act:1.25}, pal:{body:'#c89bf0',bd:'#f4e6ff',wg:'#dcc2f5',st:'#8f5ecf',horn:'#7346b3'}},
-  mint:    {name:'Rồng Bạc Hà',     el:'plant',   els:['plant'],          rar:'rare',   gold:19, atk:46, hp:130, range:4, spd:6, pal:{body:'#9be7c4',bd:'#e4fbf0',wg:'#bff2dc',st:'#3fae86',horn:'#2f9670'}},
-  lemon:   {name:'Rồng Chanh',      el:'electric',els:['electric'],       rar:'rare',   gold:21, atk:58, hp:112, range:5, spd:8, pal:{body:'#ffe37a',bd:'#fff9d6',wg:'#ffee9e',st:'#d9a516',horn:'#b9860d'}},
-  berry:   {name:'Rồng Việt Quất',  el:'ice',     els:['ice'],            rar:'rare',   gold:20, atk:50, hp:122, range:4, spd:6, pal:{body:'#8aa0ff',bd:'#e6ebff',wg:'#b3c0ff',st:'#5566cc',horn:'#3f4ba3'}},
-  coral:   {name:'Rồng San Hô',     el:'fire',    els:['fire'],           rar:'rare',   gold:20, atk:54, hp:118, range:4, spd:7, pal:{body:'#ff9e7a',bd:'#ffe6dc',wg:'#ffc2ac',st:'#e8663f',horn:'#c24a25'}},
-  cloud:   {name:'Rồng Mây',        el:'water',   els:['water'],          rar:'rare',   gold:19, atk:48, hp:126, range:4, spd:6, pal:{body:'#cfe3ff',bd:'#f0f7ff',wg:'#e0eeff',st:'#8fa8c8',horn:'#6f88a8'}},
-  rainbow: {name:'Rồng Cầu Vồng',   el:'light',   els:['light'],          rar:'epic',   gold:40, atk:80, hp:150, range:5, spd:8, pal:{body:'#ff9ec4',bd:'#fff0f8',wg:'#c9b3ff',st:'#b0569f',horn:'#8f3f86'}},
+  // ===== Rồng CUTE/COLORFUL có sprite thật (8 khung) — thêm 2025-07 =====
+  rose:        {name:'Rồng Hoa Hồng',  el:'plant', els:['plant'], rar:'rare',      gold:20, atk:50, hp:126, range:4, spd:6, sheet:{url:'assets/dragons/rose.webp',frames:8,fps:7,act:1.3}},
+  lotus:       {name:'Rồng Hoa Sen',   el:'water', els:['water'], rar:'rare',      gold:20, atk:48, hp:130, range:4, spd:6, sheet:{url:'assets/dragons/lotus.webp',frames:8,fps:7,act:1.35}},
+  peony:       {name:'Rồng Mẫu Đơn',   el:'plant', els:['plant'], rar:'rare',      gold:21, atk:52, hp:124, range:4, spd:6, sheet:{url:'assets/dragons/peony.webp',frames:8,fps:7,act:1.3}},
+  bubblegum:   {name:'Rồng Kẹo Bông',  el:'water', els:['water'], rar:'rare',      gold:20, atk:46, hp:132, range:4, spd:7, sheet:{url:'assets/dragons/bubblegum.webp',frames:8,fps:8,act:1.25}},
+  starlight:   {name:'Rồng Ánh Sao',   el:'light', els:['light'], rar:'epic',      gold:40, atk:78, hp:142, range:5, spd:8, sheet:{url:'assets/dragons/starlight.webp',frames:8,fps:7,act:1.4}},
+  aurora:      {name:'Rồng Cực Quang', el:'ice',   els:['ice'],   rar:'epic',      gold:38, atk:74, hp:146, range:5, spd:7, sheet:{url:'assets/dragons/aurora.webp',frames:8,fps:7,act:1.35}},
+  carnival:    {name:'Rồng Lễ Hội',    el:'fire',  els:['fire'],  rar:'epic',      gold:38, atk:78, hp:138, range:4, spd:7, sheet:{url:'assets/dragons/carnival.webp',frames:8,fps:7,act:1.3}},
+  prism:       {name:'Rồng Lăng Kính', el:'light', els:['light'], rar:'epic',      gold:42, atk:82, hp:148, range:5, spd:8, sheet:{url:'assets/dragons/prism.webp',frames:8,fps:7,act:1.3}},
+  kaleidoscope:{name:'Rồng Vạn Hoa',   el:'light', els:['light'], rar:'legendary', gold:66, atk:106,hp:176, range:5, spd:8, sheet:{url:'assets/dragons/kaleidoscope.webp',frames:8,fps:7,act:1.45}},
+  rainbow:     {name:'Rồng Cầu Vồng',  el:'light', els:['light'], rar:'epic',      gold:40, atk:80, hp:150, range:5, spd:8, sheet:{url:'assets/dragons/rainbow.webp',frames:8,fps:7,act:1.4}},
   sakura:  {name:'Rồng Anh Đào',    el:'plant',   els:['plant'],          rar:'rare',   gold:19, atk:50, hp:124, range:4, spd:6, fx:'petal', evo:'assets/dragons/evolution/sakura.webp', sheet:{url:'assets/dragons/sakura.webp',frames:1,fps:1}, pal:{body:'#ff8fc7',bd:'#ffe3f1',wg:'#ffb3d9',st:'#e84f95',horn:'#c93a7a'}},
   fire:    {name:'Rồng Lửa',       el:'fire',    els:['fire'],           rar:'common', gold:10, atk:42, hp:100, range:3, spd:6, evo:'assets/dragons/evolution/fire.webp',       sheet:{url:'assets/dragons/fire.webp', frames:8, fps:7, act:1.25}},
   water:   {name:'Rồng Nước',      el:'water',   els:['water'],          rar:'common', gold:10, atk:38, hp:112, range:4, spd:5, evo:'assets/dragons/evolution/water.webp',      sheet:{url:'assets/dragons/water.webp', frames:8, fps:9, act:1.3}},
@@ -139,7 +144,7 @@ const DR_SPECIES={
   dark:    {name:'Hắc Long',       el:'dark',    els:['dark'],           rar:'epic',   gold:40, atk:86, hp:150, range:4, spd:7, evo:'assets/dragons/evolution/dark.webp',       sheet:{url:'assets/dragons/dark.webp', frames:8, fps:7, act:1.45}},
   light:   {name:'Thần Long',      el:'light',   els:['light'],          rar:'legendary',gold:70,atk:110,hp:180, range:5, spd:8, evo:'assets/dragons/evolution/light.webp',      sheet:{url:'assets/dragons/light.webp', frames:8, fps:7, act:1.6}},
 };
-const DR_SP_PRIORITY=['peach','sakura','candy','mint','lemon','berry','coral','cloud','rainbow','fire','water','plant','earth','electric','ice','lava','steam','swamp','storm','dark','light'];
+const DR_SP_PRIORITY=['peach','sakura','candy','rose','lotus','peony','bubblegum','starlight','aurora','carnival','prism','kaleidoscope','rainbow','fire','water','plant','earth','electric','ice','lava','steam','swamp','storm','dark','light'];
 // DR_SP_ORDER LUÔN gồm mọi loài trong DR_SPECIES: chỉ cần thêm rồng mới vào DR_SPECIES
 // là nó TỰ có trong Sách rồng + Vòng quay + đối thủ Đấu, không cần đụng danh sách này.
 const DR_SP_ORDER=(function(){ const o=DR_SP_PRIORITY.filter(sp=>DR_SPECIES[sp]);
@@ -164,9 +169,9 @@ function drEvolutionNext(lv){
 }
 /* Bảng lai: cặp nguyên tố (sắp xếp) -> loài có thể ra (ngẫu nhiên) */
 const DR_BREED={
-  'fire+fire':['fire','fire','lava','coral'],
-  'water+water':['water','water','steam','candy','cloud'],
-  'plant+plant':['plant','plant','swamp','peach','mint','sakura'],
+  'fire+fire':['fire','fire','lava','carnival'],
+  'water+water':['water','water','steam','candy','lotus','bubblegum'],
+  'plant+plant':['plant','plant','swamp','peach','rose','peony','sakura'],
   'earth+earth':['earth','earth','lava'],
   'earth+fire':['lava','fire','earth'],
   'fire+water':['steam','fire','water'],
@@ -175,9 +180,9 @@ const DR_BREED={
   'earth+electric':['electric','earth','storm'],   // key phải theo abc (earth<electric) — trước ghi 'electric+earth' nên KHÔNG bao giờ khớp
   'ice+plant':['ice','plant','swamp'],
   'dark+fire':['dark','lava','fire'],
-  'dark+dark':['dark','dark','light','rainbow'],
-  'electric+electric':['electric','electric','storm','lemon'],
-  'ice+ice':['ice','ice','storm','berry'],
+  'dark+dark':['dark','dark','light','rainbow','prism','starlight'],
+  'electric+electric':['electric','electric','storm'],
+  'ice+ice':['ice','ice','storm','aurora'],
   // --- công thức mới: lấp "vùng chết", cho lai tới MỌI hệ chỉ từ 3 rồng khởi đầu ---
   'fire+plant':['earth','plant','fire'],          // mở khoá ĐẤT
   'earth+plant':['electric','earth','plant'],     // mở khoá ĐIỆN
@@ -191,8 +196,14 @@ const DR_BREED={
 /* Khắc chế nguyên tố (đấu trường) */
 const DR_ADV={water:'fire', fire:'plant', plant:'water', earth:'electric', electric:'ice', ice:'plant', dark:'light', light:'dark'};
 
-const DR_SLOTS=[[30,32],[58,28],[44,47],[31,61],[66,56],[48,68],[73,40],[21,47],
-  [15,58],[85,52],[38,24],[62,70]];      // 8 ô gốc + 4 ô mở ra khi dọn chướng ngại
+// 12 ô rải ĐỀU khắp đảo theo 4 hàng so le (tránh dồn giữa gây chồng rồng).
+// x 15–83%, y 22–74% — hàng dưới render đè hàng trên (z theo y) tạo chiều sâu.
+const DR_SLOTS=[
+  [30,24],[50,22],[70,24],            // hàng sau (trên)
+  [15,42],[37,40],[60,42],[83,41],    // hàng giữa — rộng nhất
+  [25,58],[48,60],[71,58],            // hàng dưới-giữa
+  [38,74],[62,74]                     // hàng trước (dưới)
+];
 const DR_DECO=[['🌴',12,20,1.5],['🌸',82,42,1],['🍄',20,72,1],['🌷',75,73,1],['✨',52,17,.9],['🌿',88,60,1.1]];
 const DR_BASE_CAP=8;                      // số ô nuôi rồng ban đầu (giữ nguyên như bản cũ, không nerf save cũ)
 const DR_MAX=12;                          // trần tối đa sau khi mở rộng đảo
@@ -629,7 +640,10 @@ function drRenderDragons(){
     roam.appendChild(bob); wrap.appendChild(roam);
     drScheduleDragonAction(bob,d.sp);
     if(!drReduce){
-      const dist=42+Math.random()*30, dx=slot[0]>58?-dist:dist, dy=Math.random()*18-9;
+      // Rồng biên đi VÀO trong cho khỏi rớt mép; rồng giữa xen kẽ trái/phải theo chỉ số
+      // (KHÔNG cùng dồn về tâm như trước) + biên độ nhỏ lại để đỡ chồng lên nhau.
+      const dir=slot[0]<24?1:slot[0]>76?-1:(i%2?1:-1);
+      const dist=16+Math.random()*20, dx=dir*dist, dy=Math.random()*12-6;
       const dur=Math.max(6200,12400-(s.spd||5)*560)+Math.random()*2600;
       roam.animate([
         {transform:'translate(0,0)'},
@@ -1138,11 +1152,13 @@ function drClaimMail(i){
 }
 
 /* ---------- Shop ---------- */
-const DR_SHOP_RARE_POOL=['electric','ice','lava','steam','swamp','storm','dark'];   // trứng hiếm: chỉ loài đã có sprite
+const DR_SHOP_RARE_POOL=['electric','ice','lava','steam','swamp','storm','dark','rose','lotus','peony','bubblegum','aurora','carnival','prism','starlight','rainbow'];  // trứng hiếm: loài hiếm/epic đã có sprite
+const DR_SHOP_LEGEND_POOL=['kaleidoscope','light'];   // trứng huyền thoại
 function drShowShop(){
   const body=`<div class="dr-shop-grid">
     <div class="dr-shop-item"><div class="dr-shop-ic">${drIcon('egg')}</div><b>Trứng thường</b><small>Nở 1 rồng nguyên tố cơ bản</small><button class="dr-btn" id="drBuyEgg">250 🪙</button></div>
-    <div class="dr-shop-item"><div class="dr-shop-ic">${drIcon('star')}</div><b>Trứng HIẾM</b><small>Nở rồng hiếm/epic (Điện, Băng, Bão, Hắc Long…)</small><button class="dr-btn alt" id="drBuyEggRare">40 💎</button></div>
+    <div class="dr-shop-item"><div class="dr-shop-ic">${drIcon('star')}</div><b>Trứng HIẾM</b><small>Nở rồng hiếm/epic (Cực Quang, Lễ Hội, Hoa Sen, Cầu Vồng…)</small><button class="dr-btn alt" id="drBuyEggRare">40 💎</button></div>
+    <div class="dr-shop-item"><div class="dr-shop-ic">${drIcon('gift')}</div><b>Trứng HUYỀN THOẠI</b><small>Chắc chắn rồng huyền thoại (Vạn Hoa / Thần Long)</small><button class="dr-btn alt" id="drBuyEggLegend">120 💎</button></div>
     <div class="dr-shop-item"><div class="dr-shop-ic">${drIcon('food')}</div><b>Thức ăn ×20</b><small>Cho rồng lên cấp</small><button class="dr-btn" id="drBuyFood">100 🪙</button></div>
     <div class="dr-shop-item"><div class="dr-shop-ic">${drIcon('food')}</div><b>Thức ăn ×100</b><small>Gói lớn tiết kiệm</small><button class="dr-btn" id="drBuyFood100">400 🪙</button></div>
     <div class="dr-shop-item"><div class="dr-shop-ic">${drIcon('gem')}</div><b>Đổi 30 🍖</b><small>Mua thức ăn bằng kim cương</small><button class="dr-btn alt" id="drBuyFood2">3 💎</button></div>
@@ -1157,6 +1173,9 @@ function drShowShop(){
   $('drBuyEggRare').onclick=()=>{ if(full())return; if(drState.gems<40){toast('Thiếu 💎 (cần 40)');return;}
     drState.gems-=40; const sp=DR_SHOP_RARE_POOL[Math.floor(Math.random()*DR_SHOP_RARE_POOL.length)]; drState.dragons.push({sp,lv:1,fed:0,star:1});
     drAddXp(30); if(typeof confetti==='function') confetti(); drRenderHud(); drRenderDragons(); drSave(); toast('✨ Trứng hiếm nở: '+DR_SPECIES[sp].name+'!'); };
+  $('drBuyEggLegend').onclick=()=>{ if(full())return; if(drState.gems<120){toast('Thiếu 💎 (cần 120)');return;}
+    drState.gems-=120; const sp=DR_SHOP_LEGEND_POOL[Math.floor(Math.random()*DR_SHOP_LEGEND_POOL.length)]; drState.dragons.push({sp,lv:1,fed:0,star:1});
+    drAddXp(50); if(typeof confetti==='function') confetti(); drRenderHud(); drRenderDragons(); drSave(); toast('🌟 Trứng huyền thoại nở: '+DR_SPECIES[sp].name+'!'); };
   $('drBuyFood').onclick=()=>{ if(drState.gold<100){toast('Thiếu vàng');return;} drState.gold-=100; drState.food+=20; drRenderHud(); drBump('drFood'); drSave(); toast('+20 🍖'); };
   $('drBuyFood100').onclick=()=>{ if(drState.gold<400){toast('Thiếu vàng');return;} drState.gold-=400; drState.food+=100; drRenderHud(); drBump('drFood'); drSave(); toast('+100 🍖'); };
   $('drBuyFood2').onclick=()=>{ if(drState.gems<3){toast('Thiếu 💎');return;} drState.gems-=3; drState.food+=30; drRenderHud(); drBump('drFood'); drSave(); toast('+30 🍖'); };
