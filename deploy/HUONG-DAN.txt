@@ -36,9 +36,18 @@ Game giờ có ĐĂNG NHẬP + VÍ XU nên phải bật thêm Authentication.
               ".write": "auth != null && (auth.uid === $uid || auth.token.email === 'Phanthai18072001@gmail.com')",
               "coins": { ".validate": "newData.isNumber()" },
               "wins":  { ".validate": "newData.isNumber()" },
-              "games": { ".validate": "newData.isNumber()" } } }
+              "games": { ".validate": "newData.isNumber()" } } },
+          "leaderboard": {
+            ".read": "auth != null",
+            "$uid": { ".write": "auth != null && auth.uid === $uid" } },
+          "cardrank": {
+            ".read": "auth != null",
+            "$uid": { ".write": "auth != null && auth.uid === $uid" } }
         }
       }
+
+    → "leaderboard" = BXH Đảo Rồng (lực chiến rồng);  "cardrank" = BXH game bài (ELO/xu).
+      Cả hai là bản CÔNG KHAI (KHÔNG có email); mỗi người chỉ ghi ô của mình, mọi người đọc được.
 
     → Người thường chỉ sửa ví CỦA MÌNH; tài khoản ADMIN (email khai ở trên) được
       xem danh sách + cộng/đặt xu cho mọi người. Phòng chơi thì ai đăng nhập cũng vào.

@@ -259,9 +259,17 @@ function showGameSelect(){
     <h1 style="font-size:30px">Chọn loại bài</h1>
     <p class="sub">Chọn trò muốn chơi · <span class="hl">Tiến Lên</span> &amp; <span class="hl">Đảo Rồng</span> đang mở, thêm trò sắp ra mắt.</p>
     <div class="game-list">${cards}</div>
+    <div class="hub-row">
+      <button class="btn block ghost" id="gsQuest">🎯 Nhiệm vụ</button>
+      <button class="btn block ghost" id="gsBxh">🏆 Xếp hạng</button>
+    </div>
     <button class="linkish" id="gsSignOut">Đăng xuất${profile&&profile.email?` (${esc(profile.email)})`:''}</button>`;
+  $('overlay').classList.remove('dr-boot');
   $('overlay').style.display='flex';
   renderCoinBar();
+  // Bọc an toàn: 1 hàm phụ thiếu (bản cache cũ…) cũng KHÔNG được làm hỏng cả sảnh chọn game.
+  $('gsQuest').onclick=()=>{ if(typeof showQuests==='function') showQuests(); };
+  $('gsBxh').onclick=()=>{ if(typeof showLeaderboard==='function') showLeaderboard(); };
   document.querySelectorAll('.game-card').forEach(btn=>btn.onclick=()=>{
     if(Date.now()-gsOpenAt<450) return;   // vừa mở sảnh <0.45s -> là cú chạm dội của nút back, bỏ qua
     const g=GAME_TYPES.find(x=>x.id===btn.dataset.game);
@@ -273,6 +281,66 @@ function showGameSelect(){
     showMenu();
   });
   $('gsSignOut').onclick=signOut;
+}
+/* ---------- Nhiệm vụ ngày (kiếm xu) ---------- */
+function showQuests(){
+  const q=(profile&&profile.quests&&profile.quests.day===todayKey())?profile.quests:questFresh();
+  const rows=QUESTS.map(def=>{
+    const p=Math.min(def.target,def.prog(q)), done=def.prog(q)>=def.target;
+    const claimed=q.claimed&&q.claimed[def.id];
+    const pct=Math.round(p/def.target*100);
+    const act=claimed?`<span class="q-tag done">✓ Đã nhận</span>`
+      :done?`<button class="btn sm" data-claim="${def.id}">Nhận ${fmtCoin(def.reward)}🪙</button>`
+      :`<span class="q-tag">${def.prog(q)}/${def.target}</span>`;
+    return `<div class="q-row${claimed?' claimed':''}"><span class="q-ic">${def.ic}</span>
+      <div class="q-mid"><b>${esc(def.name)}</b><i class="q-bar"><em style="width:${pct}%"></em></i>
+        <small>Thưởng ${fmtCoin(def.reward)} 🪙</small></div>${act}</div>`;
+  }).join('');
+  $('panel').innerHTML=`
+    <div class="logo">Nhiệm vụ</div>
+    <h1 style="font-size:24px">🎯 Nhiệm vụ ngày</h1>
+    <p class="sub">Chơi bài (Tiến Lên · Mậu Binh) để hoàn thành và nhận xu. Làm mới mỗi ngày.</p>
+    <div class="q-list">${rows}</div>
+    <button class="linkish" id="qBack">← Về sảnh</button>`;
+  $('overlay').style.display='flex'; renderCoinBar();
+  document.querySelectorAll('[data-claim]').forEach(b=>b.onclick=async()=>{
+    b.disabled=true;
+    const res=await claimQuest(b.dataset.claim);
+    if(res.ok){ if(res.val) profile=res.val; renderCoinBar(); toast('Đã nhận thưởng! 🪙'); showQuests(); }
+    else{ b.disabled=false; toast('Chưa nhận được — thử lại'); }
+  });
+  $('qBack').onclick=showGameSelect;
+}
+/* ---------- Bảng xếp hạng (BXH) ---------- */
+function showLeaderboard(){
+  $('panel').innerHTML=`
+    <div class="logo">Xếp hạng</div>
+    <h1 style="font-size:24px">🏆 Bảng xếp hạng</h1>
+    <div class="bxh-tabs"><button class="bxh-tab sel" data-by="elo">Trình độ (ELO)</button>
+      <button class="bxh-tab" data-by="coins">Giàu nhất 🪙</button></div>
+    <div class="bxh-list" id="bxhList">Đang tải…</div>
+    <button class="linkish" id="bxhBack">← Về sảnh</button>`;
+  $('overlay').style.display='flex'; renderCoinBar();
+  $('bxhBack').onclick=showGameSelect;
+  const myUid=auth&&auth.currentUser?auth.currentUser.uid:null;
+  let users=[], by='elo';
+  const draw=()=>{
+    const def=by==='elo'?1000:0;
+    const rows=users.slice().sort((a,b)=>(b[by]??def)-(a[by]??def)).slice(0,50);
+    $('bxhList').innerHTML=rows.map((u,i)=>{
+      const medal=['🥇','🥈','🥉'][i]||(i+1);
+      const val=by==='elo'?`${u.elo??1000} <small>ELO</small>`:`${fmtCoin(u.coins||0)} 🪙`;
+      return `<div class="rank-row${u.uid===myUid?' you':''}"><div class="pos">${medal}</div>
+        <div class="who">${esc(u.name||'Bạn')}<span class="sub" style="display:block;margin:0;font-weight:600">${u.wins||0} thắng · ${u.games||0} ván</span></div>
+        <div class="hl">${val}</div></div>`;
+    }).join('')||'<p class="sub">Chưa có dữ liệu.</p>';
+  };
+  db.ref('cardrank').once('value').then(snap=>{
+    users=[]; snap.forEach(c=>{ const v=c.val()||{}; users.push({uid:c.key,name:v.name,coins:v.coins,elo:v.elo,wins:v.wins,games:v.games}); });
+    draw();
+  }).catch(()=>{ $('bxhList').innerHTML='<p class="sub" style="color:var(--red)">Không tải được BXH — cần thêm mục "cardrank" vào Rules Firebase (xem HUONG-DAN.txt).</p>'; });
+  document.querySelectorAll('.bxh-tab').forEach(t=>t.onclick=()=>{ by=t.dataset.by;
+    document.querySelectorAll('.bxh-tab').forEach(x=>x.classList.toggle('sel',x===t)); draw(); });
 }
 function showMenu(){
   const classCards=Object.entries(CHARACTER_CLASSES).map(([id,c])=>`
@@ -331,6 +399,9 @@ function showAccount(){
     <div class="rank-row you"><div class="pos">🪙</div>
       <div class="who">Số xu<span class="sub" style="display:block;margin:0;font-weight:600">Thắng ${wins} · Đã chơi ${games} ván</span></div>
       <div class="hl">${coins}</div></div>
+    <div class="rank-row"><div class="pos">🏅</div>
+      <div class="who">Điểm trình độ<span class="sub" style="display:block;margin:0;font-weight:600">Càng thắng càng lên hạng</span></div>
+      <div class="hl">${(profile&&profile.elo!=null)?profile.elo:1000} ELO</div></div>
     <div class="class-title" style="margin-top:12px">Tên hiển thị</div>
     <input class="field" id="acName" maxlength="12" placeholder="Tên của bạn" value="${esc(name)}">
     <div class="field-err" id="acMsg"></div>

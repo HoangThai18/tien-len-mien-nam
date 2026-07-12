@@ -180,8 +180,13 @@ function mbBuild(){
     <div class="mb-top">
       <button class="mb-back" id="mbBack" type="button" aria-label="Về sảnh">←</button>
       <div class="mb-title">🀄 Mậu Binh</div>
+      <button class="mb-help" id="mbHelp" type="button" aria-label="Luật chơi">?</button>
       <span class="mb-bet" id="mbBet"></span>
       <span class="mb-coin"><span aria-hidden="true">🪙</span> <b id="mbCoin">--</b></span>
+    </div>
+    <div class="mb-oppo" id="mbOppo">
+      ${[1,2,3].map(p=>`<div class="mb-opp"><span class="mb-opp-ava">${MB_BOTS[p].emoji}</span>
+        <span class="mb-opp-col"><b>${MB_BOTS[p].name}</b><small id="mbOppS${p}">Đang binh…</small></span></div>`).join('')}
     </div>
     <div class="mb-board" id="mbBoard">
       <div class="mb-row" data-slot="front">
@@ -205,22 +210,27 @@ function mbBuild(){
       <button class="btn" id="mbGo" type="button">Binh xong 🎴</button>
     </div>
     <div class="mb-hint">Chạm 1 lá để chọn · chạm vào một CHI hoặc khay để đặt lá vào đó. Chi dưới phải mạnh hơn chi trên.</div>
-    <div class="mb-modal" id="mbResult" aria-hidden="true"></div>`;
+    <div class="mb-modal" id="mbResult" aria-hidden="true"></div>
+    <div class="mb-modal" id="mbRules" aria-hidden="true"></div>`;
   document.body.appendChild(app);
   mbBuilt=true;
 
   $('mbBack').onclick=()=>leaveMauBinh();
+  $('mbHelp').onclick=mbShowRules;
   $('mbAuto').onclick=mbAutoArrange;
   $('mbClear').onclick=mbClearArrange;
   $('mbGo').onclick=mbConfirm;
   // Chạm lá / chạm chi
   app.addEventListener('click',e=>{
     if($('mbResult').getAttribute('aria-hidden')==='false') return;
+    if($('mbRules').getAttribute('aria-hidden')==='false') return;
     const cardEl=e.target.closest('.card');
     if(cardEl && cardEl.closest('#mbBoard, #mbTray')){
       const id=+cardEl.dataset.id;
-      mbState.sel = (mbState.sel===id)? null : id;
-      mbRenderMe(); return;
+      if(mbState.sel==null){ mbState.sel=id; mbRenderMe(); }          // chọn lá đầu
+      else if(mbState.sel===id){ mbState.sel=null; mbRenderMe(); }    // chạm lại -> bỏ chọn
+      else { mbSwap(mbState.sel, id); mbState.sel=null; }             // chạm lá 2 -> ĐỔI CHỖ 2 lá
+      return;
     }
     const zoneEl=e.target.closest('[data-slot]');
     if(zoneEl && mbState.sel!=null){ mbMove(mbState.sel, zoneEl.dataset.slot); }
@@ -247,12 +257,16 @@ function mbDeal(){
   const deck=newDeck();
   const hands=[[],[],[],[]];
   for(let i=0;i<52;i++) hands[i%4].push(deck[i]);
-  // Sắp khay của Bạn theo rank giảm dần cho dễ nhìn
-  const tray=hands[0].slice().sort((a,b)=> mbRank(b)-mbRank(a) || b.suit-a.suit);
-  mbState={ bet:gameBet, hands, zones:{tray, front:[], mid:[], back:[]}, sel:null, bots:[null,null,null,null], done:false };
+  // UX: chia xong XẾP SẴN 3 chi hợp lệ (như app khác) — người chơi chỉ chạm 2 lá để đổi chỗ,
+  // hoặc bấm Binh xong luôn. Đỡ phải kéo từng lá.
+  const a=mbBestArrange(hands[0]);
+  mbState={ bet:gameBet, hands, zones:{tray:[], front:a.front.slice(), mid:a.mid.slice(), back:a.back.slice()},
+    sel:null, bots:[null,null,null,null], done:false };
   $('mbResult').setAttribute('aria-hidden','true');
   $('mbBet').textContent=`Mệnh giá ${gameBet} 🪙/điểm`;
   $('mbCoin').textContent = profile&&profile.coins!=null? fmtCoin(profile.coins) : '--';
+  for(let p=1;p<=3;p++){ const s=$('mbOppS'+p); if(s){ s.textContent='Đang binh…'; s.className=''; }
+    const opp=s&&s.closest('.mb-opp'); if(opp) opp.classList.remove('win'); }
   mbRenderMe();
   // Tính sẵn cách binh của 3 máy trong nền để lật bài mượt
   setTimeout(()=>{ for(let p=1;p<=3;p++) if(mbActive&&mbState&&!mbState.bots[p]) mbState.bots[p]=mbBotPlan(hands[p]); }, 30);
@@ -354,39 +368,82 @@ function mbConfirm(){
   // Ăn xu theo điểm ghế 0
   const gameId='mb-'+Date.now()+'-'+Math.floor(Math.random()*1e6);
   const delta=pts[0]*mbState.bet;
-  if(delta!==0) addCoins(delta, gameId, delta>0);
+  addCoins(delta, gameId, delta>0, {game:'maubinh'});   // luôn ghi ván (kể cả hoà) -> tính ELO + nhiệm vụ
   mbShowResult(arrs, pts, delta);
 }
 
 /* ---------- Bảng kết quả ---------- */
-function mbMiniCards(cards){ return cards.map(c=>cardHTML(c,'mb-mini')).join(''); }
+let mbRevealToken=0;   // huỷ hiệu ứng cũ khi qua ván mới / thoát
 function mbShowResult(arrs, pts, delta){
+  const tok=++mbRevealToken;
   const names=['Bạn', MB_BOTS[1].name, MB_BOTS[2].name, MB_BOTS[3].name];
   const avas=['🙂', MB_BOTS[1].emoji, MB_BOTS[2].emoji, MB_BOTS[3].emoji];
+  const PGAP=680, CDLY=30, BASE=160;              // nhịp lật: mỗi người 0.68s, mỗi lá 30ms
   const rows=arrs.map((a,p)=>{
-    const chi=(cards,ev)=>`<div class="mb-rescol"><span class="mb-reseval">${ev.name}</span><div class="mb-rescards">${mbMiniCards(cards)}</div></div>`;
-    const sp=a.special?`<span class="mb-badge">${a.special.name}</span>`:'';
+    const pStart=BASE + p*PGAP; let k=0;           // k = thứ tự lá trong người này (lật lần lượt)
+    const chi=(cards,ev,cd)=>{
+      const cs=cards.map(c=>cardHTML(c,'mb-mini mb-flip', pStart + (k++)*CDLY)).join('');
+      return `<div class="mb-rescol"><span class="mb-reseval mb-fade" style="--d:${cd}ms">${ev.name}</span><div class="mb-rescards">${cs}</div></div>`;
+    };
+    const chis=chi(a.back,a.eb,pStart+180)+chi(a.mid,a.em,pStart+330)+chi(a.front,a.ef,pStart+470);
+    const sp=a.special?`<span class="mb-badge mb-pop" style="--d:${pStart+500}ms">${a.special.name}</span>`:'';
     const pc=pts[p]>0?'pos':pts[p]<0?'neg':'zero';
-    return `<div class="mb-resrow${p===0?' me':''}">
+    return `<div class="mb-resrow${p===0?' me':''} mb-fade" style="--d:${pStart}ms">
       <div class="mb-reshead"><span class="mb-resava">${avas[p]}</span><b>${esc(names[p])}</b>${sp}
-        <span class="mb-respts ${pc}">${pts[p]>0?'+':''}${pts[p]}</span></div>
-      <div class="mb-reschis">${chi(a.back,a.eb)}${chi(a.mid,a.em)}${chi(a.front,a.ef)}</div>
+        <span class="mb-respts ${pc} mb-pop" style="--d:${pStart+500}ms">${pts[p]>0?'+':''}${pts[p]}</span></div>
+      <div class="mb-reschis">${chis}</div>
     </div>`;
   }).join('');
+  const endT=BASE + 4*PGAP;                        // lúc tất cả đã lật xong -> hiện tổng kết
   const dCls=delta>0?'pos':delta<0?'neg':'zero';
   const dTxt=delta>0?`Bạn ăn +${fmtCoin(delta)} 🪙`:delta<0?`Bạn chung ${fmtCoin(-delta)} 🪙`:'Hòa vốn';
   $('mbResult').innerHTML=`
     <div class="mb-modal-card">
       <div class="mb-modal-h">🏁 Kết quả ván</div>
-      <div class="mb-modal-sum ${dCls}">${dTxt}</div>
       <div class="mb-reslist">${rows}</div>
-      <div class="mb-modal-act">
+      <div class="mb-modal-sum ${dCls} mb-pop" style="--d:${endT}ms">${dTxt}</div>
+      <div class="mb-modal-act mb-fade" style="--d:${endT}ms">
         <button class="btn ghost sm" id="mbLeave" type="button">← Về sảnh</button>
         <button class="btn" id="mbAgain" type="button">Ván mới 🎴</button>
       </div>
     </div>`;
   $('mbResult').setAttribute('aria-hidden','false');
   $('mbCoin').textContent = profile&&profile.coins!=null? fmtCoin(profile.coins) : '--';
-  $('mbAgain').onclick=()=>{ $('mbResult').setAttribute('aria-hidden','true'); mbDeal(); };
-  $('mbLeave').onclick=()=>leaveMauBinh();
+  $('mbAgain').onclick=()=>{ mbRevealToken++; $('mbResult').setAttribute('aria-hidden','true'); mbDeal(); };
+  $('mbLeave').onclick=()=>{ mbRevealToken++; leaveMauBinh(); };
+  // Cập nhật dải đối thủ theo nhịp lật (mỗi người tới lượt mới hiện điểm)
+  const topPts=Math.max(...pts);
+  for(let p=1;p<=3;p++){
+    setTimeout(()=>{ if(tok!==mbRevealToken) return;
+      const s=$('mbOppS'+p); if(!s) return;
+      s.textContent=(pts[p]>0?'+':'')+pts[p]+' điểm'; s.className=pts[p]>0?'pos':pts[p]<0?'neg':'';
+      const opp=s.closest('.mb-opp'); if(opp) opp.classList.toggle('win', pts[p]===topPts && topPts>0);
+    }, BASE + p*PGAP + 520);
+  }
+  // Ăn mừng khi tất cả đã lật xong
+  setTimeout(()=>{ if(tok!==mbRevealToken) return;
+    if(delta>0){ if(typeof confetti==='function') confetti(); if(typeof flash==='function') flash('THẮNG! 🎉'); }
+    else if(delta<0 && typeof flash==='function') flash('Thua rồi 😅');
+  }, endT+60);
+}
+/* ---------- Luật chơi (nút ?) ---------- */
+function mbShowRules(){
+  const rank='Mậu thầu → Đôi → Thú (2 đôi) → Sám → Sảnh → Thùng → Cù lũ → Tứ quý → Thùng phá sảnh';
+  $('mbRules').innerHTML=`
+    <div class="mb-modal-card mb-rules">
+      <div class="mb-modal-h">📖 Luật Mậu Binh</div>
+      <div class="mb-rules-body">
+        <p><b>Mục tiêu:</b> chia 13 lá thành <b>3 chi</b> — Chi Đầu (3 lá) · Chi Giữa (5 lá) · Chi Cuối (5 lá).</p>
+        <p><b>Luật xếp:</b> sức mạnh phải <b>tăng dần xuống dưới</b>: Chi Cuối ≥ Chi Giữa ≥ Chi Đầu. Xếp sai = <span class="mb-r-bad">Binh Lủng</span>, thua cả 3 chi.</p>
+        <p><b>Thứ hạng bài (yếu → mạnh):</b><br>${rank}.</p>
+        <p><b>Tính điểm:</b> so từng chi với từng đối thủ — thắng chi <b>+1</b>, thua <b>−1</b>. Thắng <b>cả 3 chi</b> (Sập Hầm) ăn <b>gấp đôi</b> (±6).</p>
+        <p><b>Bộ Mậu Binh</b> (báo — thắng trắng cả bàn): Sảnh Rồng 🐉 · Đồng Màu · Ba Thùng · Ba Sảnh · 5 Đôi 1 Sám · Sáu Đôi.</p>
+        <p><b>Ăn xu:</b> tổng điểm × mệnh giá mỗi ván.</p>
+        <p class="mb-r-tip">💡 Bấm <b>✨ Xếp tự động</b> để máy xếp hộ, rồi chỉnh lại nếu muốn.</p>
+      </div>
+      <div class="mb-modal-act"><button class="btn" id="mbRulesClose" type="button">Hiểu rồi 👍</button></div>
+    </div>`;
+  $('mbRules').setAttribute('aria-hidden','false');
+  $('mbRulesClose').onclick=()=>$('mbRules').setAttribute('aria-hidden','true');
+  $('mbRules').onclick=e=>{ if(e.target===$('mbRules')) $('mbRules').setAttribute('aria-hidden','true'); };
 }

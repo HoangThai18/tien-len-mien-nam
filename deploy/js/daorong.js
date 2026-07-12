@@ -1768,7 +1768,7 @@ function drBreedOdds(elA,elB){
 /* ============ CHIẾN ĐẤU THEO LƯỢT (engine dùng chung: Phiêu lưu · Đấu trường) ============
    Mỗi rồng có máu/atk (theo loài×cấp×sao), năng lượng ⚡ (đủ 3 dùng kỹ năng hệ), khắc hệ (DR_ADV).
    Đội tối đa 3 con, đánh con đầu (front) tới khi ngã thì tới con sau. Địch AI tự đánh. */
-let drBattle=null;
+let drBattle=null, drBattleTimer=null;
 const DR_SKILL={
   fire:{name:'Phun Lửa 🔥',kind:'atk'}, electric:{name:'Sấm Sét ⚡',kind:'atk'}, dark:{name:'Hắc Ám 🌑',kind:'atk'},
   water:{name:'Sóng Thần 🌊',kind:'heal'}, ice:{name:'Băng Giá ❄️',kind:'heal'}, light:{name:'Thánh Quang ✨',kind:'heal'},
@@ -1813,17 +1813,37 @@ function drResolve(atk,def,special,who){
   const act=special?('dùng '+drSkillOf(atk.el).name):'đánh';
   st.log.unshift(`${who}: <b>${atk.name}</b> ${act} → ${def.name} <b>-${dmg}</b>${advTxt}${r.heal?` (+${r.heal}♥)`:''}${r.shield?' 🛡':''}`);
   st.log=st.log.slice(0,6);
+  // Ghi lại đòn đánh để RENDER diễn hoạt (lao vào, giật mình, số sát thương, chiêu hệ)
+  const aSide=st.P.indexOf(atk)>=0?'P':'E', aIdx=(aSide==='P'?st.P:st.E).indexOf(atk);
+  const dSide=st.P.indexOf(def)>=0?'P':'E', dIdx=(dSide==='P'?st.P:st.E).indexOf(def);
+  (st._fx=st._fx||[]).push({aSide,aIdx,dSide,dIdx,dmg,special,el:atk.el,mul:r.mul,heal:r.heal,crit:r.mul>1});
 }
 function drStartBattle(playerDragons, enemyDragons, opts){
+  clearTimeout(drBattleTimer);
   drBattle={ P:playerDragons.slice(0,3).map(drCombatStats), E:enemyDragons.slice(0,3).map(drCombatStats),
-    log:['Trận đấu bắt đầu!'], turn:1, over:false, win:false, opts:opts||{} };
+    log:['⚔️ Trận đấu bắt đầu!'], turn:1, over:false, win:false, opts:opts||{}, speed:1 };
   drRenderBattle();
+  drScheduleTick(700);                                   // TỰ ĐỘNG đánh — người chơi chỉ ngồi xem
+}
+// Hẹn giờ cho đòn tiếp theo; nhịp = thời gian đủ để xem diễn hoạt, chia theo tốc độ đang chọn.
+function drScheduleTick(first){
+  clearTimeout(drBattleTimer);
+  const st=drBattle; if(!st||st.over) return;
+  const gap=Math.round((first!=null?first:1150)/(st.speed||1));
+  drBattleTimer=setTimeout(drBattleStep, gap);
+}
+function drBattleStep(){
+  const st=drBattle; if(!st||st.over) return;
+  if(!$('drModal')){ clearTimeout(drBattleTimer); return; }   // đã thoát modal -> dừng
+  const pf=drFront(st.P);
+  drBattleAct(pf&&pf.en>=3?'special':'normal');           // đủ ⚡ thì tự tung chiêu hệ
+  drScheduleTick();
 }
 function drBattleAct(kind){
   const st=drBattle; if(!st||st.over) return;
   const pf=drFront(st.P), ef=drFront(st.E); if(!pf||!ef) return;
-  const special=(kind==='special');
-  if(special && pf.en<3){ toast('Chưa đủ ⚡ (cần 3)'); return; }
+  const special=(kind==='special' && pf.en>=3);
+  st._fx=[]; st.P.concat(st.E).forEach(c=>{ c._prehp=c.hp; });   // chốt máu trước đòn -> thanh máu tụt mượt
   const enemyFirst = ef.spd > pf.spd;                    // spd quyết ai ra đòn trước
   const doP=()=>{ const e=drFront(st.E); if(e&&pf.hp>0) drResolve(pf, e, special, 'Bạn'); };
   const doE=()=>{ const e=drFront(st.E), p=drFront(st.P); if(e&&p) drResolve(e, p, e.en>=3, 'Địch'); };
@@ -1832,6 +1852,7 @@ function drBattleAct(kind){
   st.turn++; drRenderBattle();
 }
 function drEndBattle(win){
+  clearTimeout(drBattleTimer);
   const st=drBattle; st.over=true; st.win=win;
   st.log.unshift(win?'🏆 <b>CHIẾN THẮNG!</b>':'💀 <b>Thất bại…</b>');
   if(win && st.opts.onWin) st.opts.onWin();
@@ -1841,26 +1862,80 @@ function drEndBattle(win){
 function drCombatIcon(c){ return `<span class="dr-cbt-ic">${drDragonArt({sp:c.sp,lv:c.lv})}</span>`; }
 function drRenderBattle(){
   const st=drBattle; if(!st) return;
-  const row=(c)=>{ const pct=Math.max(0,Math.round(c.hp/c.maxhp*100)); const front=(!c._dead&&c.hp>0);
-    return `<div class="dr-cbt ${c.hp<=0?'dead':''}">${drCombatIcon(c)}
-      <div class="dr-cbt-mid"><b>${esc(c.name)}</b><div class="dr-hpbar"><i style="width:${pct}%"></i></div>
-        <small>${Math.max(0,c.hp)}/${c.maxhp} · ⚡${c.en}/3${c.shield?' 🛡':''}</small></div></div>`; };
-  const pf=drFront(st.P);
-  const skill=pf?drSkillOf(pf.el):null;
+  // 1 con rồng đứng trên SÂN ĐẤU: thanh máu trên đầu, sprite lớn, con đang xung trận (front) to + sáng hơn.
+  const unit=(c,side,i)=>{ const arr=side==='P'?st.P:st.E; const front=drFront(arr)===c;
+    const initHp=(c._prehp!=null)?c._prehp:c.hp; const pct=Math.max(0,Math.round(initHp/c.maxhp*100));
+    const enDots=[0,1,2].map(k=>`<i class="${k<c.en?'on':''}"></i>`).join('');
+    return `<div class="dr-unit ${c.hp<=0?'dead':''} ${front?'front':''}" data-cbt="${side}${i}">
+      <div class="dr-unit-hp"><i data-hp style="width:${pct}%"></i></div>
+      <span class="dr-unit-art">${drDragonArt({sp:c.sp,lv:c.lv})}</span>
+      <span class="dr-unit-nm">${esc(c.name)}${c.shield?' 🛡':''}</span>
+      <span class="dr-unit-en">${enDots}</span>
+    </div>`; };
   const actions = st.over
     ? `<button class="dr-btn go block" id="drBtlDone">${st.win?'🎉 Nhận thưởng':'Thoát'}</button>`
-    : `<div class="dr-btl-acts">
-        <button class="dr-btn" id="drBtlHit">⚔️ Đánh thường</button>
-        <button class="dr-btn alt" id="drBtlSkill" ${pf&&pf.en>=3?'':'disabled'}>${skill?skill.name:'Kỹ năng'} (⚡3)</button>
+    : `<div class="dr-btl-auto">
+        <span class="dr-btl-auto-lbl"><i class="dr-auto-dot"></i> Tự động đấu…</span>
+        <button class="dr-btn sm" id="drBtlSpeed">⏩ ${st.speed||1}×</button>
       </div>`;
-  const body=`<div class="dr-btl-side"><div class="dr-btl-lbl">👹 Địch</div>${st.E.map(row).join('')}</div>
-    <div class="dr-btl-log">${st.log.map(l=>`<div>${l}</div>`).join('')}</div>
-    <div class="dr-btl-side"><div class="dr-btl-lbl">🐲 Đội bạn</div>${st.P.map(row).join('')}</div>
+  const body=`<div class="dr-field">
+      <div class="dr-army ally">${st.P.map((c,i)=>unit(c,'P',i)).join('')}</div>
+      <div class="dr-vs-badge" id="drBtlVs">⚔️<b>VS</b></div>
+      <div class="dr-army enemy">${st.E.map((c,i)=>unit(c,'E',i)).join('')}</div>
+    </div>
+    <div class="dr-army-lbls"><span>🐲 Đội bạn</span><span>👹 Địch</span></div>
+    <div class="dr-btl-log">${st.log.map((l,i)=>`<div${i===0?' class="fresh"':''}>${l}</div>`).join('')}</div>
     ${actions}`;
   drModal((st.opts.title||'⚔️ Chiến đấu')+(st.over?'':` · Lượt ${st.turn}`), body, true);
-  if(!st.over){ const h=$('drBtlHit'); if(h) h.onclick=()=>drBattleAct('normal');
-    const s=$('drBtlSkill'); if(s) s.onclick=()=>drBattleAct('special'); }
-  else { const d=$('drBtlDone'); if(d) d.onclick=()=>{ const cb=st.opts.onDone; drBattle=null; drCloseModal(); if(cb) cb(); }; }
+  drPlayBattleFx();                                     // diễn hoạt đòn đánh vừa xảy ra
+  if(!st.over){ const sp=$('drBtlSpeed'); if(sp) sp.onclick=()=>{           // đổi tốc độ 1× → 2× → 3× → 1×
+      st.speed=(st.speed||1)>=3?1:(st.speed||1)+1; sp.textContent='⏩ '+st.speed+'×'; drScheduleTick(120); }; }
+  else { const d=$('drBtlDone'); if(d) d.onclick=()=>{ clearTimeout(drBattleTimer); const cb=st.opts.onDone; drBattle=null; drCloseModal(); if(cb) cb(); }; }
+}
+// Diễn hoạt các đòn của lượt vừa rồi: rồng lao vào, đối thủ giật + chớp đỏ, số sát thương bay lên,
+// chiêu hệ nổ quầng màu, thanh máu tụt mượt. Chạy sau khi modal đã dựng DOM.
+function drPlayBattleFx(){
+  const st=drBattle; if(!st) return;
+  const modal=$('drModal'); if(!modal) return;
+  const cell=k=>modal.querySelector(`[data-cbt="${k}"]`);
+  requestAnimationFrame(()=>{
+    // 1) thanh máu tụt về giá trị thật (đã có transition trong CSS)
+    ['P','E'].forEach(side=>{ (side==='P'?st.P:st.E).forEach((c,i)=>{
+      const el=cell(side+i); if(!el) return; const bar=el.querySelector('[data-hp]');
+      if(bar) bar.style.width=Math.max(0,Math.round(c.hp/c.maxhp*100))+'%';
+      delete c._prehp;
+    });});
+    // 2) từng đòn: stagger cho dễ nhìn (đòn bạn trước, đòn địch sau)
+    (st._fx||[]).forEach((fx,k)=>{
+      const atk=cell(fx.aSide+fx.aIdx), def=cell(fx.dSide+fx.dIdx);
+      setTimeout(()=>{
+        if(atk){ const ic=atk.querySelector('.dr-cbt-ic'); const dir=(fx.aSide==='P')?-1:1;   // bạn ở dưới lao lên, địch ở trên lao xuống
+          if(ic&&ic.animate) ic.animate(
+            [{transform:'translateY(0) scale(1)'},{transform:`translateY(${dir*16}px) scale(1.12)`,offset:.4},{transform:'translateY(0) scale(1)'}],
+            {duration:fx.special?520:380, easing:'cubic-bezier(.35,1.4,.5,1)'});
+        }
+        if(def){
+          def.classList.remove('dr-cbt-hit'); void def.offsetWidth; def.classList.add('dr-cbt-hit');
+          if(fx.special) drBurstEl(def, fx.el);
+          drFloatDmg(def, fx.heal?('+'+fx.heal):('-'+fx.dmg), fx.heal?'heal':(fx.crit?'crit':'hit'));
+        }
+      }, k*300);
+    });
+    st._fx=[];
+  });
+}
+function drFloatDmg(cell, txt, kind){
+  const n=document.createElement('span'); n.className='dr-dmgnum '+kind; n.textContent=txt;
+  cell.appendChild(n);
+  if(n.animate) n.animate([{transform:'translate(-50%,0) scale(.6)',opacity:0},{transform:'translate(-50%,-8px) scale(1.15)',opacity:1,offset:.25},{transform:'translate(-50%,-34px) scale(1)',opacity:0}],{duration:900,easing:'ease-out'});
+  setTimeout(()=>n.remove(),920);
+}
+function drBurstEl(cell, el){
+  const col=(DR_PAL[el]||DR_PAL.fire).body||'#ffd35c';
+  const b=document.createElement('span'); b.className='dr-cbt-burst'; b.style.setProperty('--bc',col);
+  cell.appendChild(b);
+  if(b.animate) b.animate([{transform:'translate(-50%,-50%) scale(.2)',opacity:.95},{transform:'translate(-50%,-50%) scale(1.8)',opacity:0}],{duration:560,easing:'ease-out'});
+  setTimeout(()=>b.remove(),580);
 }
 
 /* ============ BẠN BÈ + TẶNG QUÀ (Firebase) ============

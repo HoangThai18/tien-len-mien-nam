@@ -1,4 +1,4 @@
-const CACHE = 'tienlen-v84-5-dragons';
+const CACHE = 'tienlen-v92-mb-reveal-fit';
 const ASSETS = [
   './', './index.html', './styles.css', './manifest.webmanifest', './icon-192.png', './icon-512.png',
   './js/config.js', './js/version.js', './js/engine.js', './js/state.js', './js/game.js', './js/ui.js', './js/daorong.js', './js/maubinh.js', './js/social.js',

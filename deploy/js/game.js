@@ -123,6 +123,7 @@ async function ensureProfile(user,name){
       name:(name||'').trim() || (user.email||'').split('@')[0] || 'Bạn',
       email:user.email||'',
       coins:1000000, wins:0, games:0,   // tặng 1 triệu xu khi tạo tài khoản
+      elo:1000,                          // điểm trình độ khởi điểm
       createdAt:Date.now(), lastSettled:null
     };
   });
@@ -139,27 +140,72 @@ function attachProfile(uid){
       if(profile.name) myName=profile.name;
       renderCoinBar();
       if(mode!=='solo'&&roomRef) roomRef.child('players/'+myIdx).update({coins:profile.coins||0,name:myName});
+      // Gương thông tin CÔNG KHAI cho BXH bài (node RIÊNG 'cardrank' — KHÔNG đụng 'leaderboard' của Đảo Rồng)
+      db.ref('cardrank/'+uid).set({name:profile.name||'Bạn', elo:profile.elo||1000,
+        coins:profile.coins||0, wins:profile.wins||0, games:profile.games||0}).catch(()=>{});
     }
   });
 }
 function detachProfile(){ if(unsubProfile){ unsubProfile.off(); unsubProfile=null; } }
 // Cộng/trừ xu vào ví CỦA MÌNH, đúng 1 lần cho mỗi ván (chốt bằng lastSettled)
-function addCoins(delta,gameId,isWinner){
+// meta (tuỳ chọn): {game:'tienlen'|'maubinh'} — dùng để cộng ELO + tiến độ nhiệm vụ ngày.
+function addCoins(delta,gameId,isWinner,meta){
   if(!auth||!auth.currentUser||!db) return;
   const email=auth.currentUser.email||'';
   db.ref('users/'+auth.currentUser.uid).transaction(u=>{
     if(u===null){                                // hồ sơ chưa có (hiếm) -> tạo kèm tiền thưởng gốc để không mất xu
-      return {name:email.split('@')[0]||'Bạn', email, coins:1000000+delta,
-        wins:isWinner?1:0, games:1, createdAt:Date.now(), lastSettled:gameId};
+      u={name:email.split('@')[0]||'Bạn', email, coins:1000000, wins:0, games:0, elo:1000,
+        createdAt:Date.now(), lastSettled:null};
     }
     if(u.lastSettled===gameId) return;           // ván này đã trả tiền -> bỏ qua
     u.coins=(u.coins||0)+delta;
     u.games=(u.games||0)+1;
     if(isWinner) u.wins=(u.wins||0)+1;
     u.lastSettled=gameId;
+    if(meta&&meta.game){                          // ván bài thật -> cập nhật ELO + nhiệm vụ
+      u.elo=eloAfter(u.elo||1000, !!isWinner);
+      u.quests=questTick(u.quests, !!isWinner, meta.game);
+    }
     return u;
   }).catch(e=>{ console.error('addCoins',e);
     toast('⚠️ Chưa lưu được xu — kiểm tra mạng hoặc Rules Firebase (mục users)'); });
+}
+/* ---------- ELO ---------- */
+// Đấu với "bàn" mốc 1000 (bot/đối thủ trung bình). Thắng +, thua −, co giãn theo chênh lệch.
+function eloAfter(cur,won){
+  const K=24, base=1000, E=1/(1+Math.pow(10,(base-cur)/400));
+  return Math.max(100, Math.round(cur + K*((won?1:0)-E)));
+}
+/* ---------- Nhiệm vụ ngày ---------- */
+const QUESTS=[
+  {id:'play', ic:'🎴', name:'Chơi 3 ván bài',        target:3, reward:300, prog:q=>q.play||0},
+  {id:'win',  ic:'🏆', name:'Thắng 1 ván',           target:1, reward:500, prog:q=>q.win||0},
+  {id:'mb',   ic:'🀄', name:'Chơi 1 ván Mậu Binh',   target:1, reward:200, prog:q=>q.mb||0},
+];
+function todayKey(){ return new Date().toISOString().slice(0,10); }
+function questFresh(){ return {day:todayKey(), play:0, win:0, mb:0, claimed:{}}; }
+// Cộng tiến độ 1 ván vào object quests (tự reset khi sang ngày mới). Trả object mới.
+function questTick(q, won, game){
+  if(!q || q.day!==todayKey()) q=questFresh();
+  q.play=(q.play||0)+1;
+  if(won) q.win=(q.win||0)+1;
+  if(game==='maubinh') q.mb=(q.mb||0)+1;
+  if(!q.claimed) q.claimed={};
+  return q;
+}
+// Nhận thưởng 1 nhiệm vụ (giao dịch riêng, chống nhận trùng bằng cờ claimed).
+function claimQuest(qid){
+  const def=QUESTS.find(x=>x.id===qid); if(!def||!auth||!auth.currentUser||!db) return Promise.resolve({ok:false});
+  return db.ref('users/'+auth.currentUser.uid).transaction(u=>{
+    if(!u) return u;
+    const q=(u.quests&&u.quests.day===todayKey())?u.quests:questFresh();
+    if(!q.claimed) q.claimed={};
+    if(q.claimed[qid]) return;                    // đã nhận
+    if(def.prog(q) < def.target) return;          // chưa đủ
+    q.claimed[qid]=true; u.quests=q;
+    u.coins=(u.coins||0)+def.reward;
+    return u;
+  }).then(r=>({ok:r.committed, val:r.snapshot&&r.snapshot.val()})).catch(e=>{ console.error('claimQuest',e); return {ok:false}; });
 }
 // Áp kết quả tiền của ván vào ví mình (host=seat0, khách online=ghế được cấp); bot không lưu
 function settleMyWallet(S){
@@ -168,7 +214,7 @@ function settleMyWallet(S){
   settledGameId=S.settle.gameId;
   const row=(S.settle.rows||[]).find(r=>r.seat===myIdx);
   if(!row) return;
-  addCoins(row.delta, S.settle.gameId, S.settle.winner===myIdx);
+  addCoins(row.delta, S.settle.gameId, S.settle.winner===myIdx, {game:'tienlen'});
 }
 function fmtCoin(n){ n=Number(n); if(!isFinite(n)) return '--'; return n.toLocaleString('vi-VN'); }
 function renderCoinBar(){
@@ -176,7 +222,10 @@ function renderCoinBar(){
   // Cập nhật cả ô xu riêng của Mậu Binh để luôn khớp số dư thật, cho thấy tiền là một.
   const mb=$('mbCoin'); if(mb) mb.textContent=(profile&&profile.coins!=null)?fmtCoin(profile.coins):'--';
   const bar=$('coinBar'); if(!bar) return;
-  if(profile){ $('coinVal').textContent=(profile.coins!=null?fmtCoin(profile.coins):'--'); bar.style.display='inline-flex'; }
+  // Đảo Rồng & Mậu Binh có ví xu riêng ngay trên HUD của chúng -> KHÔNG hiện ví xu chung
+  // ở góc màn (nếu không sẽ đè lên đảo/bàn, gây 2 số 🪙 trùng lặp khó hiểu).
+  const inOtherGame=(typeof drActive!=='undefined'&&drActive)||(typeof mbActive!=='undefined'&&mbActive);
+  if(profile && !inOtherGame){ $('coinVal').textContent=(profile.coins!=null?fmtCoin(profile.coins):'--'); bar.style.display='inline-flex'; }
   else bar.style.display='none';
 }
 /* ---------- Admin: cộng/đặt xu cho mọi tài khoản (rules chặn phía server) ---------- */
@@ -222,14 +271,28 @@ function throwHint(){
 }
 /* ---------- Màn đăng nhập ---------- */
 function showAuthLoading(){
-  $('panel').innerHTML=`
-    <div class="logo">Tiến Lên</div>
-    <h1 style="font-size:24px">Đang tải…</h1>
-    <div class="spinner"></div>
-    <p class="sub">Đang kiểm tra đăng nhập</p>`;
-  $('overlay').style.display='flex';
+  let resume=null; try{ resume=localStorage.getItem('lastGame'); }catch(_){}
+  const ov=$('overlay');
+  if(resume==='daorong'){                               // reload khi đang ở Đảo Rồng -> màn chờ chủ đề đảo, không lộ giao diện Tiến Lên
+    ov.classList.add('dr-boot');
+    $('panel').innerHTML=`
+      <div class="dr-boot-emblem">🐉</div>
+      <div class="logo">Đảo Rồng</div>
+      <h1 style="font-size:24px">Đang vào đảo…</h1>
+      <div class="spinner"></div>
+      <p class="sub">Đang tải hòn đảo của bạn</p>`;
+  }else{
+    ov.classList.remove('dr-boot');
+    $('panel').innerHTML=`
+      <div class="logo">Tiến Lên</div>
+      <h1 style="font-size:24px">Đang tải…</h1>
+      <div class="spinner"></div>
+      <p class="sub">Đang kiểm tra đăng nhập</p>`;
+  }
+  ov.style.display='flex';
 }
 function showLogin(){
+  $('overlay').classList.remove('dr-boot');
   $('panel').innerHTML=`
     <div class="menu-fan" aria-hidden="true">
       <div class="card"><span class="r">3</span><span class="big">♠</span><span class="s">♠</span></div>

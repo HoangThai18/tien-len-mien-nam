@@ -364,10 +364,23 @@ function closeWhatsNew(){
   el.classList.remove('show'); el.setAttribute('aria-hidden','true');
   try{ localStorage.setItem(SEEN_VER_KEY,APP_VERSION); }catch(_){}
 }
-// true nếu người chơi đang ở bản cũ hơn (đã từng chơi) -> nên báo bản mới.
+// Người chơi CŨ = đã có dữ liệu game từ lần trước (tên, nhân vật hoặc game gần nhất).
+// Người mới cài lần đầu chưa có key nào tại thời điểm này -> không làm phiền.
+function isReturningPlayer(){
+  try{
+    if(localStorage.getItem('lastGame')||localStorage.getItem('tienlen-name')||localStorage.getItem('tienlen-character')) return true;
+    // Đã từng đăng nhập (Firebase Auth lưu phiên) -> chắc chắn là người chơi cũ.
+    for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k&&k.indexOf('firebase:authUser')===0) return true; }
+  }catch(_){}
+  return false;
+}
+// true nếu nên bật bảng "Có gì mới":
+//   • đã có mốc version cũ hơn  -> báo bản mới (như thường lệ), hoặc
+//   • CHƯA có mốc nhưng là người chơi cũ -> báo 1 lần (vd bản đầu tiên có tính năng này).
 function shouldAnnounceUpdate(){
   let seen=null; try{ seen=localStorage.getItem(SEEN_VER_KEY); }catch(_){}
-  return !!seen && isNewerVersion(APP_VERSION,seen);
+  if(seen) return isNewerVersion(APP_VERSION,seen);
+  return isReturningPlayer();
 }
 function initVersionUI(){
   const badge=$('versionBadge');

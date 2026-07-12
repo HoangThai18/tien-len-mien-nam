@@ -12,11 +12,11 @@
 // tag : nhãn ngắn (nền màu) ở góc mỗi bản, vd 'Bản lớn', 'Tính năng', 'Sửa lỗi'.
 // items: mỗi dòng { ic:'emoji', t:'mô tả' }.
 
-const APP_VERSION = '2.0.0';
+const APP_VERSION = '2.1.0';
 
 const CHANGELOG = [
   {
-    version: '2.0.0',
+    version: '2.1.0',
     date: '12/07/2026',
     tag: 'Bản lớn',
     title: 'Đảo Rồng bùng nổ',
