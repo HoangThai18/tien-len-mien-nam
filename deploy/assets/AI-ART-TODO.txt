@@ -1,0 +1,49 @@
+========================================================================
+  DANH SÁCH ẢNH / ICON CẦN TẠO BẰNG AI   (bạn tạo → nhắn mình gắn vào code)
+========================================================================
+Mọi thứ dưới đây đang dùng EMOJI hoặc SVG màu tạm để chơi được ngay.
+Tạo ảnh xong bỏ vào ĐÚNG thư mục rồi báo mình tên file — mình chạy packer
+(tách nền + căn khung) và gắn vào code như Rồng Nước.
+
+────────────────────────────────────────────────────────────────────────
+A) RỒNG — sprite sheet 8 khung đi bộ  →  deploy/assets/dragons/
+────────────────────────────────────────────────────────────────────────
+CHUẨN: 1 dải NGANG 8 khung, đi 4 chân, nghiêng 3/4, cùng nhân vật + cỡ ở
+mọi khung, NỀN TRONG SUỐT, chibi mắt to má hồng (giống fire.png / water.png).
+
+Đã có sprite thật: fire, water, dark  (đang thêm: plant, earth, electric, ice)
+RỒNG CUTE ĐÃ VÀO GAME (đang chơi bằng SVG màu tạm 'pal' — CẦN ẢNH để đẹp hơn):
+  • peach   "Rồng Đào Hồng"   HỒNG đào   #ff9ec4  → peach.png
+  • candy   "Rồng Kẹo Ngọt"   TÍM pastel #c89bf0  → candy.png
+  • mint    "Rồng Bạc Hà"     XANH MINT  #9be7c4  → mint.png
+  • lemon   "Rồng Chanh"      VÀNG chanh #ffe37a  → lemon.png
+  • berry   "Rồng Việt Quất"  XANH-TÍM   #8aa0ff  → berry.png
+  • coral   "Rồng San Hô"     CAM-HỒNG   #ff9e7a  → coral.png
+  • cloud   "Rồng Mây"        XÁM-XANH   #cfe3ff  → cloud.png
+  • rainbow "Rồng Cầu Vồng"   nhiều màu pastel    → rainbow.png  (epic)
+  (Đã lai ra được: plant+plant→Bạc Hà · water+water→Mây · fire+fire→San Hô ·
+   electric+electric→Chanh · ice+ice→Việt Quất · dark+dark→Cầu Vồng)
+
+PROMPT MẪU (thay [MÀU] / [TÊN]):
+  "A super cute chibi baby dragon, [MÀU] pastel body, big sparkly round eyes,
+   rosy cheeks, tiny wings, short horns, 3/4 side view. ONE horizontal sprite
+   sheet of 8 frames = a smooth 4-legged walk cycle, identical character, size
+   and colors in every frame, walking in place. Transparent background, soft
+   cel-shaded game art, centered, even spacing between frames."
+
+────────────────────────────────────────────────────────────────────────
+B) ICON CHỨC NĂNG (đang là emoji trên thanh dock)  →  deploy/assets/dragon-island/items/
+────────────────────────────────────────────────────────────────────────
+Tuỳ chọn. Muốn icon đẹp thay emoji thì tạo PNG VUÔNG ~128px, nền trong suốt:
+  🏝️ Khu đảo · 🌾 Nông trại · 🗺️ Phiêu lưu · 👹 Boss · 📅 Điểm danh
+  🏆 Thành tựu · 👑 BXH · 👫 Bạn bè · 🌴 Trang trí · 🎉 Sự kiện · 💎 Cường hóa
+  Đá cường hóa (3 loại, mỗi loại 3 bậc T1/T2/T3): 🔴 Đá Công · 🟢 Đá Thủ · 🔵 Đá Tốc
+(Đã có sẵn: shop, quest, breed, food, arena, codex, egg, gem, gold, rock, star, gift)
+
+────────────────────────────────────────────────────────────────────────
+C) KHÁC (tuỳ chọn, để sau)
+────────────────────────────────────────────────────────────────────────
+  • Boss tuần (4 con): Hải Xà Khổng Lồ, Rồng Dung Nham, Titan Băng Giá, Ác Long Bóng Tối
+  • Nền các màn Phiêu lưu: Bãi Biển, Rừng Rậm, Hang Băng, Núi Lửa, Đầm Lầy, Vực Bóng Tối, Đỉnh Thần Long
+  • Icon vật trang trí (đang emoji): 🌷 🔥 🌳 ⛲ 🗿 🏮 💠 🌈
+  • Ảnh đại diện đảo bạn bè (đang emoji 🐲)

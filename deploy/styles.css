@@ -761,17 +761,6 @@
   .dr-bob.hop{animation:drHop .55s cubic-bezier(.3,1.5,.5,1);}
   @keyframes drHop{0%{transform:translateY(0)}30%{transform:translateY(-26px) scale(1.08,.94)}
     60%{transform:translateY(0) scale(1.05,.9)}100%{transform:translateY(0)}}
-  .dr-drg{width:96px; height:96px; overflow:visible; display:block;}
-  .dr-drg .shadow{fill:rgba(10,50,30,.2);}
-  .dr-drg .body{transform-box:fill-box; transform-origin:50% 92%; animation:drBreathe 2.8s ease-in-out infinite;}
-  @keyframes drBreathe{0%,100%{transform:scale(1,1)}50%{transform:scale(1.035,.965)}}
-  .dr-drg .tail{transform-box:fill-box; transform-origin:18% 60%; animation:drTail 3.2s ease-in-out infinite;}
-  @keyframes drTail{0%,100%{transform:rotate(-7deg)}50%{transform:rotate(9deg)}}
-  .dr-drg .wing{transform-box:fill-box; transform-origin:85% 50%; animation:drFlap 1.5s ease-in-out infinite;}
-  @keyframes drFlap{0%,100%{transform:rotate(-4deg) scaleX(1)}50%{transform:rotate(16deg) scaleX(.86)}}
-  .dr-drg .lid{transform-box:fill-box; transform-origin:50% 0%; transform:scaleY(0); animation:drBlink 5s ease-in-out infinite;}
-  @keyframes drBlink{0%,90%,100%{transform:scaleY(0)}94%,96%{transform:scaleY(1)}}
-
   .dr-coin-bubble{position:absolute; top:-14px; left:50%; transform:translateX(-50%);
     width:38px; height:38px; cursor:pointer; z-index:6; animation:drCoinUp .4s cubic-bezier(.2,1.4,.5,1) both;}
   .dr-coin{width:100%; height:100%; border-radius:50%; display:flex; align-items:center; justify-content:center;
@@ -835,14 +824,14 @@
   @media (orientation:landscape) and (max-height:540px){
     .dr-sun{width:56px; height:56px;}
     .dr-island{top:50%; height:min(66vh,320px); width:min(80vw,620px);}
-    .dr-bob,.dr-drg{width:76px;} .dr-drg{height:76px;} .dr-sprite{--sz:76px;}
+    .dr-bob{width:76px;} .dr-sprite{--sz:76px;}
     .dr-hint{bottom:max(58px,calc(env(safe-area-inset-bottom) + 48px)); font-size:11px; padding:6px 12px;}
     .dr-shop{padding:9px 16px; font-size:13px;}
   }
   @media (prefers-reduced-motion:reduce){
     .dr-sun,.dr-cloud,.dr-shimmer,.dr-sparkle,.dr-foam,.dr-deco,.dr-bob,.dr-sprite,.dr-img,
     .dr-aura,.dr-aura::before,.dr-evo-halo,.dr-evo-crest,.dr-evo::after,
-    .dr-drg .body,.dr-drg .tail,.dr-drg .wing,.dr-drg .lid,.dr-coin,.dr-coin-bubble::after{animation:none !important;}
+    .dr-coin,.dr-coin-bubble::after{animation:none !important;}
   }
 
   /* ===================== ĐẢO RỒNG — chức năng đầy đủ ===================== */
@@ -860,25 +849,26 @@
     border:1px solid rgba(255,255,255,.3); white-space:nowrap; font-family:'Baloo 2','Nunito',sans-serif;}
   /* hình rồng từ asset: sprite-sheet (nhiều khung) hoặc ảnh tĩnh — thay SVG khi hoạ sĩ cấp file */
   .dr-sprite{--sz:96px; width:var(--sz); height:var(--sz); display:block; transform-origin:50% 92%;
-    background:var(--url) 0 0 / calc(var(--frames) * var(--sz)) var(--sz) no-repeat;
+    background:var(--url) 0 var(--row-y,0%) / var(--bg-cols,100%) var(--bg-rows,100%) no-repeat;
     animation:drSprite var(--dur,1s) steps(var(--frames,1)) infinite, drIdleSway 3.6s ease-in-out infinite;
     filter:drop-shadow(0 5px 5px rgba(10,50,30,.28));}
-  @keyframes drSprite{to{background-position-x:calc(-1 * var(--frames) * var(--sz));}}
+  @keyframes drSprite{to{background-position-x:100%;}}
   .dr-sprite.has-actions{animation:drWalkFrames var(--walk-dur,.65s) linear infinite,drIdleSway 3.6s ease-in-out infinite;}
   .dr-bob.dr-act .dr-sprite.has-actions{animation:drActionFrames var(--act-dur,1.3s) linear 1,drIdleSway 3.6s ease-in-out infinite;}
   @keyframes drWalkFrames{
     0%,24.99%{background-position-x:0}
-    25%,49.99%{background-position-x:calc(-1 * var(--sz))}
-    50%,74.99%{background-position-x:calc(-2 * var(--sz))}
-    75%,100%{background-position-x:calc(-3 * var(--sz))}
+    25%,49.99%{background-position-x:14.286%}
+    50%,74.99%{background-position-x:28.571%}
+    75%,100%{background-position-x:42.857%}
   }
   @keyframes drActionFrames{
-    0%,24.99%{background-position-x:calc(-4 * var(--sz))}
-    25%,49.99%{background-position-x:calc(-5 * var(--sz))}
-    50%,74.99%{background-position-x:calc(-6 * var(--sz))}
-    75%,100%{background-position-x:calc(-7 * var(--sz))}
+    0%,24.99%{background-position-x:57.143%}
+    25%,49.99%{background-position-x:71.429%}
+    50%,74.99%{background-position-x:85.714%}
+    75%,100%{background-position-x:100%}
   }
   @keyframes drIdleSway{0%,100%{transform:rotate(-1.5deg)}50%{transform:rotate(1.5deg)}}  /* lắc thân nhẹ (đầu/mình) cộng thêm cho sprite */
+  @keyframes drBreathe{0%,100%{transform:scale(1,1)}50%{transform:scale(1.035,.965)}}
   .dr-img{width:96px; height:96px; object-fit:contain; display:block; transform-origin:50% 90%;
     filter:drop-shadow(0 5px 6px rgba(10,50,30,.3)); animation:drBreathe 2.8s ease-in-out infinite;}
 
@@ -886,11 +876,12 @@
   .dr-evo{--evo-size:96px; position:relative; width:var(--evo-size); height:var(--evo-size);
     display:grid; place-items:center; isolation:isolate; overflow:visible; flex:0 0 auto;}
   .dr-evo>.dr-sprite{--sz:var(--evo-size); position:relative; z-index:1;}
-  .dr-evo>.dr-img,.dr-evo>.dr-drg{position:relative; z-index:1; width:var(--evo-size); height:var(--evo-size);}
+  .dr-evo>.dr-img{position:relative; z-index:1; width:var(--evo-size); height:var(--evo-size);}
   .dr-evo-halo{position:absolute; z-index:0; left:50%; top:53%; width:88%; height:72%; border-radius:50%;
     transform:translate(-50%,-50%); pointer-events:none; opacity:0;}
   .dr-evo-crest{position:absolute; z-index:2; top:7%; left:50%; width:20%; height:18%;
     transform:translateX(-50%); pointer-events:none; opacity:0;}
+  .dr-evo.has-atlas .dr-evo-crest{display:none;}
   .dr-evo-teen{filter:saturate(1.08) brightness(1.03);}
   .dr-evo-teen .dr-evo-halo{opacity:.36; filter:blur(7px);
     background:radial-gradient(ellipse,var(--acc,#80dfff) 0%,transparent 70%); animation:drEvoBreath 2.8s ease-in-out infinite;}
@@ -1243,6 +1234,65 @@
   .dr-odd{display:flex; align-items:center; gap:8px; background:rgba(255,255,255,.05);
     border:1px solid rgba(255,255,255,.1); border-radius:10px; padding:5px 9px;}
   .dr-odd-mini{width:30px; height:30px; flex:0 0 auto; display:flex; align-items:center; justify-content:center;}
-  .dr-odd-mini .dr-drg{width:30px; height:30px;}
+  .dr-odd-mini .dr-evo{--evo-size:30px;}
   .dr-odd b{flex:1; min-width:0; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .dr-odd-pct{font-weight:900; color:#ffd76a; font-size:13px;}
+
+  /* ===== Chiến đấu theo lượt ===== */
+  .dr-btl-side{display:flex; flex-direction:column; gap:6px; margin:6px 0;}
+  .dr-btl-lbl{font-size:12px; font-weight:800; color:#bde;}
+  .dr-cbt{display:flex; align-items:center; gap:9px; background:rgba(255,255,255,.05);
+    border:1px solid rgba(255,255,255,.1); border-radius:11px; padding:6px 9px;}
+  .dr-cbt.dead{opacity:.35; filter:grayscale(1);}
+  .dr-cbt-ic{width:38px; height:38px; flex:0 0 auto; display:flex; align-items:center; justify-content:center;}
+  .dr-cbt-ic .dr-evo{--evo-size:38px;}
+  .dr-cbt-mid{flex:1; min-width:0;}
+  .dr-cbt-mid b{font-size:12.5px;}
+  .dr-cbt-mid small{font-size:10px; color:rgba(255,255,255,.6);}
+  .dr-hpbar{height:9px; border-radius:6px; background:rgba(0,0,0,.35); overflow:hidden; margin:3px 0;}
+  .dr-hpbar i{display:block; height:100%; background:linear-gradient(90deg,#4be07a,#8fe0a0); border-radius:6px; transition:width .3s;}
+  .dr-btl-log{background:rgba(0,0,0,.25); border-radius:10px; padding:8px 10px; margin:8px 0; font-size:11.5px;
+    line-height:1.6; max-height:120px; overflow-y:auto; color:#dfe;}
+  .dr-btl-log b{color:#ffe08a;}
+  .dr-btl-acts{display:flex; gap:8px; margin-top:4px;}
+  .dr-btl-acts .dr-btn{flex:1;}
+
+  /* ===== Bạn bè + tặng quà ===== */
+  .dr-mycode{background:rgba(0,0,0,.2); border-radius:12px; padding:10px 12px; margin-bottom:10px;}
+  .dr-mycode-lbl{font-size:11.5px; color:#bde; margin-bottom:6px;}
+  .dr-mycode-row{display:flex; gap:8px; align-items:center;}
+  .dr-code{flex:1; min-width:0; font-family:monospace; font-size:14px; font-weight:800; letter-spacing:1px; color:#ffe08a;
+    background:rgba(255,255,255,.08); border-radius:8px; padding:6px 10px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .dr-addfriend{display:flex; gap:8px; margin-bottom:10px;}
+  .dr-input{flex:1; min-width:0; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.2);
+    border-radius:10px; padding:8px 12px; color:#fff; font-size:13px; font-family:inherit;}
+  .dr-input::placeholder{color:rgba(255,255,255,.45);}
+  .dr-friend-list{display:flex; flex-direction:column; gap:8px;}
+  .dr-friend{display:flex; align-items:center; gap:9px; background:rgba(255,255,255,.05);
+    border:1px solid rgba(255,255,255,.1); border-radius:12px; padding:7px 10px;}
+  .dr-friend-ic{font-size:22px; width:30px; text-align:center; flex:0 0 auto;}
+  .dr-visit-hd{font-size:15px; font-weight:800; text-align:center; margin-bottom:10px; color:#eafffb;}
+  .dr-visit-drgs{display:flex; gap:10px; justify-content:center; margin:12px 0;}
+  .dr-visit-drgs .dr-odd-mini,.dr-visit-drgs .dr-drg,.dr-visit-drgs .dr-sprite{width:56px; height:56px;}
+
+  /* ===== Sự kiện ===== */
+  .dr-evt-miles{display:flex; flex-direction:column; gap:8px; margin-top:8px;}
+  .dr-evt-mile{display:flex; align-items:center; gap:10px; background:rgba(255,255,255,.05);
+    border:1px solid rgba(255,255,255,.1); border-radius:11px; padding:8px 11px;}
+  .dr-evt-pts{width:52px; flex:0 0 auto; font-weight:900; color:#ffd76a; text-align:center;}
+  .dr-evt-mile .dr-ach-rw{flex:1;}
+
+  /* ===== Đá cường hóa (Runes) ===== */
+  .dr-rune-pick{display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; margin-bottom:6px;}
+  .dr-rune-drg{flex:0 0 auto; position:relative; border:2px solid transparent; background:rgba(0,0,0,.2);
+    border-radius:12px; padding:4px; cursor:pointer;}
+  .dr-rune-drg.on{border-color:#ffd35c;}
+  .dr-rune-drg .dr-sprite,.dr-rune-drg .dr-drg,.dr-rune-drg .dr-img{width:46px; height:46px;}
+  .dr-rune-slots{display:flex; flex-direction:column; gap:6px; margin:6px 0;}
+  .dr-rune-slot{border:1px solid rgba(255,255,255,.15); border-radius:10px; padding:9px 11px; font-size:13px; font-weight:700;}
+  .dr-rune-slot.filled{background:rgba(255,211,92,.12); border-color:rgba(255,211,92,.4); cursor:pointer; color:#fff; text-align:left; width:100%;}
+  .dr-rune-slot.empty{color:rgba(255,255,255,.4); border-style:dashed; text-align:center;}
+  .dr-rune-inv{display:flex; flex-wrap:wrap; gap:6px; margin:6px 0;}
+  .dr-rune-item{background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.15); border-radius:999px;
+    padding:6px 11px; font-size:12px; font-weight:700; color:#fff; cursor:pointer;}
+  .dr-rune-item:hover{background:rgba(255,211,92,.2);}
