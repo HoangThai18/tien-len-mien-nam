@@ -919,19 +919,19 @@
   /* Nâng sao: hào quang màu hệ + lấp lánh + to dần theo cấp — KHÔNG cần vẽ art riêng cho từng sao */
   .dr-artwrap{position:relative; z-index:1; display:block; transform:scale(var(--dScale,1)); transform-origin:50% 90%;}
   /* Aura theo BẬC SAO (5 bậc: đồng/bạc/vàng/tím/cầu vồng) — màu = --tcol, độ sáng & nhịp tăng dần */
-  .dr-aura{position:absolute; left:50%; top:52%; width:var(--asz,120%); height:calc(var(--asz,120%) * .7); z-index:0; opacity:0;
+  /* Quầng sáng: độ sáng & cỡ theo --au/--asz (JS tính liên tục theo sao) — hiện & pulse từ ★1 */
+  .dr-aura{position:absolute; left:50%; top:52%; width:var(--asz,120%); height:calc(var(--asz,120%) * .7); z-index:0;
     transform:translate(-50%,-50%); border-radius:50%; pointer-events:none; filter:blur(7px);
+    opacity:var(--au,.3); animation:drAuraPulse 2.4s ease-in-out infinite;
     background:radial-gradient(ellipse at center, var(--tcol,#8fe0ff) 0%, transparent 64%);}
-  .dr-tier-0 .dr-aura{--asz:116%; opacity:.18;}
-  .dr-tier-1 .dr-aura{--asz:130%; --au:.34; opacity:.34; animation:drAuraPulse 2.8s ease-in-out infinite;}
-  .dr-tier-2 .dr-aura{--asz:144%; --au:.48; opacity:.48; animation:drAuraPulse 2.2s ease-in-out infinite;}
-  .dr-tier-3 .dr-aura{--asz:158%; --au:.64; opacity:.64; animation:drAuraPulse 1.7s ease-in-out infinite;}
-  .dr-tier-4 .dr-aura{--asz:176%; --au:.84; opacity:.84; animation:drAuraPulse 1.3s ease-in-out infinite;
-    background:radial-gradient(ellipse at center, #fff 0%, var(--tcol,#8fe0ff) 30%, transparent 70%);}
-  @keyframes drAuraPulse{0%,100%{opacity:var(--au,.4); transform:translate(-50%,-50%) scale(1);}
-    50%{opacity:calc(var(--au,.4) + .2); transform:translate(-50%,-50%) scale(1.12);}}
-  /* Lấp lánh cho bậc Quý trở lên (tier ≥ 2) */
-  .dr-tier-2 .dr-aura::before,.dr-tier-3 .dr-aura::before,.dr-tier-4 .dr-aura::before{content:''; position:absolute; inset:-8%; border-radius:50%;
+  .dr-tier-2 .dr-aura{animation-duration:2s;}
+  .dr-tier-3 .dr-aura{animation-duration:1.7s;}
+  .dr-tier-4 .dr-aura{animation-duration:1.3s;
+    background:radial-gradient(ellipse at center, #fff 0%, var(--tcol,#8fe0ff) 32%, transparent 70%);}
+  @keyframes drAuraPulse{0%,100%{opacity:var(--au,.3); transform:translate(-50%,-50%) scale(1);}
+    50%{opacity:calc(var(--au,.3) + .16); transform:translate(-50%,-50%) scale(1.1);}}
+  /* Lấp lánh từ bậc Hiếm (★6+) trở lên */
+  .dr-tier-1 .dr-aura::before,.dr-tier-2 .dr-aura::before,.dr-tier-3 .dr-aura::before,.dr-tier-4 .dr-aura::before{content:''; position:absolute; inset:-8%; border-radius:50%;
     background:radial-gradient(2.4px 2.4px at 22% 32%,#fff 45%,transparent 55%),
       radial-gradient(2.4px 2.4px at 76% 24%,#fff 45%,transparent 55%),
       radial-gradient(2px 2px at 62% 78%,#fff 45%,transparent 55%),
@@ -951,7 +951,7 @@
   /* Hạt sáng bay quanh cho bậc Sử thi (≥3) trở lên */
   .dr-orbit{position:absolute; left:50%; top:50%; width:104%; height:80%; z-index:2; pointer-events:none; opacity:0;
     transform:translate(-50%,-50%);}
-  .dr-tier-3 .dr-orbit,.dr-tier-4 .dr-orbit{opacity:1; animation:drOrbit 5s linear infinite;}
+  .dr-tier-2 .dr-orbit,.dr-tier-3 .dr-orbit,.dr-tier-4 .dr-orbit{opacity:1; animation:drOrbit 5s linear infinite;}
   .dr-tier-4 .dr-orbit{animation-duration:3.4s;}
   .dr-orbit::before,.dr-orbit::after{content:''; position:absolute; left:50%; width:7px; height:7px; margin-left:-3.5px;
     border-radius:50%; background:#fff; box-shadow:0 0 8px 1.5px var(--tcol,#fff);}

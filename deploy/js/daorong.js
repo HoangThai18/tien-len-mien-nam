@@ -596,6 +596,8 @@ function drRenderDragons(){
     bob.style.animationDelay=(-Math.random()*2.6).toFixed(2)+'s';
     bob.style.setProperty('--acc',(DR_PAL[s.el]||{}).body||'#8fe0ff');
     bob.style.setProperty('--tcol',drStarCol(st));
+    bob.style.setProperty('--au',(0.22+st*0.026).toFixed(3));      // độ sáng quầng: tăng liên tục theo sao (★1≈.25 → ★25≈.87)
+    bob.style.setProperty('--asz',(114+st*2.4).toFixed(0)+'%');    // kích thước quầng theo sao
     const scale=(evo.scale+Math.max(0,(d.lv||1)-evo.minLv)*0.012).toFixed(3);
     bob.innerHTML=`<span class="dr-aura"></span><span class="dr-orbit"></span>`
       +`<div class="dr-artwrap dr-facing" style="--dScale:${scale}">${drDragonArt(d)}</div>`
