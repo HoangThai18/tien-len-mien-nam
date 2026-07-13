@@ -759,7 +759,11 @@ function mbShopHTML(){
       else if(owned) act=`<button class="btn ghost sm mb-buy" data-equip="${c.id}" data-type="${type}">Dùng</button>`;
       else if(c.ach){ const a=MB_ACHS.find(x=>x.id===c.ach); act=`<span class="mb-shop-lock">🔒 ${a?esc(a.name):'thành tựu'}</span>`; }
       else act=`<button class="btn sm mb-buy" data-buy="${c.id}">${fmtCoin(c.price)} 🪙</button>`;
-      return `<div class="mb-shop-it${equipped?' eq':''}"><span class="mb-shop-ic">${c.icon}</span>
+      // Khung avatar: hiện PREVIEW ảnh động thật (avatar tí hon đeo khung); còn lại dùng emoji.
+      const ic = (c.type==='frame' && c.id!=='frame_none')
+        ? `<span class="mb-shop-ic mb-fpreview" data-frame="${c.id}">🙂</span>`
+        : `<span class="mb-shop-ic">${c.icon}</span>`;
+      return `<div class="mb-shop-it${equipped?' eq':''}">${ic}
         <b>${esc(c.name)}</b>${act}</div>`;
     }).join('');
     return `<div class="mb-prof-h">${label}</div><div class="mb-shop-grid">${items}</div>`;

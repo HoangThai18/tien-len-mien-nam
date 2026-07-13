@@ -408,6 +408,14 @@
   .wn-item-ic{flex:0 0 auto; width:30px; height:30px; border-radius:9px; display:flex; align-items:center;
     justify-content:center; font-size:17px; background:linear-gradient(180deg,#fff6df,#ffe9b8);
     box-shadow:inset 0 0 0 1.5px rgba(255,207,77,.5);}
+  /* Item có khoe hình rồng mới */
+  .wn-item:has(.wn-dragons){align-items:flex-start;}
+  .wn-item-tx{flex:1; min-width:0; display:flex; flex-direction:column; gap:8px;}
+  .wn-dragons{display:flex; flex-wrap:wrap; gap:5px; margin-top:1px;}
+  .wn-dragon{flex:0 0 auto; width:54px; height:54px; display:flex; align-items:flex-end; justify-content:center;
+    background:radial-gradient(circle at 50% 42%, rgba(255,255,255,.6), transparent 68%);
+    border-radius:13px; box-shadow:inset 0 0 0 1.5px rgba(255,207,77,.3); overflow:hidden;}
+  .wn-dragon .dr-evo{--evo-size:52px;}
   .wn-older-sep{display:flex; align-items:center; gap:10px; margin:4px 2px 12px;
     font-size:10.5px; font-weight:900; color:#b6a483; text-transform:uppercase; letter-spacing:.6px;}
   .wn-older-sep::before,.wn-older-sep::after{content:""; flex:1; height:2px; border-radius:2px;
@@ -1181,10 +1189,11 @@
   /* Aura theo BẬC SAO (5 bậc: đồng/bạc/vàng/tím/cầu vồng) — màu = --tcol, độ sáng & nhịp tăng dần */
   /* Quầng sáng: độ sáng & cỡ theo --au/--asz (JS tính liên tục theo sao) — hiện & pulse từ ★1 */
   /* PERF: BỎ filter:blur (vừa mờ vừa động = rất nặng, nhân theo số rồng). Gradient mềm cho vẫn ra "quầng sáng" mà mượt. */
-  .dr-aura{position:absolute; left:50%; top:52%; width:var(--asz,120%); height:calc(var(--asz,120%) * .7); z-index:0;
+  /* Quầng sáng dồn xuống GỐC/chân rồng (không glow giữa thân che hình) */
+  .dr-aura{position:absolute; left:50%; top:72%; width:var(--asz,120%); height:calc(var(--asz,120%) * .42); z-index:0;
     transform:translate(-50%,-50%); border-radius:50%; pointer-events:none;
     opacity:var(--au,.3); animation:drAuraPulse 2.4s ease-in-out infinite;
-    background:radial-gradient(ellipse at center, var(--tcol,#8fe0ff) 0%, transparent 74%);}
+    background:radial-gradient(ellipse at center, var(--tcol,#8fe0ff) 0%, transparent 72%);}
   .dr-tier-2 .dr-aura{animation-duration:2s;}
   .dr-tier-3 .dr-aura{animation-duration:1.7s;}
   .dr-tier-4 .dr-aura{animation-duration:1.3s;
@@ -1546,14 +1555,46 @@
   .dr-ach-rw{font-size:11px; font-weight:800; color:#ffd76a;}
   .dr-ach-ok{color:#7ee08a; font-weight:900; font-size:16px;}
   .dr-ach-lock{opacity:.5; font-size:15px;}
-  /* Nông trại */
-  .dr-farm-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:10px;}
-  .dr-plot{background:rgba(0,0,0,.2); border:1px solid rgba(255,255,255,.12); border-radius:14px;
-    padding:12px 6px; display:flex; flex-direction:column; align-items:center; gap:8px; min-height:112px; justify-content:center;}
-  .dr-plot.ready{border-color:#ffd76a; box-shadow:0 0 0 2px rgba(255,215,106,.25) inset;}
-  .dr-plot-ic{font-size:34px; line-height:1;}
-  .dr-plot-ic.ripe{animation:drBob 1.4s ease-in-out infinite;}
-  .dr-plot-lab{font-size:12px; font-weight:800; color:#bfe;}
+  /* Nông trại — kệ hạt + luống đất */
+  .dr-seedbar{display:flex; gap:7px; overflow-x:auto; padding:2px 2px 8px; -webkit-overflow-scrolling:touch;}
+  .dr-seed{flex:0 0 auto; display:flex; flex-direction:column; align-items:center; gap:1px; cursor:pointer;
+    background:rgba(255,255,255,.06); border:2px solid rgba(255,255,255,.14); border-radius:13px; padding:7px 11px; color:#eafff4; font-family:inherit;}
+  .dr-seed.sel{border-color:#ffd76a; background:linear-gradient(180deg,rgba(255,215,106,.22),rgba(255,215,106,.08)); box-shadow:0 0 10px rgba(255,215,106,.3);}
+  .dr-seed-ic{font-size:24px; line-height:1;}
+  .dr-seed b{font-size:12px; font-weight:900;}
+  .dr-seed small{font-size:9px; font-weight:700; color:#bfe0cf; white-space:nowrap;}
+  .dr-farm-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:4px;}
+  .dr-plot{position:relative; border-radius:14px; padding:12px 6px 10px; display:flex; flex-direction:column; align-items:center;
+    gap:7px; min-height:118px; justify-content:center; overflow:hidden;
+    background:linear-gradient(180deg,#7a5230,#5c3a1e 60%,#472c15);
+    box-shadow:inset 0 2px 4px rgba(255,255,255,.12), inset 0 -8px 16px rgba(0,0,0,.4);
+    border:2px solid #3d2712;}
+  /* luống đất kẻ sọc */
+  .dr-plot::before{content:''; position:absolute; inset:0; pointer-events:none; opacity:.5;
+    background:repeating-linear-gradient(90deg, rgba(0,0,0,.16) 0 8px, transparent 8px 20px);}
+  .dr-plot.empty{cursor:pointer; filter:saturate(.85);}
+  .dr-plot.empty:active{transform:translateY(2px);}
+  .dr-plot.ready{background:linear-gradient(180deg,#3f7a34,#2f5f28 60%,#244a20); border-color:#ffd76a; cursor:pointer;
+    box-shadow:inset 0 2px 4px rgba(255,255,255,.18), 0 0 0 2px rgba(255,215,106,.4), 0 0 16px rgba(255,215,106,.35);}
+  .dr-plot.ready:active{transform:translateY(2px);}
+  .dr-plot.g3{background:linear-gradient(180deg,#5f6a30,#4c531f 60%,#3b4218);}
+  .dr-plot-ic{position:relative; z-index:1; font-size:36px; line-height:1; filter:drop-shadow(0 3px 3px rgba(0,0,0,.4));}
+  .dr-plot-ic.ripe{animation:drBob 1.3s ease-in-out infinite;}
+  .dr-plot-sow{position:relative; z-index:1; font-size:12px; font-weight:900; color:#ffe9b0; text-shadow:0 1px 2px rgba(0,0,0,.6);}
+  .dr-plot-get{position:relative; z-index:1; font-size:12px; font-weight:900; color:#fff; background:rgba(0,0,0,.35);
+    padding:2px 9px; border-radius:10px; border:1px solid rgba(255,215,106,.6);}
+  .dr-plot-lab{position:relative; z-index:1; font-size:11.5px; font-weight:800; color:#eafff4; text-shadow:0 1px 2px rgba(0,0,0,.6);}
+  .dr-plot-bar{position:relative; z-index:1; width:78%; height:7px; border-radius:5px; background:rgba(0,0,0,.4); overflow:hidden;
+    box-shadow:inset 0 1px 2px rgba(0,0,0,.5);}
+  .dr-plot-bar i{display:block; height:100%; border-radius:5px; background:linear-gradient(90deg,#8ed15a,#43c96a); transition:width .5s linear;}
+  .dr-plot-fert{position:relative; z-index:2; margin-top:1px; font:900 10px/1 'Baloo 2','Nunito',sans-serif;
+    color:#3a2a56; background:linear-gradient(180deg,#c9e0ff,#8fbcf5); border:1.5px solid #5f8fd6; border-radius:9px;
+    padding:3px 8px; cursor:pointer;}
+  .dr-plot-fert:active{transform:translateY(1px);}
+  .dr-farm-acts{display:flex; flex-wrap:wrap; gap:9px; margin-top:12px;}
+  .dr-farm-acts .dr-btn{flex:1 1 40%;}
+  .dr-farm-full{flex:1 1 100%; text-align:center; font-size:12px; font-weight:800; color:#bfe0cf; padding:6px;}
+  @media(max-width:560px){ .dr-farm-grid{gap:7px;} .dr-plot{min-height:104px; font-size:.95em;} }
   /* Điểm danh */
   .dr-daily-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:12px;}
   .dr-day{position:relative; background:rgba(0,0,0,.2); border:1.5px solid rgba(255,255,255,.12); border-radius:12px;
@@ -2260,14 +2301,23 @@
   .mb-title-chip{display:inline-flex; align-items:center; font-size:9.5px; font-weight:900; color:#3a2a56;
     background:linear-gradient(180deg,#ffe9a8,#ffcf4d); border:1.5px solid #fff; border-radius:9px;
     padding:1px 7px; vertical-align:middle; box-shadow:0 1px 2px rgba(0,0,0,.2);}
-  /* Khung avatar (data-frame trên .mb-resava của Bạn & .mb-prof-ava) */
-  .mb-resava[data-frame="frame_silver"], .mb-prof-ava[data-frame="frame_silver"]{box-shadow:0 0 0 3px #d7dde6, 0 0 8px rgba(215,221,230,.7);}
-  .mb-resava[data-frame="frame_neon"],   .mb-prof-ava[data-frame="frame_neon"]{box-shadow:0 0 0 3px #b46bff, 0 0 12px rgba(180,107,255,.9);}
-  .mb-resava[data-frame="frame_gold"],   .mb-prof-ava[data-frame="frame_gold"]{box-shadow:0 0 0 3px var(--gold), 0 0 12px rgba(255,207,77,.9);}
-  .mb-resava[data-frame="frame_fire"],   .mb-prof-ava[data-frame="frame_fire"]{box-shadow:0 0 0 3px #ff7a2e, 0 0 14px rgba(255,122,46,.95); animation:mbFrameFire 1.4s ease-in-out infinite;}
-  .mb-resava[data-frame="frame_rainbow"],.mb-prof-ava[data-frame="frame_rainbow"]{animation:mbFrameRb 3s linear infinite;}
-  @keyframes mbFrameFire{0%,100%{box-shadow:0 0 0 3px #ff7a2e,0 0 10px rgba(255,122,46,.8);}50%{box-shadow:0 0 0 3px #ffb02e,0 0 18px rgba(255,176,46,1);}}
-  @keyframes mbFrameRb{0%{box-shadow:0 0 0 3px #ff5e5e,0 0 12px rgba(255,94,94,.8);}33%{box-shadow:0 0 0 3px #5ed0ff,0 0 12px rgba(94,208,255,.8);}66%{box-shadow:0 0 0 3px #8dff5e,0 0 12px rgba(141,255,94,.8);}100%{box-shadow:0 0 0 3px #ff5eff,0 0 12px rgba(255,94,255,.8);}}
+  /* Khung avatar — ẢNH ĐỘNG THẬT (data-frame trên .mb-resava của Bạn, .mb-prof-ava, .mb-fpreview shop) */
+  /* Avatar là hình tròn cố định để lỗ trong suốt của khung ôm khít; khung là ::after phủ ~164%, tâm trong suốt lộ avatar. */
+  .mb-resava{position:relative; width:30px; height:30px; border-radius:50%; display:inline-flex;
+    align-items:center; justify-content:center; font-size:17px;
+    background:radial-gradient(circle at 38% 32%,#fff,#e3d5ff 72%,#c3a9f5);}
+  .mb-prof-ava, .mb-fpreview{position:relative;}
+  /* Mỗi khung nạp ảnh động qua biến --mb-frame; frame_none không có ảnh */
+  [data-frame="frame_silver"] { --mb-frame:url(assets/maubinh/frames/animated/frame-silver.webp); }
+  [data-frame="frame_neon"]   { --mb-frame:url(assets/maubinh/frames/animated/frame-neon.webp); }
+  [data-frame="frame_gold"]   { --mb-frame:url(assets/maubinh/frames/animated/frame-gold.webp); }
+  [data-frame="frame_fire"]   { --mb-frame:url(assets/maubinh/frames/animated/frame-fire.webp); }
+  [data-frame="frame_rainbow"]{ --mb-frame:url(assets/maubinh/frames/animated/frame-rainbow.webp); }
+  .mb-resava[data-frame]:not([data-frame="frame_none"])::after,
+  .mb-prof-ava[data-frame]:not([data-frame="frame_none"])::after,
+  .mb-fpreview[data-frame]:not([data-frame="frame_none"])::after{
+    content:""; position:absolute; inset:-32%; z-index:3; pointer-events:none;
+    background:var(--mb-frame) center/100% 100% no-repeat;}
   /* Nền bàn (data-table trên .mb-screen) */
   .mb-screen[data-table="table_midnight"]{background:radial-gradient(130% 100% at 50% 20%, #24406b 0%, #16264a 55%, #0a1430 100%);}
   .mb-screen[data-table="table_sakura"]{background:radial-gradient(130% 100% at 50% 22%, #b85c86 0%, #8a3f6b 55%, #4d2246 100%);}
@@ -2318,6 +2368,8 @@
   .mb-shop-it.eq{border-color:#e0a52a; background:rgba(255,207,77,.16);}
   .mb-shop-it b{flex:1; min-width:0; font-size:12px; font-weight:800; color:#3a2a56; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .mb-shop-ic{flex:0 0 auto; font-size:20px;}
+  .mb-shop-ic.mb-fpreview{width:24px; height:24px; border-radius:50%; display:inline-flex; align-items:center;
+    justify-content:center; font-size:14px; background:radial-gradient(circle at 38% 32%,#fff,#e3d5ff 72%,#c3a9f5);}
   .mb-shop-it .btn{flex:0 0 auto; padding:5px 9px; font-size:11px;}
   .mb-shop-eq{flex:0 0 auto; font-size:10px; font-weight:900; color:#6a4a00; background:#ffd76e;
     padding:3px 8px; border-radius:9px;}

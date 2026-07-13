@@ -1,4 +1,4 @@
-const CACHE = 'tienlen-v142-cute-dragons';
+const CACHE = 'tienlen-v151-whatsnew-dragons';
 const ASSETS = [
   './', './index.html', './styles.css', './manifest.webmanifest', './icon-192.png', './icon-512.png',
   './js/config.js', './js/version.js', './js/engine.js', './js/state.js', './js/game.js', './js/ui.js', './js/daorong.js', './js/maubinh.js', './js/social.js',
@@ -109,6 +109,9 @@ const ASSETS = [
   './assets/dragon-island/ui-kit/notifications/level-up.webp',
   './assets/dragon-island/ui-kit/buttons/primary.webp', './assets/dragon-island/ui-kit/buttons/success.webp',
   './assets/dragon-island/ui-kit/buttons/danger.webp', './assets/dragon-island/ui-kit/buttons/legendary.webp',
+  './assets/maubinh/frames/animated/frame-silver.webp', './assets/maubinh/frames/animated/frame-neon.webp',
+  './assets/maubinh/frames/animated/frame-gold.webp', './assets/maubinh/frames/animated/frame-fire.webp',
+  './assets/maubinh/frames/animated/frame-rainbow.webp',
   'https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-auth-compat.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-database-compat.min.js',

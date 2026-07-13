@@ -14,12 +14,27 @@
 // date: 'DD/MM/YYYY' — hiển thị cho người chơi.
 // tag : nhãn ngắn (nền màu) ở góc mỗi bản, vd 'Bản lớn', 'Tính năng', 'Sửa lỗi', 'Mới'.
 // items: mỗi dòng { ic:'emoji', t:'mô tả' }.
+//   → Nếu bản cập nhật THÊM RỒNG MỚI: kèm dragons:['key1','key2',...] (key loài trong DR_SPECIES)
+//     để bảng "Có gì mới" KHOE LUÔN hình các con rồng đó cho người chơi thấy.
 
 const GAME_CHANGELOGS = {
   daorong: {
     name: 'Đảo Rồng',
-    version: '2.7.0',
+    version: '2.8.0',
     log: [
+      {
+        version: '2.8.0',
+        date: '13/07/2026',
+        tag: 'Tính năng',
+        title: 'Rồng cưng, lai & nông trại',
+        items: [
+          { ic: '🐣', t: 'Thêm 10 rồng dễ thương mới — ngắm thử bên dưới!', dragons: ['cotton-candy','strawberry-cream','blossom-bubble','cherry-soda','pearl-lotus','rose-quartz','moon-ribbon','rainbow-mochi','starlight-bow','cupid-heart'] },
+          { ic: '🩷', t: 'Trứng RỒNG CƯNG mới ở Shop — mua bằng vàng (dễ kiếm), ai cũng dễ dàng sở hữu rồng dễ thương.' },
+          { ic: '💞', t: 'Lai rồng nay ra được MỌI loài — thêm "đột biến" ~10% cho ra bất kỳ rồng nào (hiếm thì tỉ lệ thấp); vài rồng lai xịn (Dung Nham, Hơi Nước, Cầu Vồng, Lăng Kính…) chỉ LAI mới có, không bán ở trứng.' },
+          { ic: '🌾', t: 'Nông trại thành game trồng trọt thật — 6 luống (mở rộng tới 9), 5 loại hạt lớn dần theo thời gian, gieo/thu tất cả 1 chạm.' },
+          { ic: '🌟', t: 'Nông trại đáng cày — bội thu ×2 ngẫu nhiên, cây cao cấp rớt thêm 🪙/💎 & cho XP, bón phân bằng 💎 cho chín ngay.' },
+        ],
+      },
       {
         version: '2.7.0',
         date: '13/07/2026',
@@ -27,7 +42,6 @@ const GAME_CHANGELOGS = {
         title: 'Thế giới đảo sống động',
         items: [
           { ic: '🏝️', t: '20 hòn đảo, mỗi đảo một khung cảnh riêng cực kỳ lộng lẫy — đổi đảo là đổi cả thế giới.' },
-          { ic: '🐣', t: 'Thêm 10 rồng dễ thương mới (Kẹo Bông Gòn, Kem Dâu, Sen Ngọc, Thạch Anh Hồng, Nơ Trăng, Nơ Sao, Thần Tình Yêu…) — dễ nở & lai ra hơn.' },
           { ic: '👹', t: 'Boss động vẫy cánh, thở phì phò — sống động hơn hẳn ảnh tĩnh.' },
           { ic: '✨', t: 'Rộn ràng hiệu ứng khắp nơi: lên cấp, tiến hoá, nở trứng, chí mạng, hồi máu, lên khiên, thu vàng/ngọc, thắng trận.' },
           { ic: '🎴', t: 'Nở rồng hiện thẻ khoe theo độ hiếm — rồng Hiếm & Huyền Thoại có khung riêng lộng lẫy.' },
@@ -150,8 +164,19 @@ const GAME_CHANGELOGS = {
 
   maubinh: {
     name: 'Mậu Binh',
-    version: '1.2.0',
+    version: '1.3.0',
     log: [
+      {
+        version: '1.3.0',
+        date: '13/07/2026',
+        tag: 'Tính năng',
+        title: 'Khung avatar sống động',
+        items: [
+          { ic: '🖼️', t: 'Khung avatar giờ là ẢNH ĐỘNG thật — Bạc, Neon, Vàng, Lửa, Cầu Vồng lấp lánh, uốn lượn quanh mặt cười.' },
+          { ic: '🛍️', t: 'Cửa hàng xem trước khung ngay trên hình — thấy tận mắt trước khi mua/đeo.' },
+          { ic: '🏆', t: 'Đeo khung ở cả bảng kết quả lẫn hồ sơ để khoe đẳng cấp mỗi ván.' },
+        ],
+      },
       {
         version: '1.2.0',
         date: '12/07/2026',

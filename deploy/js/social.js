@@ -335,8 +335,14 @@ function tagClass(tag){
   return '';
 }
 function relHTML(r,latest){
-  const items=(r.items||[]).map(it=>
-    `<li class="wn-item"><span class="wn-item-ic" aria-hidden="true">${esc(it.ic||'•')}</span><span>${esc(it.t||'')}</span></li>`).join('');
+  const items=(r.items||[]).map(it=>{
+    // Nếu item khai báo `dragons:[...]` -> khoe luôn hình các con rồng mới (sprite động) cho người chơi thấy
+    const drg=(Array.isArray(it.dragons)&&it.dragons.length&&typeof drDragonArt==='function')
+      ? `<div class="wn-dragons">${it.dragons.map(sp=>`<span class="wn-dragon" title="${esc((typeof DR_SPECIES!=='undefined'&&DR_SPECIES[sp]&&DR_SPECIES[sp].name)||'')}">${drDragonArt({sp,lv:1})}</span>`).join('')}</div>`
+      : '';
+    return `<li class="wn-item"><span class="wn-item-ic" aria-hidden="true">${esc(it.ic||'•')}</span>`
+      +`<div class="wn-item-tx"><span>${esc(it.t||'')}</span>${drg}</div></li>`;
+  }).join('');
   const tag=r.tag?`<span class="wn-tag ${tagClass(r.tag)}">${esc(r.tag)}</span>`:'';
   return `<div class="wn-rel${latest?' latest':''}">
     <div class="wn-rel-head">${tag}

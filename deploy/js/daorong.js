@@ -378,7 +378,7 @@ function drDefault(){
     dragons:[{sp:'fire',lv:1,fed:0,hab:1},{sp:'water',lv:1,fed:0,hab:2},{sp:'plant',lv:1,fed:0}], breed:null, cleared:[],
     qc:{tap:0,feed:0,breed:0,win:0,clear:0}, qClaimed:[],
     habitats:[{id:1,el:'fire',at:0,bank:0},{id:2,el:'water',at:0,bank:0}], habNext:3,
-    farm:[0,0,0], daily:{day:0,streak:0}, achClaimed:[], adv:0, boss:{week:0,dmg:0,hits:0,day:0,claimed:[]}, decos:[], pity:0, friends:[], giftLog:{}, event:{week:-1,pts:0,claimed:[]}, runes:[], arena:{pts:0,week:-1,wins:0,claimed:false},
+    farm:[0,0,0,0,0,0], daily:{day:0,streak:0}, achClaimed:[], adv:0, boss:{week:0,dmg:0,hits:0,day:0,claimed:[]}, decos:[], pity:0, friends:[], giftLog:{}, event:{week:-1,pts:0,claimed:[]}, runes:[], arena:{pts:0,week:-1,wins:0,claimed:false},
     ore:0, forge:{gold:0,power:0}, mails:[], spinDay:0, mailSeeded:false, lastSeen:0, tower:{floor:0,sweepDay:0},
     rebirth:{count:0,ki:0,up:{gold:0,power:0,xp:0}}, seen:['fire','water','plant'],
     periodic:{dk:-1,wk:-1,d:{},w:{}}, dq:{day:-1,claimed:[]}, wq:{week:-1,claimed:[]}};
@@ -407,7 +407,8 @@ function drNorm(v){
     mails:Array.isArray(v.mails)?v.mails:[],
     habitats:(Array.isArray(v.habitats)&&v.habitats.length)?v.habitats.filter(h=>h&&DR_PAL[h.el]).map(h=>({id:h.id, el:h.el, at:h.at||0, bank:h.bank||0})):drDefault().habitats,
     habNext:Math.max(3, v.habNext||0, ...((Array.isArray(v.habitats)?v.habitats:[]).map(h=>((h&&h.id)||0)+1))),
-    farm:Array.isArray(v.farm)?v.farm.slice(0,3).map(x=>+x||0):[0,0,0],
+    farm:(()=>{ const a=Array.isArray(v.farm)?v.farm.slice(0,9):[]; while(a.length<6)a.push(0);   // 6–9 ô; giữ save cũ (số) lẫn mới ({c,t})
+      return a.map(x=>(x&&typeof x==='object'&&x.t)?{c:String(x.c||'wheat'),t:+x.t||0}:(+x||0)); })(),
     daily:(v.daily&&typeof v.daily==='object')?{day:v.daily.day||0,streak:v.daily.streak||0}:{day:0,streak:0},
     achClaimed:Array.isArray(v.achClaimed)?v.achClaimed:[], adv:v.adv||0,
     boss:(v.boss&&typeof v.boss==='object')?{week:v.boss.week||0,dmg:v.boss.dmg||0,hits:v.boss.hits||0,day:v.boss.day||0,claimed:Array.isArray(v.boss.claimed)?v.boss.claimed:[]}:{week:0,dmg:0,hits:0,day:0,claimed:[]},
@@ -446,7 +447,7 @@ function drSaveNow(){
     ore:Math.round(drState.ore||0), forge:{gold:(drState.forge&&drState.forge.gold)||0, power:(drState.forge&&drState.forge.power)||0},
     mails:(drState.mails||[]).slice(), spinDay:drState.spinDay||0, mailSeeded:!!drState.mailSeeded, lastSeen:drNow(),
     habitats:(drState.habitats||[]).map(h=>({id:h.id,el:h.el,at:h.at||0,bank:Math.round(h.bank||0)})), habNext:drState.habNext||3,
-    farm:(drState.farm||[]).slice(0,3), daily:drState.daily||{day:0,streak:0}, achClaimed:(drState.achClaimed||[]).slice(),
+    farm:(drState.farm||[]).slice(0,9), daily:drState.daily||{day:0,streak:0}, achClaimed:(drState.achClaimed||[]).slice(),
     adv:drState.adv||0, boss:drState.boss||{week:0,dmg:0,hits:0,day:0,claimed:[]}, decos:(drState.decos||[]).slice(), pity:drState.pity||0, friends:(drState.friends||[]).slice(), giftLog:drState.giftLog||{}, event:drState.event||{week:-1,pts:0,claimed:[]}, runes:(drState.runes||[]).slice(), arena:drState.arena||{pts:0,week:-1,wins:0,claimed:false}, tower:drState.tower||{floor:0,sweepDay:0},
     rebirth:drState.rebirth||{count:0,ki:0,up:{gold:0,power:0,xp:0}},
     seen:Array.from(new Set([...(drState.seen||[]), ...(drState.dragons||[]).map(d=>d.sp)])),
@@ -530,11 +531,21 @@ function drBreedPool(elA,elB){
     if(s.el===elA && drRarRank(sp)>=1 && pool.indexOf(sp)<0) pool.push(sp); } }
   return pool;
 }
+// Rồng CHỈ-LAI (không bán ở trứng) — lai mới có, tạo giá trị riêng cho việc lai rồng.
+const DR_BREED_ONLY=new Set(['lava','steam','swamp','storm','rainbow','prism','aurora','carnival']);
+// "Đột biến": bốc 1 rồng BẤT KỲ toàn hệ, theo tỉ lệ hiếm (rare cao nhất, legendary thấp nhất) -> mọi con đều lai được.
+function drWildcardSp(){
+  const all=Object.keys(DR_SPECIES), w=all.map(sp=>({0:2,1:4,2:3,3:1})[drRarRank(sp)]||1);
+  let r=Math.random()*w.reduce((a,b)=>a+b,0);
+  for(let i=0;i<all.length;i++){ if((r-=w[i])<0) return all[i]; }
+  return all[0];
+}
 function drBreedResult(elA,elB,blessed){
   const pool=drBreedPool(elA,elB);
   const rarest=pool.slice().sort((x,y)=>drRarRank(y)-drRarRank(x))[0];
   if(blessed) return rarest;                              // chúc phúc: CHẮC CHẮN ra con hiếm nhất
   if((drState.pity||0)>=DR_PITY_MAX && drRarRank(rarest)>=1) return rarest;   // đủ pity -> ép ra hiếm
+  if(Math.random()<0.10) return drWildcardSp();           // ~10% ĐỘT BIẾN: có thể ra bất kỳ rồng nào (kể cả chỉ-lai/hiếm)
   const wts=pool.map(sp=>Math.pow(2,drRarRank(sp)));      // con càng hiếm càng dễ ra (trọng số 2^bậc hiếm)
   let r=Math.random()*wts.reduce((a,b)=>a+b,0);
   for(let i=0;i<pool.length;i++){ if((r-=wts[i])<0) return pool[i]; }
@@ -787,7 +798,7 @@ function drRenderDragons(){
     bob.style.animationDelay=(-Math.random()*2.6).toFixed(2)+'s';
     bob.style.setProperty('--acc',(DR_PAL[s.el]||{}).body||'#8fe0ff');
     bob.style.setProperty('--tcol',drStarCol(st));
-    bob.style.setProperty('--au',(0.22+st*0.026).toFixed(3));      // độ sáng quầng: tăng liên tục theo sao (★1≈.25 → ★25≈.87)
+    bob.style.setProperty('--au',(0.12+st*0.02).toFixed(3));       // quầng sáng NHẸ để không lấn hình rồng (★1≈.14 → ★25≈.62)
     bob.style.setProperty('--asz',(114+st*2.4).toFixed(0)+'%');    // kích thước quầng theo sao
     bob.style.setProperty('--odur',(Math.max(2.6, 7-st*0.17)).toFixed(2)+'s'); // xoay nhanh dần theo sao
     // ==== FX theo BẬC SAO — mỗi bậc một KIỂU hiệu ứng khác hẳn ====
@@ -1643,12 +1654,22 @@ function drClaimMail(i){
 }
 
 /* ---------- Shop ---------- */
-const DR_SHOP_RARE_POOL=['electric','ice','lava','steam','swamp','storm','dark','rose','lotus','peony','bubblegum','aurora','carnival','prism','starlight','rainbow','mint','lemon','berry','coral','cloud',
-  'cotton-candy','strawberry-cream','blossom-bubble','cherry-soda','pearl-lotus','rose-quartz','moon-ribbon','rainbow-mochi','starlight-bow','cupid-heart'];  // trứng hiếm: loài hiếm/epic đã có sprite (gồm 10 rồng dễ thương mới)
+const DR_SHOP_RARE_POOL=['electric','ice','dark','rose','lotus','peony','bubblegum','starlight','mint','lemon','berry','coral','cloud',
+  'cotton-candy','strawberry-cream','blossom-bubble','cherry-soda','pearl-lotus','rose-quartz','moon-ribbon','rainbow-mochi','starlight-bow','cupid-heart']  // trứng hiếm (KHÔNG gồm rồng chỉ-lai)
+  .filter(sp=>!DR_BREED_ONLY.has(sp));
 const DR_SHOP_LEGEND_POOL=['kaleidoscope','light'];   // trứng huyền thoại
+// Trứng RỒNG CƯNG — giá VÀNG (dễ kiếm) để ai cũng sở hữu rồng dễ thương. Ưu tiên 10 con MỚI (trọng số x2).
+const DR_CUTE_NEW=['cotton-candy','strawberry-cream','blossom-bubble','cherry-soda','pearl-lotus','rose-quartz','moon-ribbon','rainbow-mochi','starlight-bow','cupid-heart'];
+const DR_CUTE_POOL=[...DR_CUTE_NEW,'peach','sakura','candy','rose','lotus','peony','bubblegum','mint','lemon','berry','coral','cloud'];
+const DR_CUTE_EGG_COST=4000;   // 🪙
+function drCuteRoll(){ const w=DR_CUTE_POOL.map(sp=>DR_CUTE_NEW.includes(sp)?2:1);
+  let r=Math.random()*w.reduce((a,b)=>a+b,0);
+  for(let i=0;i<DR_CUTE_POOL.length;i++){ if((r-=w[i])<0) return DR_CUTE_POOL[i]; }
+  return DR_CUTE_POOL[0]; }
 function drShowShop(){
   const body=`<div class="dr-shop-grid">
     <div class="dr-shop-item"><div class="dr-shop-ic">${drIcon('egg')}</div><b>Trứng thường</b><small>Nở 1 rồng nguyên tố cơ bản</small><button class="dr-btn" id="drBuyEgg">250 🪙</button></div>
+    <div class="dr-shop-item"><div class="dr-shop-ic">${drIcon('egg')}</div><b>Trứng RỒNG CƯNG 🩷</b><small>Nở rồng dễ thương (Kẹo Bông, Kem Dâu, Nơ Sao, Thần Tình Yêu…) — giá vàng, dễ sở hữu!</small><button class="dr-btn go" id="drBuyEggCute">${fmtCoin(DR_CUTE_EGG_COST)} 🪙</button></div>
     <div class="dr-shop-item"><div class="dr-shop-ic">${drIcon('star')}</div><b>Trứng HIẾM</b><small>Nở rồng hiếm/epic (Cực Quang, Lễ Hội, Hoa Sen, Cầu Vồng…)</small><button class="dr-btn alt" id="drBuyEggRare">40 💎</button></div>
     <div class="dr-shop-item"><div class="dr-shop-ic">${drIcon('gift')}</div><b>Trứng HUYỀN THOẠI</b><small>Chắc chắn rồng huyền thoại (Vạn Hoa / Thần Long)</small><button class="dr-btn alt" id="drBuyEggLegend">120 💎</button></div>
     <div class="dr-shop-item"><div class="dr-shop-ic">${drIcon('food')}</div><b>Thức ăn ×20</b><small>Cho rồng lên cấp</small><button class="dr-btn" id="drBuyFood">100 🪙</button></div>
@@ -1663,12 +1684,18 @@ function drShowShop(){
     drState.gold-=250; const sp=['fire','water','plant','earth'][Math.floor(Math.random()*4)]; drState.dragons.push({sp,lv:1,fed:0}); drFocusLast();
     drAddXp(10); drRenderHud(); drRenderDragons(); drSave(); drFx('egg-hatch'); drNewSp(sp);
     drRevealCard('common', `${drDragonArt({sp,lv:1})}<b>${esc(DR_SPECIES[sp].name)}</b><small>🥚 Rồng mới!</small>`); };
+  $('drBuyEggCute').onclick=()=>{ if(full())return; if(drState.gold<DR_CUTE_EGG_COST){drNotify('warning','Thiếu vàng (cần '+fmtCoin(DR_CUTE_EGG_COST)+' 🪙)');return;}
+    drState.gold-=DR_CUTE_EGG_COST; const sp=drCuteRoll(); drState.dragons.push({sp,lv:1,fed:0,star:1}); drFocusLast();
+    drAddXp(20); if(typeof confetti==='function') confetti(); drFx('egg-hatch'); drRenderHud(); drRenderDragons(); drSave(); drNewSp(sp);
+    drRevealCard('crystal', `${drDragonArt({sp,lv:1})}<b>${esc(DR_SPECIES[sp].name)}</b><small>🩷 Rồng Cưng!</small>`); };
   $('drBuyEggRare').onclick=()=>{ if(full())return; if(drState.gems<40){toast('Thiếu 💎 (cần 40)');return;}
-    drState.gems-=40; const sp=DR_SHOP_RARE_POOL[Math.floor(Math.random()*DR_SHOP_RARE_POOL.length)]; drState.dragons.push({sp,lv:1,fed:0,star:1}); drFocusLast();
+    const pool=DR_SHOP_RARE_POOL.filter(sp=>drRarRank(sp)>=1);   // KIM CƯƠNG: chặn chắc, không bao giờ ra rồng thường
+    drState.gems-=40; const sp=pool[Math.floor(Math.random()*pool.length)]; drState.dragons.push({sp,lv:1,fed:0,star:1}); drFocusLast();
     drAddXp(30); if(typeof confetti==='function') confetti(); drFx('egg-hatch'); drRenderHud(); drRenderDragons(); drSave(); drNewSp(sp);
     drRevealCard('crystal', `${drDragonArt({sp,lv:1})}<b>${esc(DR_SPECIES[sp].name)}</b><small>✨ Rồng Hiếm!</small>`); };
   $('drBuyEggLegend').onclick=()=>{ if(full())return; if(drState.gems<120){toast('Thiếu 💎 (cần 120)');return;}
-    drState.gems-=120; const sp=DR_SHOP_LEGEND_POOL[Math.floor(Math.random()*DR_SHOP_LEGEND_POOL.length)]; drState.dragons.push({sp,lv:1,fed:0,star:1}); drFocusLast();
+    const pool=DR_SHOP_LEGEND_POOL.filter(sp=>drRarRank(sp)>=2);   // KIM CƯƠNG: chỉ epic/huyền thoại
+    drState.gems-=120; const sp=(pool[0]?pool:DR_SHOP_LEGEND_POOL)[Math.floor(Math.random()*(pool[0]?pool.length:DR_SHOP_LEGEND_POOL.length))]; drState.dragons.push({sp,lv:1,fed:0,star:1}); drFocusLast();
     drAddXp(50); if(typeof confetti==='function') confetti(); drFx('egg-hatch'); drRenderHud(); drRenderDragons(); drSave(); drNewSp(sp);
     drRevealCard('legendary', `${drDragonArt({sp,lv:1})}<b>${esc(DR_SPECIES[sp].name)}</b><small>🌟 Rồng Huyền Thoại!</small>`); };
   $('drBuyFood').onclick=()=>{ if(drState.gold<100){drNotify('warning','Thiếu vàng để mua');return;} drState.gold-=100; drState.food+=20; drRenderHud(); drBump('drFood'); drSave(); drNotify('success','Đã mua +20 🍖'); };
@@ -1798,10 +1825,10 @@ function drCodexDetail(sp,has){
   const body=`<button class="dr-back-btn" id="drCodexBack">← Danh sách rồng</button>
     <div class="dr-codex-detail">
     <div class="dr-codex-art ${has?'':'silh'}">${has?drDragonArt({sp,lv:bestLv||1}):'<span class="dr-lock">?</span>'}</div>
-    <div class="dr-codex-meta"><div class="dr-detail-name">${has?esc(s.name):'? ? ?'} ${drRarChip(s.rar)}</div>
+    <div class="dr-codex-meta"><div class="dr-detail-name">${has?esc(s.name):'? ? ?'} ${drRarChip(s.rar)}${DR_BREED_ONLY.has(sp)?' <span class="dr-rar" style="--rc:#d17ae0">💞 Chỉ Lai</span>':''}</div>
       <div class="dr-chips">${s.els.map(drElChip).join('')}</div>
       ${own?`<div class="dr-kv"><span>Hình thái cao nhất</span><b>${drEvolution(bestLv).name} · Lv${bestLv}</b></div>`
-           :(has?'<p class="dr-note">Đã sưu tầm — nuôi & lên cấp để mở các hình thái.</p>':'<p class="dr-note">Chưa sở hữu — lai hoặc mua để mở khoá.</p>')}
+           :(has?'<p class="dr-note">Đã sưu tầm — nuôi & lên cấp để mở các hình thái.</p>':(DR_BREED_ONLY.has(sp)?'<p class="dr-note">💞 <b>Chỉ có được qua LAI RỒNG</b> — không bán ở trứng.</p>':'<p class="dr-note">Chưa sở hữu — lai hoặc mua để mở khoá.</p>'))}
       <div class="dr-kv"><span>Sinh vàng</span><b>${s.gold} 🪙/phút (Lv1)</b></div>
     </div></div>
     <div class="dr-evohead"><b>🧬 Hình thái tiến hoá</b><span>${evoNote}</span></div>
@@ -2012,34 +2039,108 @@ function drShowCoach(){
   $('drModal').querySelectorAll('[data-coach]').forEach(b=>b.onclick=()=>drOpen(b.dataset.coach));   // mở thẳng màn liên quan (reuse popup, mượt)
 }
 
-/* ---- Nông trại: gieo bằng vàng -> chờ chín -> thu thức ăn ---- */
-const DR_FARM_PLOTS=3, DR_FARM_COST=200, DR_FARM_YIELD=45, DR_FARM_MS=300000;   // 200🪙 -> 45🍖 sau 5 phút
-function drFarmReady(t){ return t>0 && (drNow()-t)>=DR_FARM_MS; }
-function drPlant(i){ if(drState.farm[i]) return; if(drState.gold<DR_FARM_COST){ toast('Thiếu vàng (cần '+DR_FARM_COST+' 🪙)'); return; }
-  drState.gold-=DR_FARM_COST; drState.farm[i]=drNow(); drRenderHud(); drSave(); drShowFarm(); toast('🌱 Đã gieo hạt'); }
-function drHarvest(i){ if(!drFarmReady(drState.farm[i])) return; drState.food+=DR_FARM_YIELD; drState.farm[i]=0;
-  drBump('drFood'); drRenderHud(); drSave(); drShowFarm(); toast('🌾 Thu +'+DR_FARM_YIELD+' 🍖'); }
-function drFarmTickUI(){ (drState.farm||[]).forEach((t,i)=>{ if(!t) return; const lab=$('drPlotLab'+i); if(!lab) return;
-  const left=Math.max(0,Math.ceil((DR_FARM_MS-(drNow()-t))/1000)); lab.textContent='⏳ '+drFmtSec(left); }); drUpdateFeatureDots(); }
+/* ---- Nông trại kiểu game trồng trọt: chọn hạt -> gieo bằng vàng -> lớn dần -> thu thức ăn ---- */
+// Cây chậm/đắt hơn = lời hơn (nhiều 🍖/vàng). 6 ô. Ô lưu {c:loại, t:lúc gieo} (save cũ: số -> Lúa Mì).
+// yield=🍖 · xp=điểm KN · gb=thưởng vàng {ch,amt} · gm=thưởng 💎 {ch,amt}. Cây cao cấp lời hơn & hay rớt đồ.
+const DR_CROPS=[
+  {id:'wheat',  n:'Lúa Mì',  ic:'🌾', cost:120,  ms:180000,  yield:30,  xp:3},
+  {id:'carrot', n:'Cà Rốt',  ic:'🥕', cost:220,  ms:300000,  yield:60,  xp:4,  gb:{ch:.12,amt:90}},
+  {id:'corn',   n:'Ngô',     ic:'🌽', cost:400,  ms:480000,  yield:120, xp:6,  gb:{ch:.18,amt:200}},
+  {id:'berry',  n:'Dâu',     ic:'🍓', cost:650,  ms:720000,  yield:210, xp:8,  gb:{ch:.24,amt:380}, gm:{ch:.05,amt:1}},
+  {id:'pumpkin',n:'Bí Ngô',  ic:'🎃', cost:1100, ms:1200000, yield:400, xp:12, gb:{ch:.30,amt:850}, gm:{ch:.12,amt:2}},
+];
+const DR_CROP_MAP=Object.fromEntries(DR_CROPS.map(c=>[c.id,c]));
+const DR_BUMPER=0.18;            // 18% "bội thu" -> nhân đôi 🍖
+const DR_FARM_MAX=9;             // mở rộng tối đa 9 luống
+let drFarmSeed='wheat';
+// Thu 1 ô -> trả về {food,gold,gem,xp,bumper}. Cộng thẳng vào state.
+function drReapPlot(v){
+  const c=drCrop(drFarmPlot(v).c); const bump=Math.random()<DR_BUMPER;
+  let food=c.yield*(bump?2:1), gold=0, gem=0;
+  if(c.gb && Math.random()<c.gb.ch) gold=c.gb.amt;
+  if(c.gm && Math.random()<c.gm.ch) gem=c.gm.amt;
+  drState.food+=food; if(gold) drState.gold+=gold; if(gem) drState.gems+=gem;
+  return {food,gold,gem,xp:c.xp||0,bump};
+}
+function drCrop(id){ return DR_CROP_MAP[id]||DR_CROPS[0]; }
+function drFarmPlot(v){ if(!v) return null; if(typeof v==='number') return {c:'wheat',t:v}; if(v&&v.t) return {c:drCrop(v.c).id,t:v.t}; return null; }
+function drFarmReady(v){ const p=drFarmPlot(v); return !!p && (drNow()-p.t)>=drCrop(p.c).ms; }
+function drFarmLeft(v){ const p=drFarmPlot(v); if(!p) return 0; return Math.max(0,Math.ceil((drCrop(p.c).ms-(drNow()-p.t))/1000)); }
+function drFarmProg(v){ const p=drFarmPlot(v); if(!p) return 0; return Math.max(0,Math.min(100,Math.round((drNow()-p.t)/drCrop(p.c).ms*100))); }
+function drFarmStage(v){ const p=drFarmPlot(v); if(!p) return {e:'',s:''}; const c=drCrop(p.c), r=(drNow()-p.t)/c.ms;
+  if(r>=1) return {e:c.ic,s:'ripe'}; if(r>=.62) return {e:'🌿',s:'g3'}; if(r>=.28) return {e:'🌱',s:'g2'}; return {e:'🌰',s:'g1'}; }
+function drPlant(i, cropId){ if(drFarmPlot(drState.farm[i])) return; const c=drCrop(cropId||drFarmSeed);
+  if(drState.gold<c.cost){ drNotify('warning','Thiếu vàng — cần '+fmtCoin(c.cost)+' 🪙'); return; }
+  drState.gold-=c.cost; drState.farm[i]={c:c.id,t:drNow()}; drBump('drGold'); drRenderHud(); drSave(); drShowFarm(); }
+function drRewardStr(r){ return [r.food?'+'+r.food+'🍖':'', r.gold?'+'+fmtCoin(r.gold)+'🪙':'', r.gem?'+'+r.gem+'💎':''].filter(Boolean).join(' '); }
+function drHarvest(i){ if(!drFarmReady(drState.farm[i])) return; const c=drCrop(drFarmPlot(drState.farm[i]).c);
+  const r=drReapPlot(drState.farm[i]); drState.farm[i]=0; if(r.xp) drAddXp(r.xp);
+  drBump('drFood'); if(r.gold) drBump('drGold'); if(r.gem) drBump('drGems'); drRenderHud(); drSave();
+  drFx(r.bump?'reward-burst':'coin-collect'); if(r.bump&&typeof flash==='function') flash('🌟 BỘI THU!');
+  drShowFarm(); toast((r.bump?'🌟 Bội thu '+c.ic+' ':'🧺 Thu '+c.ic+' ')+drRewardStr(r)); }
+function drPlantAll(){ const c=drCrop(drFarmSeed); let n=0;
+  drState.farm.forEach((v,i)=>{ if(!drFarmPlot(v) && drState.gold>=c.cost){ drState.gold-=c.cost; drState.farm[i]={c:c.id,t:drNow()}; n++; } });
+  if(n){ drBump('drGold'); drRenderHud(); drSave(); drShowFarm(); } else drNotify('warning','Hết ô trống hoặc thiếu vàng'); }
+function drHarvestAll(){ let food=0,gold=0,gem=0,xp=0,n=0,bumps=0;
+  drState.farm.forEach((v,i)=>{ if(drFarmReady(v)){ const r=drReapPlot(v); drState.farm[i]=0; food+=r.food; gold+=r.gold; gem+=r.gem; xp+=r.xp; if(r.bump)bumps++; n++; } });
+  if(!n){ toast('Chưa có ô nào chín 🌱'); return; }
+  if(xp) drAddXp(xp); drBump('drFood'); if(gold) drBump('drGold'); if(gem) drBump('drGems'); drRenderHud(); drSave();
+  if(typeof confetti==='function') confetti(); drFx('reward-burst'); drShowFarm();
+  toast('🧺 Thu '+n+' ô '+(bumps?('· '+bumps+'🌟 '):'')+drRewardStr({food,gold,gem})); }
+// Bón phân: trả 💎 để cây chín NGAY (giá theo thời gian còn lại, tối thiểu 1💎)
+function drFertCost(v){ return Math.max(1, Math.ceil(drFarmLeft(v)/180)); }   // ~1💎 / 3 phút còn lại
+function drFertilize(i){ const v=drState.farm[i], p=drFarmPlot(v); if(!p||drFarmReady(v)) return;
+  const cost=drFertCost(v); if(drState.gems<cost){ drNotify('warning','Thiếu 💎 — cần '+cost+' để bón phân'); return; }
+  drState.gems-=cost; drState.farm[i]={c:p.c,t:drNow()-drCrop(p.c).ms}; drBump('drGems'); drRenderHud(); drSave();
+  drFx('unlock'); drShowFarm(); toast('⚡ Bón phân — cây chín ngay!'); }
+// Mở rộng luống mới bằng vàng (6 -> 9), giá tăng dần
+function drFarmExpandCost(){ const cur=drState.farm.length; return 3000*Math.pow(2, cur-6); }   // 6→7:3k, 7→8:6k, 8→9:12k
+function drExpandFarm(){ if(drState.farm.length>=DR_FARM_MAX){ toast('Đã mở tối đa '+DR_FARM_MAX+' luống'); return; }
+  const cost=drFarmExpandCost(); if(drState.gold<cost){ drNotify('warning','Thiếu vàng — cần '+fmtCoin(cost)+' 🪙 để mở luống'); return; }
+  drState.gold-=cost; drState.farm.push(0); drBump('drGold'); drRenderHud(); drSave(); drFx('unlock'); drShowFarm(); toast('🪴 Mở thêm 1 luống đất!'); }
+function drFarmTickUI(){ (drState.farm||[]).forEach((v,i)=>{ if(!drFarmPlot(v)) return;
+  const lab=$('drPlotLab'+i); if(lab) lab.textContent='⏳ '+drFmtSec(drFarmLeft(v));
+  const bar=$('drPlotBar'+i); if(bar) bar.style.width=drFarmProg(v)+'%';
+  const ic=$('drPlotIc'+i); if(ic){ const s=drFarmStage(v); if(ic.textContent!==s.e) ic.textContent=s.e; }
+}); drUpdateFeatureDots(); }
 function drShowFarm(){
   clearInterval(drFeatTimer);
-  const plots=(drState.farm||[]).map((t,i)=>{
-    const st=!t?'empty':(drFarmReady(t)?'ready':'grow');
-    const left=t?Math.max(0,Math.ceil((DR_FARM_MS-(drNow()-t))/1000)):0;
-    const inner = st==='empty'
-      ? `<div class="dr-plot-ic">🟫</div><button class="dr-btn sm" data-plant="${i}">🌱 Gieo · ${DR_FARM_COST}🪙</button>`
-      : st==='ready'
-        ? `<div class="dr-plot-ic ripe">🌾</div><button class="dr-btn alt sm" data-harv="${i}">✅ Thu +${DR_FARM_YIELD}🍖</button>`
-        : `<div class="dr-plot-ic">🌱</div><div class="dr-plot-lab" id="drPlotLab${i}">⏳ ${drFmtSec(left)}</div>`;
-    return `<div class="dr-plot ${st}" id="drPlot${i}">${inner}</div>`;
+  drState.farm=drState.farm||[]; while(drState.farm.length<6) drState.farm.push(0);   // đảm bảo đủ 6 ô
+  const readyN=(drState.farm||[]).filter(v=>drFarmReady(v)).length;
+  const emptyN=(drState.farm||[]).filter(v=>!drFarmPlot(v)).length;
+  const seedbar=DR_CROPS.map(c=>`<button class="dr-seed${c.id===drFarmSeed?' sel':''}" data-seed="${c.id}">
+      <span class="dr-seed-ic">${c.ic}</span><b>${c.n}</b>
+      <small>${fmtCoin(c.cost)}🪙 · ${Math.round(c.ms/60000)}p · +${c.yield}🍖</small></button>`).join('');
+  const plots=(drState.farm||[]).map((v,i)=>{
+    const p=drFarmPlot(v);
+    if(!p) return `<div class="dr-plot empty" data-plant="${i}"><span class="dr-plot-ic">🟫</span><span class="dr-plot-sow">＋ Gieo</span></div>`;
+    const st=drFarmStage(v), c=drCrop(p.c);
+    if(st.s==='ripe') return `<div class="dr-plot ready" data-harv="${i}"><span class="dr-plot-ic ripe">${c.ic}</span><span class="dr-plot-get">+${c.yield}🍖</span></div>`;
+    return `<div class="dr-plot grow ${st.s}"><span class="dr-plot-ic" id="drPlotIc${i}">${st.e}</span>
+      <div class="dr-plot-bar"><i id="drPlotBar${i}" style="width:${drFarmProg(v)}%"></i></div>
+      <span class="dr-plot-lab" id="drPlotLab${i}">⏳ ${drFmtSec(drFarmLeft(v))}</span>
+      <button class="dr-plot-fert" data-fert="${i}" title="Bón phân chín ngay">⚡ ${drFertCost(v)}💎</button></div>`;
   }).join('');
-  const body=`<p class="dr-hab-intro">Gieo hạt bằng <b>vàng</b>, chờ chín rồi thu <b>🍖 thức ăn</b> để nuôi rồng. Mỗi ô ${DR_FARM_MS/60000} phút.</p>
-    <div class="dr-farm-grid">${plots}</div>`;
+  const canExpand=drState.farm.length<DR_FARM_MAX;
+  const body=`<p class="dr-hab-intro">Chọn hạt → chạm ô đất để <b>gieo</b> → chờ lớn → chạm ô chín <b>thu 🍖</b>. Cây lâu = lời hơn · có <b>🌟 bội thu ×2</b> & rớt <b>🪙/💎</b>!</p>
+    <div class="dr-seedbar">${seedbar}</div>
+    <div class="dr-farm-grid">${plots}</div>
+    <div class="dr-farm-acts">
+      <button class="dr-btn go" id="drSowAll" ${emptyN?'':'disabled'}>🌱 Gieo tất cả (${drCrop(drFarmSeed).ic})</button>
+      <button class="dr-btn alt" id="drReapAll" ${readyN?'':'disabled'}>🧺 Thu tất cả${readyN?' ('+readyN+')':''}</button>
+      ${canExpand?`<button class="dr-btn" id="drExpand">🪴 Mở luống · ${fmtCoin(drFarmExpandCost())}🪙</button>`:`<div class="dr-farm-full">🪴 Đã mở tối đa ${DR_FARM_MAX} luống</div>`}
+    </div>`;
   const bd=drModal('🌾 Nông trại', body, true);
-  bd.addEventListener('click',e=>{ const p=e.target.closest('[data-plant]'); if(p){ drPlant(+p.dataset.plant); return; }
+  bd.addEventListener('click',e=>{
+    const seed=e.target.closest('[data-seed]'); if(seed){ drFarmSeed=seed.dataset.seed; drShowFarm(); return; }
+    const f=e.target.closest('[data-fert]'); if(f){ drFertilize(+f.dataset.fert); return; }
+    const p=e.target.closest('[data-plant]'); if(p){ drPlant(+p.dataset.plant); return; }
     const h=e.target.closest('[data-harv]'); if(h){ drHarvest(+h.dataset.harv); return; } });
+  const sa=$('drSowAll'); if(sa) sa.onclick=drPlantAll;
+  const ra=$('drReapAll'); if(ra) ra.onclick=drHarvestAll;
+  const ex=$('drExpand'); if(ex) ex.onclick=drExpandFarm;
   drFeatTimer=setInterval(()=>{ if(!document.querySelector('.dr-farm-grid')){ clearInterval(drFeatTimer); return; }
-    if((drState.farm||[]).some((t,i)=>t&&drFarmReady(t)&&$('drPlotLab'+i))){ drShowFarm(); } else { drFarmTickUI(); } },1000);
+    if((drState.farm||[]).some((v,i)=>drFarmReady(v)&&$('drPlotLab'+i))){ drShowFarm(); } else { drFarmTickUI(); } },1000);
 }
 
 /* ---- Điểm danh: chuỗi 7 ngày, thưởng tăng dần ---- */
@@ -2999,7 +3100,7 @@ function drDoRebirth(){
   drState.dragons=def.dragons; drState.gold=def.gold; drState.food=def.food; drState.ore=0;
   drState.level=1; drState.xp=0; drState.adv=0; drState.breed=null; drState.pity=0;
   drState.tower={floor:0,sweepDay:0};
-  drState.habitats=def.habitats; drState.habNext=3; drState.farm=[0,0,0];
+  drState.habitats=def.habitats; drState.habNext=3; drState.farm=[0,0,0,0,0,0];
   drState.qc={tap:0,feed:0,breed:0,win:0,clear:0}; drState.qClaimed=[]; drState.cleared=[];
   drCloseModal(); if(typeof drRenderDragons==='function') drRenderDragons(); drRenderHud(); drSave();
   if(typeof drUpdateQuestDot==='function') drUpdateQuestDot();
