@@ -164,8 +164,20 @@ const GAME_CHANGELOGS = {
 
   maubinh: {
     name: 'Mậu Binh',
-    version: '1.3.0',
+    version: '1.4.0',
     log: [
+      {
+        version: '1.4.0',
+        date: '13/07/2026',
+        tag: 'Tính năng',
+        title: 'Bàn online & cược lớn',
+        items: [
+          { ic: '🌐', t: 'Bàn ONLINE nhiều người — tạo phòng, chọn số người thật (1–4), ghế trống MÁY ngồi thay. Chia sẻ mã 5 ký tự để bạn bè vào.' },
+          { ic: '🎴', t: 'Mọi người binh cùng lúc, chủ phòng gom bài chấm điểm — thắng thua ăn xu như thường.' },
+          { ic: '💰', t: 'Mức cược lớn hơn: 10 · 50 · 200 · 1.000 · 5.000 · 20.000 🪙/điểm (hoặc gõ số tuỳ ý) — hợp ví bạc triệu.' },
+          { ic: '🖼️', t: 'Nền bàn giờ là ẢNH thật (Cổ Điển, Nửa Đêm, Anh Đào, Ngọc Lục, Hoàng Gia) và hiệu ứng lật bài kết quả chậm rãi, đã mắt hơn.' },
+        ],
+      },
       {
         version: '1.3.0',
         date: '13/07/2026',

@@ -1,4 +1,4 @@
-const CACHE = 'tienlen-v151-whatsnew-dragons';
+const CACHE = 'tienlen-v153-mb-online';
 const ASSETS = [
   './', './index.html', './styles.css', './manifest.webmanifest', './icon-192.png', './icon-512.png',
   './js/config.js', './js/version.js', './js/engine.js', './js/state.js', './js/game.js', './js/ui.js', './js/daorong.js', './js/maubinh.js', './js/social.js',
@@ -112,6 +112,9 @@ const ASSETS = [
   './assets/maubinh/frames/animated/frame-silver.webp', './assets/maubinh/frames/animated/frame-neon.webp',
   './assets/maubinh/frames/animated/frame-gold.webp', './assets/maubinh/frames/animated/frame-fire.webp',
   './assets/maubinh/frames/animated/frame-rainbow.webp',
+  './assets/maubinh/backgrounds/table-classic.webp', './assets/maubinh/backgrounds/table-midnight.webp',
+  './assets/maubinh/backgrounds/table-sakura.webp', './assets/maubinh/backgrounds/table-emerald.webp',
+  './assets/maubinh/backgrounds/table-royal.webp',
   'https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-auth-compat.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-database-compat.min.js',

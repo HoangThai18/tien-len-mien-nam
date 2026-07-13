@@ -477,7 +477,7 @@ function boot(){
       }
     }else{
       if(typeof drActive!=='undefined'&&drActive) leaveDragonIsland(true);   // đang ở đảo -> thoát
-      if(typeof mbActive!=='undefined'&&mbActive) leaveMauBinh(true);        // đang binh -> thoát
+      if((typeof mbActive!=='undefined'&&mbActive)||(typeof mbOnline!=='undefined'&&mbOnline)) leaveMauBinh(true);  // đang binh / ở phòng chờ online -> thoát
       if(mode!=='solo'||S){ cleanupRoom(); render(); }   // đăng xuất giữa chừng -> dọn phòng
       detachProfile(); profile=null; renderCoinBar();
       showLogin();

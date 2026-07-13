@@ -326,6 +326,7 @@ function showMauBinh(){
 function leaveMauBinh(silent){
   mbActive=false;
   mbRevealToken++;
+  if(mbOnline) mbLeaveRoom(true);
   mbMode='solo';
   if($('mbApp')) $('mbApp').style.display='none';
   const cb=$('coinBar'); if(cb&&profile) cb.style.display='inline-flex';
@@ -345,6 +346,7 @@ function mbDeal(){
   $('mbResult').setAttribute('aria-hidden','true');
   $('mbBet').textContent=`Mệnh giá ${gameBet} 🪙/điểm`;
   $('mbCoin').textContent = profile&&profile.coins!=null? fmtCoin(profile.coins) : '--';
+  mbRenderOppStrip(['Bạn', MB_BOTS[1].name, MB_BOTS[2].name, MB_BOTS[3].name], ['🙂', MB_BOTS[1].emoji, MB_BOTS[2].emoji, MB_BOTS[3].emoji]);
   for(let p=1;p<=3;p++){ const s=$('mbOppS'+p); if(s){ s.textContent='Đang binh…'; s.className=''; }
     const opp=s&&s.closest('.mb-opp'); if(opp) opp.classList.remove('win'); }
   mbRenderMe();
@@ -452,6 +454,7 @@ function mbConfirm(){
   const ef=mbEval(z.front), em=mbEval(z.mid), eb=mbEval(z.back);
   if(mbFoul(ef,em,eb)){ toast('Binh lủng — sửa lại đi nào'); return; }
   if(typeof sfx==='function') sfx('confirm');
+  if(mbOnline){ mbSubmitBinh(z); return; }              // bàn online: gửi bài cho chủ phòng gom điểm
   // Bảo đảm 3 máy đã có kế hoạch
   for(let p=1;p<=3;p++) if(!mbState.bots[p]) mbState.bots[p]=mbBotPlan(mbState.hands[p]);
   const me={ front:z.front, mid:z.mid, back:z.back, ef, em, eb, foul:false,
@@ -475,11 +478,12 @@ function mbConfirm(){
 
 /* ---------- Bảng kết quả ---------- */
 let mbRevealToken=0;   // huỷ hiệu ứng cũ khi qua ván mới / thoát
-function mbShowResult(arrs, pts, delta){
+function mbShowResult(arrs, pts, delta, opts){
+  opts=opts||{};
   const tok=++mbRevealToken;
-  const names=['Bạn', MB_BOTS[1].name, MB_BOTS[2].name, MB_BOTS[3].name];
-  const avas=['🙂', MB_BOTS[1].emoji, MB_BOTS[2].emoji, MB_BOTS[3].emoji];
-  const PGAP=680, CDLY=30, BASE=160;              // nhịp lật: mỗi người 0.68s, mỗi lá 30ms
+  const names=opts.names||['Bạn', MB_BOTS[1].name, MB_BOTS[2].name, MB_BOTS[3].name];
+  const avas=opts.avas||['🙂', MB_BOTS[1].emoji, MB_BOTS[2].emoji, MB_BOTS[3].emoji];
+  const PGAP=1050, CDLY=55, BASE=220;             // nhịp lật CHẬM: mỗi người ~1.05s, mỗi lá 55ms
   const rows=arrs.map((a,p)=>{
     const pStart=BASE + p*PGAP; let k=0;           // k = thứ tự lá trong người này (lật lần lượt)
     const chi=(cards,ev,cd)=>{
@@ -512,8 +516,13 @@ function mbShowResult(arrs, pts, delta){
     </div>`;
   $('mbResult').setAttribute('aria-hidden','false');
   $('mbCoin').textContent = profile&&profile.coins!=null? fmtCoin(profile.coins) : '--';
-  $('mbAgain').onclick=()=>{ mbRevealToken++; $('mbResult').setAttribute('aria-hidden','true'); mbDeal(); };
+  $('mbAgain').onclick=()=>{
+    mbRevealToken++; $('mbResult').setAttribute('aria-hidden','true');
+    if(mbOnline){ mbOnlineAgain(); return; }
+    mbDeal();
+  };
   $('mbLeave').onclick=()=>{ mbRevealToken++; leaveMauBinh(); };
+  if(mbOnline && !mbOnline.isHost){ const ag=$('mbAgain'); if(ag) ag.textContent='Chờ chủ phòng…'; }
   // Tiếng lật bài theo nhịp mỗi người (0..3)
   for(let p=0;p<4;p++) setTimeout(()=>{ if(tok===mbRevealToken && typeof sfx==='function') sfx('flip'); }, BASE + p*PGAP);
   // Cập nhật dải đối thủ theo nhịp lật (mỗi người tới lượt mới hiện điểm)
@@ -521,7 +530,7 @@ function mbShowResult(arrs, pts, delta){
   for(let p=1;p<=3;p++){
     setTimeout(()=>{ if(tok!==mbRevealToken) return;
       const s=$('mbOppS'+p); if(!s) return;
-      s.textContent=(pts[p]>0?'+':'')+pts[p]+' điểm'; s.className=pts[p]>0?'pos':pts[p]<0?'neg':'';
+      s.textContent=(pts[p]>0?'+':'')+pts[p]+' điểm'; s.className=pts[p]>0?'pos':pts[p]<0?'neg':''; s.dataset.locked='1';
       const opp=s.closest('.mb-opp'); if(opp) opp.classList.toggle('win', pts[p]===topPts && topPts>0);
     }, BASE + p*PGAP + 520);
   }
@@ -552,6 +561,341 @@ function mbShowRules(){
   $('mbRules').setAttribute('aria-hidden','false');
   $('mbRulesClose').onclick=()=>$('mbRules').setAttribute('aria-hidden','true');
   $('mbRules').onclick=e=>{ if(e.target===$('mbRules')) $('mbRules').setAttribute('aria-hidden','true'); };
+}
+
+/* =========================================================================
+   ONLINE — Bàn Mậu Binh nhiều người (host-authoritative qua Firebase RTDB).
+   Chọn SỐ NGƯỜI THẬT khi tạo phòng; ghế trống là MÁY ngồi thay. Bàn luôn đủ 4.
+   Đồng thời (không lượt): mọi người tự binh 13 lá → chủ phòng gom, chấm điểm,
+   phát kết quả. Ví settle 1 lần/ván ở mỗi client (dedup theo gameId trong addCoins).
+   Dùng chung: initFirebase/auth/db/makeCode/addCoins/updateBotElo/newDeck/cid/esc.
+   Phòng nằm ở rooms/<CODE> (game:'maubinh') — cùng luật RTDB với Tiến Lên.
+   ========================================================================= */
+let mbOnline=null;      // { code, ref, seat, isHost, numReal, bet, room, unsub[], dealt, scored, revealed, settled, roundShown }
+let mbOnlineNumReal=2;  // số người thật chọn ở màn tạo phòng
+const MB_HUMAN_EMO=['🙂','😎','🧑','🤠'];
+
+function mbFromCid(id){ return { rank:Math.floor(id/4), suit:id%4 }; }
+function mbBotSeatInfo(s){ const b=MB_BOTS[s]||MB_BOTS[3]; return {uid:'bot-'+b.key, name:b.name, emoji:b.emoji, bot:true, online:true, key:b.key}; }
+function mbHumanSeatInfo(seat){ return {uid:auth.currentUser.uid, name:(myName||'Bạn').slice(0,12), emoji:MB_HUMAN_EMO[seat]||'🙂', bot:false, online:true}; }
+function mbViewOrder(){ const me=mbOnline.seat, o=[me]; for(let s=0;s<4;s++) if(s!==me) o.push(s); return o; }
+
+// Dải đối thủ trên cùng (3 ghế) — dùng cho cả solo (tên máy cố định) & online (tên ghế thật).
+function mbRenderOppStrip(names, avas){
+  const el=$('mbOppo'); if(!el) return;
+  el.innerHTML=[1,2,3].map(p=>`<div class="mb-opp"><span class="mb-opp-ava">${avas[p]}</span>
+    <span class="mb-opp-col"><b>${esc(names[p])}</b><small id="mbOppS${p}">Đang binh…</small></span></div>`).join('');
+}
+
+/* ---------- Màn chọn kiểu chơi + tạo/vào phòng (overlay panel) ---------- */
+function showMbMode(){
+  $('panel').innerHTML=`
+    <div class="logo">🀄 Mậu Binh</div>
+    <h1 style="font-size:24px">Chọn kiểu chơi</h1>
+    <p class="sub">Binh 13 lá — so 3 chi ăn xu. Chơi 1 mình với máy, hoặc mở bàn online (ghế trống máy ngồi thay).</p>
+    <div class="menu-gap">
+      <button class="btn block" id="mbModeSolo">🤖 Chơi 1 mình (3 máy)</button>
+      <button class="btn block" id="mbModeCreate">🌐 Tạo phòng online</button>
+      <button class="btn block ghost" id="mbModeJoin">🔑 Vào phòng (nhập mã)</button>
+    </div>
+    <button class="linkish" id="mbModeBack">← Quay lại</button>`;
+  $('overlay').style.display='flex';
+  $('mbModeSolo').onclick=()=>showBetSetup(()=>showMauBinh());
+  $('mbModeCreate').onclick=()=>showMbCreate();
+  $('mbModeJoin').onclick=()=>showMbJoin();
+  $('mbModeBack').onclick=()=>{ if(typeof showGameSelect==='function') showGameSelect(); };
+}
+function showMbCreate(){
+  const realBtns=[1,2,3,4].map(n=>`<button class="bet-chip${n===mbOnlineNumReal?' sel':''}" data-real="${n}">${n} thật</button>`).join('');
+  const chips=BET_PRESETS.map(v=>`<button class="bet-chip${v===gameBet?' sel':''}" data-v="${v}">${v} 🪙</button>`).join('');
+  $('panel').innerHTML=`
+    <div class="logo">Phòng Mậu Binh</div>
+    <h1 style="font-size:24px">Tạo bàn online</h1>
+    <p class="sub">Chọn số <b>người thật</b> — ghế còn lại <b>máy</b> ngồi thay. Bàn luôn đủ 4 ghế.</p>
+    <div class="class-title">Số người thật</div>
+    <div class="bet-chips mb-real">${realBtns}</div>
+    <div class="class-title" style="margin-top:14px">Mệnh giá mỗi điểm</div>
+    <div class="bet-chips mb-vals">${chips}</div>
+    <input class="field" id="mbInBet" type="number" min="0" inputmode="numeric" value="${gameBet}">
+    <div class="menu-gap"><button class="btn block" id="mbCreateGo">Tạo phòng 🌐</button></div>
+    <button class="linkish" id="mbCreateBack">← Quay lại</button>`;
+  $('overlay').style.display='flex';
+  document.querySelectorAll('.mb-real .bet-chip').forEach(c=>c.onclick=()=>{ mbOnlineNumReal=+c.dataset.real;
+    document.querySelectorAll('.mb-real .bet-chip').forEach(x=>x.classList.toggle('sel',x===c)); });
+  document.querySelectorAll('.mb-vals .bet-chip').forEach(c=>c.onclick=()=>{ $('mbInBet').value=c.dataset.v;
+    document.querySelectorAll('.mb-vals .bet-chip').forEach(x=>x.classList.toggle('sel',x===c)); });
+  $('mbCreateGo').onclick=()=>{ gameBet=Math.max(0,Math.floor(+$('mbInBet').value||0)); mbCreateRoom(); };
+  $('mbCreateBack').onclick=()=>showMbMode();
+}
+function showMbJoin(){
+  $('panel').innerHTML=`
+    <div class="logo">Vào phòng</div>
+    <h1 style="font-size:24px">Nhập mã phòng</h1>
+    <p class="sub">Mã 5 ký tự do người tạo bàn chia sẻ.</p>
+    <input class="field mb-code-in" id="mbJoinCode" maxlength="5" autocapitalize="characters" placeholder="VD: ABX9K"
+      style="text-transform:uppercase; letter-spacing:5px; text-align:center; font-weight:900; font-size:22px;">
+    <div class="menu-gap"><button class="btn block" id="mbJoinGo">Vào phòng 🔑</button></div>
+    <button class="linkish" id="mbJoinBack">← Quay lại</button>`;
+  $('overlay').style.display='flex';
+  const inp=$('mbJoinCode'); inp.oninput=()=>{ inp.value=inp.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,5); };
+  $('mbJoinGo').onclick=()=>mbJoinRoom($('mbJoinCode').value);
+  $('mbJoinBack').onclick=()=>showMbMode();
+}
+
+/* ---------- Tạo phòng (chủ) ---------- */
+async function mbCreateRoom(){
+  if(!initFirebase()){ if(typeof showFirebaseSetup==='function') showFirebaseSetup(); return; }
+  if(!auth||!auth.currentUser){ toast('Cần đăng nhập để chơi online'); return; }
+  const numReal=Math.min(4,Math.max(1,mbOnlineNumReal|0));
+  const code=makeCode(), ref=db.ref('rooms/'+code);
+  const seats={ 0:mbHumanSeatInfo(0) };
+  for(let s=1;s<4;s++) seats[s]= (s<numReal) ? {open:true} : mbBotSeatInfo(s);
+  mbOnline={ code, ref, seat:0, isHost:true, numReal, bet:gameBet, room:null,
+             dealt:false, scored:false, revealed:null, settled:false, roundShown:null, unsub:[] };
+  try{
+    await ref.set({ game:'maubinh', created:Date.now(), host:auth.currentUser.uid,
+      hostName:seats[0].name, bet:gameBet, numReal, status:'waiting', seats });
+  }catch(e){ console.error(e); toast('Không tạo được phòng — kiểm tra mạng & Rules Firebase'); mbOnline=null; return; }
+  ref.onDisconnect().remove();          // chủ thoát khi ĐANG CHỜ -> xoá phòng (huỷ khi đã chia bài)
+  mbBuild();
+  mbRoomListen();
+  mbShowLobby();
+}
+/* ---------- Vào phòng (khách) ---------- */
+async function mbJoinRoom(code){
+  if(!initFirebase()){ if(typeof showFirebaseSetup==='function') showFirebaseSetup(); return; }
+  if(!auth||!auth.currentUser){ toast('Cần đăng nhập để chơi online'); return; }
+  code=(code||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,5);
+  if(code.length<5){ toast('Mã phòng gồm 5 ký tự'); return; }
+  const ref=db.ref('rooms/'+code);
+  let r; try{ r=(await ref.get()).val(); }catch(e){ console.error(e); toast('Không đọc được phòng'); return; }
+  if(!r || r.game!=='maubinh'){ toast('Không tìm thấy phòng Mậu Binh với mã này'); return; }
+  if(r.status!=='waiting'){ toast('Phòng đã bắt đầu chơi rồi'); return; }
+  const uid=auth.currentUser.uid;
+  let claimed=-1;
+  for(let s=0;s<4;s++){ const st=r.seats&&r.seats[s]; if(st&&st.uid===uid){ claimed=s; break; } }  // vào lại
+  if(claimed<0){
+    for(let s=1;s<4;s++){
+      const st=r.seats&&r.seats[s]; if(!(st&&st.open)) continue;
+      let res; try{ res=await ref.child('seats/'+s).transaction(cur=> (cur&&cur.open)? mbHumanSeatInfo(s) : cur); }catch(_){ continue; }
+      const v=res&&res.committed&&res.snapshot.val();
+      if(v&&v.uid===uid){ claimed=s; break; }
+    }
+  }
+  if(claimed<0){ toast('Phòng đã đủ người rồi'); return; }
+  gameBet=r.bet||gameBet;
+  mbOnline={ code, ref, seat:claimed, isHost:false, numReal:r.numReal, bet:r.bet, room:null,
+             dealt:false, scored:false, revealed:null, settled:false, roundShown:null, unsub:[] };
+  ref.child('seats/'+claimed+'/online').onDisconnect().set(false);
+  mbBuild();
+  mbRoomListen();
+  mbShowLobby();
+}
+
+/* ---------- Lắng nghe phòng (chủ & khách chung 1 listener) ---------- */
+function mbRoomListen(){
+  if(!mbOnline) return;
+  const ref=mbOnline.ref;
+  const cb=ref.on('value', snap=>{
+    if(!mbOnline || mbOnline.ref!==ref) return;
+    const r=snap.val();
+    if(!r){ toast('Phòng đã đóng'); mbLeaveRoom(true); leaveMauBinh(); return; }   // chủ xoá phòng
+    mbOnline.room=r; mbOnline.numReal=r.numReal; mbOnline.bet=r.bet;
+    if(r.status==='waiting'){ mbRenderLobby(r); if(mbOnline.isHost) mbHostMaybeDeal(r); }
+    else if(r.status==='playing'){ mbEnterOnlinePlay(r); if(mbOnline.isHost) mbHostMaybeScore(r); }
+    else if(r.status==='reveal'){ mbEnterOnlinePlay(r); mbOnlineReveal(r); }
+  });
+  mbOnline.unsub.push(()=>ref.off('value',cb));
+}
+
+/* ---------- Phòng chờ ---------- */
+function mbShowLobby(){
+  const code=mbOnline?mbOnline.code:'';
+  $('panel').innerHTML=`
+    <div class="logo">Phòng ${esc(code)}</div>
+    <h1 style="font-size:22px">Phòng chờ</h1>
+    <p class="sub">Chia sẻ mã <b class="mb-code">${esc(code)}</b> cho bạn bè cùng vào. Ghế trống sẽ do máy ngồi.</p>
+    <div class="mb-lobby" id="mbLobbySeats"></div>
+    <p class="sub" id="mbLobbyMsg" style="margin-top:8px"></p>
+    <div class="menu-gap" id="mbLobbyAct"></div>
+    <button class="linkish" id="mbLobbyLeave">← Rời phòng</button>`;
+  $('overlay').style.display='flex';
+  $('mbLobbyLeave').onclick=()=>{ mbLeaveRoom(true); showMbMode(); };
+  if(mbOnline&&mbOnline.room) mbRenderLobby(mbOnline.room);
+}
+function mbRenderLobby(r){
+  const host=$('mbLobbySeats'); if(!host) return;             // không ở màn lobby -> bỏ qua
+  const myUid=auth&&auth.currentUser?auth.currentUser.uid:'';
+  const rows=[];
+  for(let s=0;s<4;s++){
+    const st=r.seats&&r.seats[s];
+    let ava='⬜', nm='Ghế trống', tag='';
+    if(st&&st.open){ ava='⏳'; nm='Đang chờ người…'; }
+    else if(st&&st.bot){ ava=st.emoji||'🤖'; nm=st.name||'Máy'; tag='<span class="mb-seat-tag bot">MÁY</span>'; }
+    else if(st&&st.uid){ ava=st.emoji||'🙂'; nm=st.name||'Người chơi';
+      tag = st.uid===myUid ? '<span class="mb-seat-tag me">BẠN</span>' : '<span class="mb-seat-tag">Online</span>'; }
+    rows.push(`<div class="mb-lobby-seat"><span class="mb-lseat-ava">${ava}</span><b>${esc(nm)}</b>${tag}</div>`);
+  }
+  host.innerHTML=rows.join('');
+  let waiting=0; for(let s=0;s<4;s++){ const st=r.seats&&r.seats[s]; if(st&&st.open) waiting++; }
+  const msg=$('mbLobbyMsg'); if(msg) msg.textContent = waiting? `Còn chờ ${waiting} người thật…` : 'Đủ người — đang chia bài…';
+  const act=$('mbLobbyAct');
+  if(act){
+    if(mbOnline&&mbOnline.isHost&&waiting){ act.innerHTML=`<button class="btn block" id="mbForceStart">Chơi luôn 🎴 (máy thế ${waiting} ghế)</button>`;
+      $('mbForceStart').onclick=()=>mbHostForceStart(); }
+    else act.innerHTML='';
+  }
+}
+function mbHostForceStart(){
+  if(!mbOnline||!mbOnline.isHost||mbOnline.dealt) return;
+  const r=mbOnline.room; if(!r) return;
+  const upd={}; for(let s=1;s<4;s++){ const st=r.seats[s]; if(st&&st.open) upd['seats/'+s]=mbBotSeatInfo(s); }
+  if(Object.keys(upd).length) mbOnline.ref.update(upd);   // listener sẽ nổ lại rồi tự chia
+  else mbHostMaybeDeal(r);
+}
+
+/* ---------- Chủ phòng: chia bài khi đủ người ---------- */
+function mbHostMaybeDeal(r){
+  if(mbOnline.dealt) return;
+  for(let s=0;s<4;s++){ const st=r.seats[s]; if(st&&st.open) return; }   // còn ghế chờ người thật
+  mbHostDeal(r);
+}
+function mbHostDeal(r){
+  if(mbOnline.dealt) return; mbOnline.dealt=true;
+  try{ mbOnline.ref.onDisconnect().cancel(); }catch(_){}                 // đang chơi: đừng auto-xoá phòng
+  const deck=newDeck(), hands=[[],[],[],[]];
+  for(let i=0;i<52;i++) hands[i%4].push(deck[i]);
+  const gameId='mb-'+mbOnline.code+'-'+Date.now();
+  const handCids={}; for(let s=0;s<4;s++) handCids[s]=hands[s].map(cid);
+  const binh={};
+  for(let s=0;s<4;s++){ if(r.seats[s]&&r.seats[s].bot){ const p=mbBotPlan(hands[s]); binh[s]={f:p.front.map(cid),m:p.mid.map(cid),b:p.back.map(cid)}; } }
+  mbOnline.scored=false; mbOnline.revealed=null; mbOnline.settled=false;
+  mbOnline.ref.update({ status:'playing', round:{ gameId, hands:handCids, binh } })
+    .catch(e=>{ console.error(e); toast('Không chia được bài — kiểm tra mạng'); });
+}
+
+/* ---------- Vào màn chơi online (dựng tay bài của mình) ---------- */
+function mbEnterOnlinePlay(r){
+  const gid=r.round&&r.round.gameId; if(!gid) return;
+  if(typeof hideOverlay==='function') hideOverlay();
+  const cb=$('coinBar'); if(cb) cb.style.display='none';
+  mbApplyCosmetics();
+  $('mbApp').style.display='flex';
+  mbActive=true;
+  if(mbOnline.roundShown!==gid){
+    mbOnline.roundShown=gid;
+    mbOnline.settled=false; mbOnline.revealed=null; if(mbOnline.isHost) mbOnline.scored=false;
+    mbRevealToken++;
+    $('mbResult').setAttribute('aria-hidden','true');
+    const myCids=(r.round.hands&&r.round.hands[mbOnline.seat])||[];
+    const myHand=myCids.map(mbFromCid);
+    const tray=myHand.slice().sort((a,b)=> mbRank(b)-mbRank(a) || b.suit-a.suit);
+    mbState={ bet:r.bet, hands:[myHand,[],[],[]], zones:{tray, front:[], mid:[], back:[]},
+              sel:null, bots:[null,null,null,null], done:false, online:true };
+    const view=mbViewOrder();
+    const names=view.map(s=>r.seats[s]?(r.seats[s].name||'—'):'—');
+    const avas=view.map(s=>r.seats[s]?(r.seats[s].emoji||'🙂'):'🙂');
+    mbRenderOppStrip(names, avas);
+    $('mbBet').textContent=`Mệnh giá ${r.bet} 🪙/điểm`;
+    $('mbCoin').textContent = profile&&profile.coins!=null? fmtCoin(profile.coins) : '--';
+    mbRenderMe();
+    const iBinh=r.round.binh&&r.round.binh[mbOnline.seat];
+    const go=$('mbGo');
+    if(iBinh){ mbState.done=true; if(go){ go.disabled=true; go.textContent='Đã binh — chờ…'; } }
+    else if(go){ go.textContent='Binh xong 🎴'; }
+  }
+  mbUpdateOnlineOpp(r);
+}
+// Cập nhật trạng thái "đã binh" của 3 ghế đối thủ (theo view order me=0)
+function mbUpdateOnlineOpp(r){
+  const view=mbViewOrder();
+  for(let p=1;p<=3;p++){
+    const el=$('mbOppS'+p); if(!el) continue;
+    const seatIdx=view[p], done=r.round&&r.round.binh&&r.round.binh[seatIdx];
+    if(el.dataset.locked==='1') continue;                 // đã hiện điểm kết quả -> không ghi đè
+    el.textContent = done ? 'Đã binh ✔' : 'Đang binh…';
+    el.className = done ? 'ok' : '';
+  }
+}
+
+/* ---------- Gửi bài binh của mình lên phòng ---------- */
+function mbSubmitBinh(z){
+  if(!mbOnline) return;
+  mbOnline.ref.child('round/binh/'+mbOnline.seat)
+    .set({ f:z.front.map(cid), m:z.mid.map(cid), b:z.back.map(cid) })
+    .catch(e=>{ console.error(e); toast('Không gửi được bài — thử lại'); });
+  mbState.done=true;
+  const go=$('mbGo'); if(go){ go.disabled=true; go.textContent='Đã binh — chờ…'; }
+  toast('Đã gửi bài — chờ người khác binh xong ⏳');
+}
+
+/* ---------- Chủ phòng: gom đủ 4 bài -> chấm điểm -> phát kết quả ---------- */
+function mbArrsFromBinh(binh){
+  const arrs=[];
+  for(let s=0;s<4;s++){
+    const b=(binh&&binh[s])||{f:[],m:[],b:[]};
+    const front=(b.f||[]).map(mbFromCid), mid=(b.m||[]).map(mbFromCid), back=(b.b||[]).map(mbFromCid);
+    const ef=mbEval(front), em=mbEval(mid), eb=mbEval(back);
+    const foul=(front.length!==3||mid.length!==5||back.length!==5) ? true : mbFoul(ef,em,eb);
+    const special=foul?null:mbSpecial([...front,...mid,...back],
+      { has3F:eb.cat===5&&em.cat===5&&mb3Flush(front), has3S:eb.cat===4&&em.cat===4&&mb3Straight(front) });
+    arrs.push({front,mid,back,ef,em,eb,foul,special});
+  }
+  return arrs;
+}
+function mbHostMaybeScore(r){
+  if(mbOnline.scored) return;
+  const binh=r.round&&r.round.binh; if(!binh) return;
+  for(let s=0;s<4;s++) if(!binh[s]) return;                      // chưa đủ 4 người binh
+  mbOnline.scored=true;
+  const arrs=mbArrsFromBinh(binh), pts=mbScoreAll(arrs);
+  mbOnline.ref.update({ status:'reveal', 'round/result':{ pts } })
+    .catch(e=>console.error(e));
+  if(typeof updateBotElo==='function') for(let s=0;s<4;s++){ const st=r.seats[s]; if(st&&st.bot){ const b=MB_BOTS[s]; updateBotElo(b.key,b.name,b.emoji,pts[s]>0,r.bet); } }
+}
+
+/* ---------- Mọi người: lật bài + tính ví (1 lần/ván) ---------- */
+function mbOnlineReveal(r){
+  const gid=r.round&&r.round.gameId, res=r.round&&r.round.result;
+  if(!gid||!res||!res.pts||!r.round.binh) return;
+  if(mbOnline.revealed===gid) return; mbOnline.revealed=gid;
+  const arrs=mbArrsFromBinh(r.round.binh), pts=res.pts, me=mbOnline.seat, bet=r.bet;
+  const delta=(pts[me]||0)*bet;
+  const view=mbViewOrder();
+  const vArrs=view.map(s=>arrs[s]), vPts=view.map(s=>pts[s]||0);
+  const names=view.map(s=>r.seats[s]?(r.seats[s].name||'—'):'—');
+  const avas=view.map(s=>r.seats[s]?(r.seats[s].emoji||'🙂'):'🙂');
+  if(!mbOnline.settled){
+    mbOnline.settled=true;
+    addCoins(delta, gid, delta>0, {game:'maubinh', bet});
+    mbState.bet=bet;
+    mbApplyProgress(gid, mbGameEvents(vArrs[0], vArrs, vPts, delta));
+  }
+  mbShowResult(vArrs, vPts, delta, {names, avas});
+}
+function mbOnlineAgain(){
+  if(!mbOnline) return;
+  if(!mbOnline.isHost){ toast('Chờ chủ phòng mở ván mới…'); return; }
+  const r=mbOnline.room; if(!r) return;
+  mbOnline.dealt=false; mbOnline.scored=false; mbOnline.revealed=null; mbOnline.settled=false; mbOnline.roundShown=null;
+  // Xoá bài binh ván cũ rồi chia lại (giữ nguyên ghế hiện tại)
+  mbOnline.ref.child('round').remove().then(()=>mbHostDeal(mbOnline.room||r)).catch(()=>mbHostDeal(r));
+}
+
+/* ---------- Rời phòng / dọn dẹp ---------- */
+function mbLeaveRoom(silent){
+  const o=mbOnline; mbOnline=null;
+  if(!o) return;
+  try{ (o.unsub||[]).forEach(fn=>{ try{ fn(); }catch(_){} }); }catch(_){}
+  if(o.ref){
+    try{ o.ref.onDisconnect().cancel(); }catch(_){}
+    if(o.isHost){ o.ref.remove().catch(()=>{}); }                 // chủ đi -> đóng phòng
+    else{
+      const st=(o.room&&o.room.status)||'waiting';
+      if(st==='waiting'){ o.ref.child('seats/'+o.seat).set({open:true}).catch(()=>{}); }  // trả ghế
+      else{ o.ref.child('seats/'+o.seat+'/online').set(false).catch(()=>{}); }
+    }
+  }
 }
 
 /* =========================================================================

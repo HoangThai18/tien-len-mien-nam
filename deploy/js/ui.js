@@ -320,7 +320,7 @@ function showGameSelect(){
     if(!g.ready){ toast(`${g.name} đang phát triển — sắp ra mắt! 🔜`); return; }
     gameType=g.id;
     if(g.id==='daorong'){ showDragonIsland(); return; }
-    if(g.id==='maubinh'){ showBetSetup(()=>showMauBinh()); return; }
+    if(g.id==='maubinh'){ showMbMode(); return; }
     if(typeof announceGameUpdate==='function') announceGameUpdate('tienlen');   // bảng "Có gì mới" của Tiến Lên
     showMenu();
   });
@@ -580,7 +580,7 @@ function showAdminPanel(){
     p.then(done).catch(()=>{ toast('Lỗi: không đủ quyền (kiểm tra Rules)'); btn.disabled=false; });
   };
 }
-const BET_PRESETS=[5,10,20,50];
+const BET_PRESETS=[10,50,200,1000,5000,20000];
 function showBetSetup(next){
   const chips=BET_PRESETS.map(v=>`<button class="bet-chip${v===gameBet?' sel':''}" data-v="${v}">${v} 🪙/lá</button>`).join('');
   $('panel').innerHTML=`
