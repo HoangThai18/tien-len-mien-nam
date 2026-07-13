@@ -18,8 +18,20 @@
 const GAME_CHANGELOGS = {
   daorong: {
     name: 'Đảo Rồng',
-    version: '2.5.0',
+    version: '2.6.0',
     log: [
+      {
+        version: '2.6.0',
+        date: '12/07/2026',
+        tag: 'Tính năng',
+        title: 'Lễ hội & hào quang',
+        items: [
+          { ic: '🎉', t: 'Thêm Sự kiện lễ hội luân phiên — Trăng Rằm, Lửa Thiêng, Đại Dương, Mùa Hoa Nở; chơi để tích điểm, đạt mốc nhận quà & rồng sự kiện.' },
+          { ic: '✨', t: 'Rồng toả hào quang dưới chân theo bậc tiến hoá & bậc sao — càng lên cấp càng lộng lẫy.' },
+          { ic: '🛡️', t: 'Chiến đấu hiển thị vai trò & hiệu ứng bằng icon riêng — đỡ đòn / hồi máu / sát thương, bỏng, độc, đóng băng, khiên…' },
+          { ic: '🏅', t: 'Huy hiệu hạng đấu & đá cường hoá bậc cao có hình ảnh mới.' },
+        ],
+      },
       {
         version: '2.5.0',
         date: '12/07/2026',
