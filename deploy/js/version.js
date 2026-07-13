@@ -20,8 +20,21 @@
 const GAME_CHANGELOGS = {
   daorong: {
     name: 'Đảo Rồng',
-    version: '2.8.0',
+    version: '2.9.0',
     log: [
+      {
+        version: '2.9.0',
+        date: '13/07/2026',
+        tag: 'Bản lớn',
+        title: 'Long Nữ Vĩnh Hằng — Rồng SSS đầu tiên',
+        items: [
+          { ic: '💞', t: 'Ra mắt RỒNG SSS "Tối Thượng" đầu tiên — Long Nữ Vĩnh Hằng, đẹp nhất thế giới đảo rồng!', dragons: ['tamnhu-sss'] },
+          { ic: '🌟', t: 'Nàng có mọi thứ RIÊNG: hào quang 7 cấp sao khác nhau, chữ ký & hiệu ứng lên-sao độc quyền, ngai vàng dưới chân và mưa tim vây quanh.' },
+          { ic: '🥚', t: 'Trứng SSS riêng ở Shop: 200 💎 hoặc 1.000.000 🪙 — lần đầu gặp nàng còn có màn "chào đón" toàn màn hình.' },
+          { ic: '🎁', t: 'Nhận MIỄN PHÍ mỗi tuần 1 lần — ai cũng có cơ hội đón Long Nữ về đảo.' },
+          { ic: '💫', t: '"Duyên định": lai hai rồng Ánh Sáng có cơ may cực hiếm ra nàng. Sức mạnh vượt tầng Huyền Thoại — sinh vàng & lực chiến đỉnh cao.' },
+        ],
+      },
       {
         version: '2.8.0',
         date: '13/07/2026',

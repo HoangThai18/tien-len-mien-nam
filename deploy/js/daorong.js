@@ -27,6 +27,7 @@ const DR_RAR={
   rare:     {n:'Hiếm',      c:'#2f9fb8', mult:2},
   epic:     {n:'Cực hiếm',  c:'#8a5cc4', mult:4},
   legendary:{n:'Huyền thoại',c:'#e0972a', mult:8},
+  sss:      {n:'Tối Thượng SSS', c:'#ff4fa3', mult:20, sss:true},   // tầng đỉnh — chỉ dành cho rồng huyền thoại đặc biệt
 };
 const DR_ICON_ROOT='assets/dragon-island/items/';
 const DR_ICONS={
@@ -58,6 +59,22 @@ function drFx(name, target, size){
     img.onerror=()=>img.remove();
     document.body.appendChild(img);
     setTimeout(()=>{ img.style.transition='opacity .28s'; img.style.opacity='0'; setTimeout(()=>img.remove(),300); }, 820);
+  }catch(_){}
+}
+// Phủ 1 ảnh động RIÊNG (đường dẫn tuỳ ý — dùng cho hiệu ứng riêng của rồng SSS: chữ ký, lên sao…).
+function drSpFx(url, target, size, hold){
+  try{
+    if(drReduce||!url) return;
+    let cx, cy, sz=size;
+    if(target && target.getBoundingClientRect){ const r=target.getBoundingClientRect();
+      if(!r.width && !r.height) return; cx=r.left+r.width/2; cy=r.top+r.height/2; sz=sz||Math.max(120,Math.min(300, r.width*2.2)); }
+    else { cx=innerWidth/2; cy=innerHeight*0.42; sz=sz||Math.min(300, innerWidth*0.7); }
+    const img=new Image(); img.src=url; img.alt=''; img.draggable=false;
+    img.style.cssText=`position:fixed; left:${cx}px; top:${cy}px; width:${sz}px; height:${sz}px; transform:translate(-50%,-50%);`
+      +`z-index:82; pointer-events:none; animation:drUifxPop .3s ease-out;`;
+    img.onerror=()=>img.remove();
+    document.body.appendChild(img);
+    setTimeout(()=>{ img.style.transition='opacity .32s'; img.style.opacity='0'; setTimeout(()=>img.remove(),340); }, hold||1200);
   }catch(_){}
 }
 // Nền ĐẢO riêng theo hình bạn cấp (island-01..20) + vòng HÀO QUANG động theo bậc (tier-01..05, 4 đảo/bậc).
@@ -219,8 +236,28 @@ const DR_SPECIES={
   storm:   {name:'Rồng Bão',       el:'electric',els:['electric','water'],rar:'epic',  gold:34, atk:74, hp:130, range:5, spd:9, evo:'assets/dragons/evolution/storm.webp',      sheet:{url:'assets/dragons/storm.webp', frames:8, fps:8, act:1.15}},
   dark:    {name:'Hắc Long',       el:'dark',    els:['dark'],           rar:'epic',   gold:40, atk:86, hp:150, range:4, spd:7, evo:'assets/dragons/evolution/dark.webp',       sheet:{url:'assets/dragons/dark.webp', frames:8, fps:7, act:1.45}},
   light:   {name:'Thần Long',      el:'light',   els:['light'],          rar:'legendary',gold:70,atk:110,hp:180, range:5, spd:8, evo:'assets/dragons/evolution/light.webp',      sheet:{url:'assets/dragons/light.webp', frames:8, fps:7, act:1.6}},
+  // ★★★ RỒNG SSS ĐẶC BIỆT — Tâm Như (nàng thơ của game). Hiệu ứng riêng 7 cấp sao, chữ ký & lên-sao riêng. ★★★
+  'tamnhu-sss':{
+    name:'Long Nữ Vĩnh Hằng', el:'light', els:['light','dark'], rar:'sss',
+    gold:120, atk:150, hp:240, range:6, spd:9, muse:true, fx:'heart', throne:true,
+    lore:'Long Nữ sinh ra từ một lời hẹn ước vĩnh hằng — mỗi vảy rồng là một vì sao, mỗi nhịp cánh là một nhịp tim. Nàng là nguồn cảm hứng cho cả thế giới đảo rồng này. 💞',
+    evo:'assets/dragons/evolution/tamnhu-sss.webp',
+    sheet:{url:'assets/dragons/tamnhu-sss/atlas/adult.webp', frames:24, fps:12, act:1.6},
+    stages:[
+      {minLv:1,  sheet:{url:'assets/dragons/tamnhu-sss/atlas/baby.webp',   frames:24, fps:12, act:1.6}},
+      {minLv:5,  sheet:{url:'assets/dragons/tamnhu-sss/atlas/teen.webp',   frames:24, fps:12, act:1.6}},
+      {minLv:9,  sheet:{url:'assets/dragons/tamnhu-sss/atlas/adult.webp',  frames:24, fps:12, act:1.6}},
+      {minLv:13, sheet:{url:'assets/dragons/tamnhu-sss/atlas/legend.webp', frames:24, fps:12, act:1.6}},
+    ],
+    // Hiệu ứng RIÊNG (ảnh động sẵn) — 7 tầng hào quang sao + chữ ký + hiệu ứng lên sao:
+    starfx:'assets/dragons/tamnhu-sss/effects/stars/animated/star-',   // + (1..7) + '.webp'
+    sigfx:'assets/dragons/tamnhu-sss/effects/animated/sss-signature.webp',
+    lvfx:'assets/dragons/tamnhu-sss/effects/animated/level-up-sss.webp',
+    pal:{body:'#ff8fd0',bd:'#fff0fb',wg:'#ffd1ec',st:'#e8489f',horn:'#c92f86'},
+  },
 };
-const DR_SP_PRIORITY=['peach','sakura','candy','rose','lotus','peony','bubblegum','mint','lemon','berry','coral','cloud',
+const DR_SP_PRIORITY=['tamnhu-sss',
+  'peach','sakura','candy','rose','lotus','peony','bubblegum','mint','lemon','berry','coral','cloud',
   'cotton-candy','strawberry-cream','blossom-bubble','cherry-soda','pearl-lotus','rose-quartz','moon-ribbon','rainbow-mochi','cupid-heart','starlight-bow',
   'starlight','aurora','carnival','prism','kaleidoscope','rainbow','fire','water','plant','earth','electric','ice','lava','steam','swamp','storm','dark','light'];
 // DR_SP_ORDER LUÔN gồm mọi loài trong DR_SPECIES: chỉ cần thêm rồng mới vào DR_SPECIES
@@ -370,7 +407,7 @@ function drScheduleDragonAction(bob,sp){
   },3600+Math.random()*5200);
 }
 function drElChip(el){ return `<span class="dr-chip el-${el}">${DR_ELNAME[el]||el}</span>`; }
-function drRarChip(rar){ const r=DR_RAR[rar]||DR_RAR.common; return `<span class="dr-rar" style="--rc:${r.c}">${r.n}</span>`; }
+function drRarChip(rar){ const r=DR_RAR[rar]||DR_RAR.common; return `<span class="dr-rar${r.sss?' dr-rar-sss':''}" style="--rc:${r.c}">${r.n}</span>`; }
 
 /* ---------- State ---------- */
 function drDefault(){
@@ -423,7 +460,8 @@ function drNorm(v){
     seen:Array.isArray(v.seen)?Array.from(new Set(v.seen.filter(sp=>DR_SPECIES[sp]))):[],
     periodic:(v.periodic&&typeof v.periodic==='object')?{dk:(typeof v.periodic.dk==='number'?v.periodic.dk:-1),wk:(typeof v.periodic.wk==='number'?v.periodic.wk:-1),d:(v.periodic.d&&typeof v.periodic.d==='object')?v.periodic.d:{},w:(v.periodic.w&&typeof v.periodic.w==='object')?v.periodic.w:{}}:{dk:-1,wk:-1,d:{},w:{}},
     dq:(v.dq&&typeof v.dq==='object')?{day:(typeof v.dq.day==='number'?v.dq.day:-1),claimed:Array.isArray(v.dq.claimed)?v.dq.claimed:[]}:{day:-1,claimed:[]},
-    wq:(v.wq&&typeof v.wq==='object')?{week:(typeof v.wq.week==='number'?v.wq.week:-1),claimed:Array.isArray(v.wq.claimed)?v.wq.claimed:[]}:{week:-1,claimed:[]}};
+    wq:(v.wq&&typeof v.wq==='object')?{week:(typeof v.wq.week==='number'?v.wq.week:-1),claimed:Array.isArray(v.wq.claimed)?v.wq.claimed:[]}:{week:-1,claimed:[]},
+    sss:(v.sss&&typeof v.sss==='object')?{freeAt:v.sss.freeAt||0,anniv:v.sss.anniv||0,cut:!!v.sss.cut}:{freeAt:0,anniv:0,cut:false}};
 }
 async function drLoad(){
   // 1) ưu tiên cloud (đồng bộ đa thiết bị)
@@ -452,6 +490,7 @@ function drSaveNow(){
     rebirth:drState.rebirth||{count:0,ki:0,up:{gold:0,power:0,xp:0}},
     seen:Array.from(new Set([...(drState.seen||[]), ...(drState.dragons||[]).map(d=>d.sp)])),
     periodic:drState.periodic||{dk:-1,wk:-1,d:{},w:{}}, dq:drState.dq||{day:-1,claimed:[]}, wq:drState.wq||{week:-1,claimed:[]},
+    sss:drState.sss||{freeAt:0,anniv:0,cut:false},
     updatedAt:Date.now()};
   try{ localStorage.setItem(drLsKey(), JSON.stringify(obj)); }catch(_){}   // LUÔN lưu cục bộ trước
   if(auth&&auth.currentUser&&db){                                          // rồi mới đồng bộ cloud (best-effort)
@@ -520,7 +559,7 @@ function drStarCol(s){ return DR_STAR_COL[drStarTier(s)]; }
 function drStarBadge(d){ const s=drStar(d); return `<span class="dr-starnum" style="--sc:${drStarCol(s)}">★${s}</span>`; }
 function drStarPips(d){ const s=drStar(d); return `${drStarBadge(d)} <small class="dr-star-tier">${DR_STAR_TIERNAME[drStarTier(s)]}</small>`; }
 const DR_BLESS_COST=5;                                   // 💎 để "chúc phúc" khi lai
-function drRarRank(sp){ return ['common','rare','epic','legendary'].indexOf((DR_SPECIES[sp]||DR_SPECIES.fire).rar); }
+function drRarRank(sp){ return ['common','rare','epic','legendary','sss'].indexOf((DR_SPECIES[sp]||DR_SPECIES.fire).rar); }
 const DR_PITY_MAX=2;                                      // lai 2 lần liền ra rồng thường -> lần sau CHẮC CHẮN ra hiếm (dễ ra hơn)
 // Gom loài có thể ra từ 1 cặp hệ. Cùng hệ -> TỰ thêm mọi loài hiếm cùng hệ (kể cả
 // rồng mới thêm sau), nên rồng mới chỉ cần gắn 'el' là auto lai được từ cặp cùng hệ.
@@ -528,19 +567,23 @@ function drBreedPool(elA,elB){
   let pool=(DR_BREED[[elA,elB].sort().join('+')]||[]).slice();
   if(!pool.length) pool=[elA===elB?elA:(Math.random()<.5?elA:elB)];
   if(elA===elB){ for(const sp in DR_SPECIES){ const s=DR_SPECIES[sp];
-    if(s.el===elA && drRarRank(sp)>=1 && pool.indexOf(sp)<0) pool.push(sp); } }
+    if(s.el===elA && s.rar!=='sss' && drRarRank(sp)>=1 && pool.indexOf(sp)<0) pool.push(sp); } }   // SSS không lọt pool đại trà
   return pool;
 }
 // Rồng CHỈ-LAI (không bán ở trứng) — lai mới có, tạo giá trị riêng cho việc lai rồng.
 const DR_BREED_ONLY=new Set(['lava','steam','swamp','storm','rainbow','prism','aurora','carnival']);
 // "Đột biến": bốc 1 rồng BẤT KỲ toàn hệ, theo tỉ lệ hiếm (rare cao nhất, legendary thấp nhất) -> mọi con đều lai được.
 function drWildcardSp(){
-  const all=Object.keys(DR_SPECIES), w=all.map(sp=>({0:2,1:4,2:3,3:1})[drRarRank(sp)]||1);
+  const all=Object.keys(DR_SPECIES).filter(sp=>DR_SPECIES[sp].rar!=='sss'), w=all.map(sp=>({0:2,1:4,2:3,3:1})[drRarRank(sp)]||1);   // đột biến KHÔNG ra SSS
   let r=Math.random()*w.reduce((a,b)=>a+b,0);
   for(let i=0;i<all.length;i++){ if((r-=w[i])<0) return all[i]; }
   return all[0];
 }
 function drBreedResult(elA,elB,blessed){
+  // 💞 DUYÊN ĐỊNH: chỉ cặp Ánh Sáng + Ánh Sáng mới có cơ may hiếm sinh ra Long Nữ Tâm Như (SSS).
+  if(DR_SPECIES['tamnhu-sss'] && elA==='light' && elB==='light'){
+    if(Math.random() < (blessed?0.08:0.03)) return 'tamnhu-sss';
+  }
   const pool=drBreedPool(elA,elB);
   const rarest=pool.slice().sort((x,y)=>drRarRank(y)-drRarRank(x))[0];
   if(blessed) return rarest;                              // chúc phúc: CHẮC CHẮN ra con hiếm nhất
@@ -551,6 +594,73 @@ function drBreedResult(elA,elB,blessed){
   for(let i=0;i<pool.length;i++){ if((r-=wts[i])<0) return pool[i]; }
   return pool[pool.length-1];
 }
+// ================= RỒNG SSS "Long Nữ Vĩnh Hằng" — trứng riêng · quà tuần · cutscene · kỷ niệm =================
+const DR_SSS_KEY='tamnhu-sss';
+const DR_SSS_EGG_GEMS=200, DR_SSS_EGG_GOLD=1000000;     // trứng SSS: 200 💎  HOẶC  1.000.000 🪙
+const DR_SSS_FREE_MS=7*24*3600*1000;                     // quà miễn phí: mỗi 7 ngày 1 lần
+// Ngày kỷ niệm (đổi khi bạn cho biết) — {m,d}. null = TẮT hộp quà kỷ niệm cho tới khi có ngày.
+const DR_ANNIV=null;                                     // vd: {m:8, d:20} = 20/08 hằng năm
+
+function drOwnsSss(){ return !!(drState&&drState.dragons&&drState.dragons.some(d=>d.sp===DR_SSS_KEY)); }
+function drSssState(){ if(!drState.sss) drState.sss={freeAt:0,anniv:0,cut:false}; return drState.sss; }
+function drSssFreeReady(){ return (drNow()-(drSssState().freeAt||0)) >= DR_SSS_FREE_MS; }
+function drSssFreeLeftMs(){ return Math.max(0, DR_SSS_FREE_MS - (drNow()-(drSssState().freeAt||0))); }
+function drFmtDur(ms){ const s=Math.ceil(ms/1000), d=Math.floor(s/86400), h=Math.floor(s%86400/3600), m=Math.floor(s%3600/60);
+  return d>0?`${d} ngày ${h} giờ`:(h>0?`${h} giờ ${m} phút`:`${m} phút`); }
+
+// Trao 1 Long Nữ + hiệu ứng; lần ĐẦU tiên sở hữu -> mở cutscene toàn màn.
+function drGrantSss(subtitle){
+  if(drState.dragons.length>=drCapacity()){ toast(drFullMsg()); return false; }
+  const firstEver=!drOwnsSss();
+  drState.dragons.push({sp:DR_SSS_KEY,lv:1,fed:0,star:1}); drFocusLast();
+  drAddXp(120); if(typeof confetti==='function') confetti();
+  drRenderHud(); drRenderDragons(); drSave(); drNewSp(DR_SSS_KEY);
+  const s=DR_SPECIES[DR_SSS_KEY]; drSpFx(s.sigfx, null, Math.min(340,innerWidth*0.8), 1600);
+  if(firstEver && !drSssState().cut){ drSssState().cut=true; drSave(); drCutscene(subtitle); }
+  else drRevealCard('legendary', `${drDragonArt({sp:DR_SSS_KEY,lv:13})}<b>${esc(s.name)}</b><small>${esc(subtitle||'💞 SSS Tối Thượng')}</small>`);
+  return true;
+}
+// Nhận quà TUẦN miễn phí (1 Long Nữ mỗi 7 ngày).
+function drClaimSssFree(){
+  if(!drSssFreeReady()){ drNotify('warning','Quà tuần sẽ sẵn sàng sau '+drFmtDur(drSssFreeLeftMs())+' 💞'); return; }
+  if(drState.dragons.length>=drCapacity()){ toast(drFullMsg()); return; }
+  drSssState().freeAt=drNow(); drSave();
+  drGrantSss('🎁 Quà tuần miễn phí — Long Nữ về bên bạn!');
+}
+// CUTSCENE toàn màn (ảnh nền cung cấp sau -> fallback nền gradient + sprite + lore, không vỡ).
+function drCutscene(subtitle){
+  try{
+    const s=DR_SPECIES[DR_SSS_KEY]; if(!s) return;
+    const wrap=document.createElement('div'); wrap.className='dr-cutscene';
+    wrap.innerHTML=`<div class="dr-cut-bg"><img src="assets/dragons/${DR_SSS_KEY}/extras/unlock-cutscene.webp" alt="" draggable="false" onerror="this.remove()"></div>`
+      +`<div class="dr-cut-inner">`
+      +`<div class="dr-cut-art">${drDragonArt({sp:DR_SSS_KEY,lv:13})}</div>`
+      +`<div class="dr-cut-badge">${drRarChip('sss')}</div>`
+      +`<h2 class="dr-cut-name">${esc(s.name)}</h2>`
+      +(s.lore?`<p class="dr-cut-lore">${esc(s.lore)}</p>`:'')
+      +`<p class="dr-cut-sub">${esc(subtitle||'Rồng SSS đầu tiên của thế giới đảo rồng đã xuất hiện!')}</p>`
+      +`<button class="dr-btn hero hp-legendary" id="drCutOk">Chào đón nàng 💞</button>`
+      +`</div>`;
+    document.body.appendChild(wrap);
+    requestAnimationFrame(()=>wrap.classList.add('show'));
+    if(typeof confetti==='function') confetti();
+    drSpFx(s.sigfx, null, Math.min(360,innerWidth*0.85), 1800);
+    const close=()=>{ wrap.classList.remove('show'); setTimeout(()=>wrap.remove(),320); };
+    wrap.querySelector('#drCutOk').onclick=close;
+    wrap.addEventListener('click', e=>{ if(e.target===wrap) close(); });
+  }catch(_){}
+}
+// Hộp quà KỶ NIỆM (mỗi năm 1 lần vào đúng ngày DR_ANNIV) — icon cung cấp sau.
+function drAnnivToday(){ if(!DR_ANNIV) return false; const dt=new Date(drNow()); return (dt.getMonth()+1)===DR_ANNIV.m && dt.getDate()===DR_ANNIV.d; }
+function drAnnivReady(){ return drAnnivToday() && drSssState().anniv!==new Date(drNow()).getFullYear(); }
+function drClaimAnniv(){
+  if(!drAnnivReady()) return;
+  drSssState().anniv=new Date(drNow()).getFullYear();
+  drState.gems+=200; drState.gold+=500000; drAddXp(200);
+  drSave(); drRenderHud(); if(typeof confetti==='function') confetti();
+  drGrantSss('🎉 Quà kỷ niệm — Long Nữ & kho báu chúc mừng!');
+}
+
 function drAddXp(n){
   n=Math.round(n*drRebirthXpMult());
   drState.xp+=n; let up=false;
@@ -803,34 +913,47 @@ function drRenderDragons(){
     bob.style.setProperty('--odur',(Math.max(2.6, 7-st*0.17)).toFixed(2)+'s'); // xoay nhanh dần theo sao
     // ==== FX theo BẬC SAO — mỗi bậc một KIỂU hiệu ứng khác hẳn ====
     const stt=drStarTier(st);
-    let fx='<span class="dr-aura"></span>';
-    if(stt===1){                                                   // Hiếm: đốm nhấp nháy quanh rồng
-      const pos=[[16,24],[76,30],[50,8],[28,70],[84,60]];
-      fx+='<span class="dr-tw">'+pos.map((p,k)=>`<i style="left:${p[0]}%;top:${p[1]}%;animation-delay:${(k*0.3).toFixed(2)}s"></i>`).join('')+'</span>';
-    }else if(stt>=2){                                              // Quý+: hạt bay vòng (số lượng theo sao)
-      const pc=Math.min(drLite?5:8, Math.floor(st/2)+1);            // PERF: bớt hạt trên máy yếu
-      let orbit=''; for(let k=0;k<pc;k++) orbit+=`<i style="transform:rotate(${Math.round(k/pc*360)}deg) translateY(-44px)"></i>`;
-      fx+=`<span class="dr-orbit">${orbit}</span>`;
-    }
-    if(stt>=3) fx+='<span class="dr-ring"></span>';                // Sử thi+: vòng phép xoay dưới chân
-    if(stt>=4){                                                    // Cực hiếm: hào quang cầu vồng + hạt bay lên
-      fx+='<span class="dr-halo"></span>';
-      if(!drLite) fx+='<span class="dr-rise">'+[12,38,62,86].map((x,k)=>`<i style="left:${x}%;animation-delay:${(k*0.55).toFixed(2)}s"></i>`).join('')+'</span>';   // PERF: máy yếu bỏ hạt bay lên
+    let fx;
+    if(s.starfx){
+      // ★★★ RỒNG SSS: hào quang RIÊNG 7 cấp sao (★1..7 → star-1..7), thay hẳn hiệu ứng chung để không lấn nét đẹp.
+      const sN=Math.min(7,Math.max(1,st));
+      fx=`<span class="dr-sss-fx"><img src="${s.starfx}${sN}.webp" alt="" draggable="false" onerror="this.parentNode.remove()"></span>`;
+    }else{
+      fx='<span class="dr-aura"></span>';
+      if(stt===1){                                                   // Hiếm: đốm nhấp nháy quanh rồng
+        const pos=[[16,24],[76,30],[50,8],[28,70],[84,60]];
+        fx+='<span class="dr-tw">'+pos.map((p,k)=>`<i style="left:${p[0]}%;top:${p[1]}%;animation-delay:${(k*0.3).toFixed(2)}s"></i>`).join('')+'</span>';
+      }else if(stt>=2){                                              // Quý+: hạt bay vòng (số lượng theo sao)
+        const pc=Math.min(drLite?5:8, Math.floor(st/2)+1);            // PERF: bớt hạt trên máy yếu
+        let orbit=''; for(let k=0;k<pc;k++) orbit+=`<i style="transform:rotate(${Math.round(k/pc*360)}deg) translateY(-44px)"></i>`;
+        fx+=`<span class="dr-orbit">${orbit}</span>`;
+      }
+      if(stt>=3) fx+='<span class="dr-ring"></span>';                // Sử thi+: vòng phép xoay dưới chân
+      if(stt>=4){                                                    // Cực hiếm: hào quang cầu vồng + hạt bay lên
+        fx+='<span class="dr-halo"></span>';
+        if(!drLite) fx+='<span class="dr-rise">'+[12,38,62,86].map((x,k)=>`<i style="left:${x}%;animation-delay:${(k*0.55).toFixed(2)}s"></i>`).join('')+'</span>';   // PERF: máy yếu bỏ hạt bay lên
+      }
     }
     const scale=(evo.scale+Math.min(0.14, Math.max(0,(d.lv||1)-evo.minLv)*0.012)).toFixed(3);  // chặn phình to ở cấp cao
-    let drPetals='';                                                  // mưa cánh hoa cho rồng có fx:'petal' (nhiều dần theo cấp)
-    if(!drLite && (DR_SPECIES[d.sp]||{}).fx==='petal'){
+    let drPetals='';                                                  // mưa cánh hoa (fx:'petal') / mưa tim (fx:'heart')
+    const sfx=(DR_SPECIES[d.sp]||{}).fx;
+    if(!drLite && sfx==='petal'){
       const pn=3+DR_EVOLUTIONS.indexOf(evo)*2;                        // Baby 3 → Teen 5 → Adult 7 → Legend 9
       for(let k=0;k<pn;k++) drPetals+=`<i style="--x:${Math.round(6+Math.random()*88)}%;--sz:${(7+Math.random()*5).toFixed(1)}px;--dur:${(3.6+Math.random()*2.8).toFixed(2)}s;--del:${(-Math.random()*5).toFixed(2)}s;--drift:${Math.round(Math.random()*30-15)}px"></i>`;
       drPetals=`<span class="dr-petals">${drPetals}</span>`;
+    }else if(!drLite && sfx==='heart'){                               // MƯA TIM: ảnh động phủ quanh nàng
+      drPetals=`<span class="dr-heartrain"><img src="assets/dragons/${d.sp}/extras/heart-rain.webp" alt="" draggable="false" onerror="this.parentNode.remove()"></span>`;
     }
+    // NGAI / BỆ RIÊNG — đặt DƯỚI chân rồng; thiếu ảnh thì tự gỡ, không vỡ layout.
+    const throne=(DR_SPECIES[d.sp]||{}).throne
+      ? `<img class="dr-throne" src="assets/dragons/${d.sp}/extras/throne.webp" alt="" draggable="false" onerror="this.remove()">` : '';
     // AURA DƯỚI CHÂN (ảnh động 8 frame): vòng theo BẬC TIẾN HOÁ + theo BẬC SAO.
     // Đặt TRONG .dr-artwrap để vòng NEO theo chân rồng và TO/NHỎ đồng bộ với con rồng (rồng đứng TRỌN trong vòng).
     const evoIdx=DR_EVOLUTIONS.indexOf(evo), starTier=drStarTier(st);
-    const groundAura=`<span class="dr-ground-aura dr-aura-evo"><img src="assets/dragon-island/effects/evolution/evolution-aura.webp" alt="" draggable="false" style="top:${(-evoIdx*100).toFixed(0)}%" onerror="this.parentNode.remove()"></span>`
-      +`<span class="dr-ground-aura dr-aura-star"><img src="assets/dragon-island/effects/stars/star-aura.webp" alt="" draggable="false" style="top:${(-starTier*100).toFixed(0)}%" onerror="this.parentNode.remove()"></span>`;
+    // Chỉ giữ vòng tiến hoá MỜ dưới chân (đặt SAU lưng rồng); bỏ vòng sao SÁNG vì nó chớp đèn che hết thân rồng.
+    const groundAura=`<span class="dr-ground-aura dr-aura-evo"><img src="assets/dragon-island/effects/evolution/evolution-aura.webp" alt="" draggable="false" style="top:${(-evoIdx*100).toFixed(0)}%" onerror="this.parentNode.remove()"></span>`;
     bob.innerHTML=fx
-      +`<div class="dr-artwrap dr-facing" style="--dScale:${scale}">${drDragonArt(d)}${groundAura}</div>`
+      +`<div class="dr-artwrap dr-facing" style="--dScale:${scale}">${throne}${drDragonArt(d)}${groundAura}</div>`
       +drPetals
       +`<span class="dr-starbadge">★${st}</span>`
       +`<span class="dr-lvtag">Lv${d.lv} · ${evo.name}</span>`;
@@ -1190,7 +1313,9 @@ function drUpgradeStar(i){
   drState.gold-=cost.gold; drState.gems-=cost.gems; d.star=star+1;
   drAddXp(20); drRenderHud(); drRenderDragons(); drSave();
   if(typeof confetti==='function') confetti();
-  toast(`⭐ ${DR_SPECIES[d.sp].name} lên ${d.star} sao! Sinh vàng & sức mạnh tăng`);
+  const sp=DR_SPECIES[d.sp]||{};
+  if(sp.lvfx){ drSpFx(sp.lvfx, null, Math.min(320,innerWidth*0.75), 1400); if(sp.sigfx) setTimeout(()=>drSpFx(sp.sigfx, null, Math.min(300,innerWidth*0.7), 1300), 260); }
+  toast(`⭐ ${sp.name} lên ${d.star} sao! Sinh vàng & sức mạnh tăng`);
   drShowDragon(i);
 }
 function drFeed(i,amount){
@@ -1668,6 +1793,16 @@ function drCuteRoll(){ const w=DR_CUTE_POOL.map(sp=>DR_CUTE_NEW.includes(sp)?2:1
   return DR_CUTE_POOL[0]; }
 function drShowShop(){
   const body=`<div class="dr-shop-grid">
+    <div class="dr-shop-item dr-shop-sss"><div class="dr-shop-ic dr-egg-ic"><img class="dr-egg-sss" src="assets/dragons/tamnhu-sss/extras/egg-sss.webp" alt="Trứng SSS" draggable="false">${drDragonArt({sp:'tamnhu-sss',lv:13})}</div>
+      <b>💞 Trứng SSS — Long Nữ Vĩnh Hằng</b>
+      <small>Rồng <b>SSS Tối Thượng</b> — hào quang riêng 7 cấp sao, chữ ký & hiệu ứng lên-sao độc quyền. Nàng thơ của cả thế giới đảo rồng.</small>
+      <div class="dr-sss-buys">
+        <button class="dr-btn" id="drBuySssGem">${DR_SSS_EGG_GEMS} 💎</button>
+        <button class="dr-btn alt" id="drBuySssGold">${fmtCoin(DR_SSS_EGG_GOLD)} 🪙</button>
+      </div>
+      <button class="dr-btn go block" id="drClaimSssFree"${drSssFreeReady()?'':' disabled'}>${drSssFreeReady()?'🎁 Nhận MIỄN PHÍ tuần này':'⏳ Quà tuần: còn '+drFmtDur(drSssFreeLeftMs())}</button>
+      ${drAnnivReady()?'<button class="dr-btn go block dr-anniv-btn" id="drClaimAnniv"><img src="assets/dragons/tamnhu-sss/extras/anniversary-gift.webp" alt="" draggable="false" onerror="this.remove()">🎉 Mở HỘP QUÀ KỶ NIỆM</button>':''}
+    </div>
     <div class="dr-shop-item"><div class="dr-shop-ic">${drIcon('egg')}</div><b>Trứng thường</b><small>Nở 1 rồng nguyên tố cơ bản</small><button class="dr-btn" id="drBuyEgg">250 🪙</button></div>
     <div class="dr-shop-item"><div class="dr-shop-ic">${drIcon('egg')}</div><b>Trứng RỒNG CƯNG 🩷</b><small>Nở rồng dễ thương (Kẹo Bông, Kem Dâu, Nơ Sao, Thần Tình Yêu…) — giá vàng, dễ sở hữu!</small><button class="dr-btn go" id="drBuyEggCute">${fmtCoin(DR_CUTE_EGG_COST)} 🪙</button></div>
     <div class="dr-shop-item"><div class="dr-shop-ic">${drIcon('star')}</div><b>Trứng HIẾM</b><small>Nở rồng hiếm/epic (Cực Quang, Lễ Hội, Hoa Sen, Cầu Vồng…)</small><button class="dr-btn alt" id="drBuyEggRare">40 💎</button></div>
@@ -1680,6 +1815,12 @@ function drShowShop(){
   </div><p class="dr-note">Rồng cực hiếm có được qua <b>Lai rồng</b> 💞 và <b>Chúc phúc</b>.</p>`;
   drModal('Shop', body);
   const full=()=>{ if(drState.dragons.length>=drCapacity()){ toast(drFullMsg()); return true; } return false; };
+  const bg=$('drBuySssGem'); if(bg) bg.onclick=()=>{ if(full())return; if(drState.gems<DR_SSS_EGG_GEMS){drNotify('warning','Thiếu 💎 (cần '+DR_SSS_EGG_GEMS+') — Long Nữ xứng đáng chờ đợi 💞');return;}
+    drState.gems-=DR_SSS_EGG_GEMS; drGrantSss('💞 Trứng SSS nở — Long Nữ đã về bên bạn!'); };
+  const bgo=$('drBuySssGold'); if(bgo) bgo.onclick=()=>{ if(full())return; if(drState.gold<DR_SSS_EGG_GOLD){drNotify('warning','Thiếu vàng (cần '+fmtCoin(DR_SSS_EGG_GOLD)+' 🪙)');return;}
+    drState.gold-=DR_SSS_EGG_GOLD; drGrantSss('💞 Trứng SSS nở — Long Nữ đã về bên bạn!'); };
+  const bf=$('drClaimSssFree'); if(bf) bf.onclick=()=>{ drClaimSssFree(); drShowShop(); };
+  const ba=$('drClaimAnniv'); if(ba) ba.onclick=()=>{ drClaimAnniv(); drShowShop(); };
   $('drBuyEgg').onclick=()=>{ if(full())return; if(drState.gold<250){toast('Thiếu vàng');return;}
     drState.gold-=250; const sp=['fire','water','plant','earth'][Math.floor(Math.random()*4)]; drState.dragons.push({sp,lv:1,fed:0}); drFocusLast();
     drAddXp(10); drRenderHud(); drRenderDragons(); drSave(); drFx('egg-hatch'); drNewSp(sp);
@@ -1827,6 +1968,7 @@ function drCodexDetail(sp,has){
     <div class="dr-codex-art ${has?'':'silh'}">${has?drDragonArt({sp,lv:bestLv||1}):'<span class="dr-lock">?</span>'}</div>
     <div class="dr-codex-meta"><div class="dr-detail-name">${has?esc(s.name):'? ? ?'} ${drRarChip(s.rar)}${DR_BREED_ONLY.has(sp)?' <span class="dr-rar" style="--rc:#d17ae0">💞 Chỉ Lai</span>':''}</div>
       <div class="dr-chips">${s.els.map(drElChip).join('')}</div>
+      ${has&&s.lore?`<p class="dr-lore">${esc(s.lore)}</p>`:''}
       ${own?`<div class="dr-kv"><span>Hình thái cao nhất</span><b>${drEvolution(bestLv).name} · Lv${bestLv}</b></div>`
            :(has?'<p class="dr-note">Đã sưu tầm — nuôi & lên cấp để mở các hình thái.</p>':(DR_BREED_ONLY.has(sp)?'<p class="dr-note">💞 <b>Chỉ có được qua LAI RỒNG</b> — không bán ở trứng.</p>':'<p class="dr-note">Chưa sở hữu — lai hoặc mua để mở khoá.</p>'))}
       <div class="dr-kv"><span>Sinh vàng</span><b>${s.gold} 🪙/phút (Lv1)</b></div>

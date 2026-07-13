@@ -1176,7 +1176,7 @@
   /* AURA DƯỚI CHÂN: sprite 8 frame; chọn HÀNG (bậc tiến hoá / bậc sao) bằng top(%), chạy frame bằng translateX */
   /* NEO theo CHÂN rồng: đặt trong .dr-artwrap nên tự SCALE theo --dScale; canh tâm vòng vào chân (top:71%) để rồng đứng TRỌN trong vòng */
   .dr-ground-aura{position:absolute; left:50%; top:71%; transform:translate(-50%,-50%);
-    overflow:hidden; pointer-events:none; z-index:0;}
+    overflow:hidden; pointer-events:none; z-index:-1;}   /* SAU lưng rồng — vòng dưới chân, không che thân */
   .dr-ground-aura img{position:absolute; left:0; max-width:none; animation:drAuraFrames .72s steps(8) infinite;}
   .dr-aura-evo{opacity:.5; width:98px; height:98px;}            /* vòng tiến hoá: to hơn, mờ hơn */
   .dr-aura-evo img{width:800%; height:400%;}                     /* 8 cột × 4 hàng */
@@ -1184,6 +1184,14 @@
   .dr-aura-star img{width:800%; height:500%;}                    /* 8 cột × 5 hàng */
   @keyframes drAuraFrames{to{transform:translateX(-100%)}}
   .dr-reduce .dr-ground-aura img{animation:none;}               /* chế độ nhẹ: đứng yên frame 0 */
+  /* ★★★ RỒNG SSS: hào quang RIÊNG 7 cấp sao — ảnh động tự chạy, phủ SAU lưng rồng, KHÔNG lấn nét đẹp */
+  .dr-sss-fx{position:absolute; left:50%; top:52%; transform:translate(-50%,-50%);
+    width:172%; height:172%; pointer-events:none; z-index:0;
+    display:flex; align-items:center; justify-content:center;}
+  .dr-sss-fx img{width:100%; height:100%; object-fit:contain; max-width:none;
+    filter:drop-shadow(0 0 9px rgba(255,120,200,.35));}
+  .dr-lite .dr-sss-fx{opacity:.85;}
+  .dr-reduce .dr-sss-fx{display:none;}
   /* Sprite aura THAY vòng phép / hào quang bằng CSS cũ (khỏi chồng 2 lớp) */
   .dr-ring, .dr-halo{display:none;}
   /* Aura theo BẬC SAO (5 bậc: đồng/bạc/vàng/tím/cầu vồng) — màu = --tcol, độ sáng & nhịp tăng dần */
@@ -1316,6 +1324,13 @@
   .dr-chip.el-ice{background:#5cc4d6; color:#08343d;} .dr-chip.el-dark{background:#7457c2;} .dr-chip.el-light{background:#e6b93a; color:#3a2c00;}
   .dr-chips{display:flex; flex-wrap:wrap; gap:2px; margin:4px 0;}
   .dr-rar{display:inline-block; font-size:10px; font-weight:900; padding:1px 8px; border-radius:6px; color:#fff; background:var(--rc,#7c8f8b);}
+  /* Chip SSS lấp lánh cầu vồng — khác hẳn 4 tầng thường */
+  .dr-rar-sss{color:#fff; padding:1px 10px;
+    background:linear-gradient(100deg,#ff4fa3,#ff9a3d,#ffe14f,#5fe0ff,#a878ff,#ff4fa3);
+    background-size:300% 100%; animation:drSssChip 3.2s linear infinite;
+    box-shadow:0 0 9px rgba(255,79,163,.55); letter-spacing:.4px; text-shadow:0 1px 2px rgba(120,20,80,.5);}
+  @keyframes drSssChip{to{background-position:300% 0}}
+  .dr-lore{margin:6px 0 3px; font-size:12px; line-height:1.55; font-style:italic; color:#ff9ecb; opacity:.95;}
 
   /* thẻ rồng + danh sách */
   .dr-dcard{display:flex; flex-direction:column; align-items:center; gap:2px; width:100%; padding:8px 6px; cursor:pointer;
@@ -1494,6 +1509,26 @@
   .dr-shop-ic{width:72px; height:72px; margin:0 auto;}
   .dr-shop-item{background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.04));
     border-color:rgba(255,225,120,.32);}
+  /* Thẻ shop SSS — nổi bật, chiếm trọn hàng, viền hồng phát sáng */
+  .dr-shop-sss{grid-column:1/-1; position:relative; overflow:hidden;
+    background:linear-gradient(135deg,rgba(255,79,163,.16),rgba(120,90,255,.13))!important;
+    border:1.5px solid rgba(255,140,205,.55)!important; box-shadow:0 0 20px rgba(255,79,163,.28);}
+  .dr-shop-sss::after{content:''; position:absolute; inset:0; pointer-events:none;
+    background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.28) 50%,transparent 65%);
+    background-size:250% 100%; animation:drSssChip 3.6s linear infinite;}
+  .dr-shop-sss .dr-shop-ic{width:88px; height:88px;}
+  .dr-shop-sss .dr-shop-ic .dr-evo{--evo-size:84px;}
+  /* Icon shop = TRỨNG SSS; rê chuột (desktop) lộ hình rồng bên trong */
+  .dr-egg-ic{position:relative;}
+  .dr-egg-ic .dr-egg-sss{width:100%; height:100%; object-fit:contain; animation:drEggFloat 3s ease-in-out infinite; transition:opacity .3s;}
+  .dr-egg-ic .dr-evo{position:absolute; inset:0; opacity:0; transition:opacity .3s; display:flex; align-items:flex-end; justify-content:center;}
+  @media(hover:hover){ .dr-egg-ic:hover .dr-egg-sss{opacity:0;} .dr-egg-ic:hover .dr-evo{opacity:1;} }
+  @keyframes drEggFloat{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-5px) rotate(2deg)}}
+  /* Nút quà kỷ niệm có icon hộp quà */
+  .dr-anniv-btn{display:flex; align-items:center; justify-content:center; gap:7px;}
+  .dr-anniv-btn img{width:26px; height:26px; object-fit:contain;}
+  .dr-shop-sss b{font-size:13px; background:linear-gradient(90deg,#ff5fa8,#ffd24a);
+    -webkit-background-clip:text; background-clip:text; color:transparent;}
 
   /* ===== ĐIỆN THOẠI / màn hẹp: GIỮ 4 cụm góc như laptop nhưng gọn (đặt sau base để override) ===== */
   @media (max-width:760px), (orientation:portrait){
@@ -2030,6 +2065,44 @@
     100%{opacity:0; transform:translate(var(--drift,0),94px) rotate(300deg) scale(1);}
   }
   @media(prefers-reduced-motion:reduce){ .dr-petals{display:none;} }
+  /* 💗 MƯA TIM cho Long Nữ — ảnh động phủ quanh nàng */
+  .dr-heartrain{position:absolute; left:50%; top:44%; transform:translate(-50%,-50%);
+    width:150%; height:150%; pointer-events:none; z-index:3; overflow:visible;}
+  .dr-heartrain img{width:100%; height:100%; object-fit:contain; max-width:none;}
+  .dr-lite .dr-heartrain, .dr-reduce .dr-heartrain{display:none;}
+  /* 🪑 NGAI / BỆ riêng — neo theo chân rồng trong .dr-artwrap (ảnh cung cấp sau) */
+  .dr-throne{position:absolute; left:50%; bottom:-4%; transform:translateX(-50%);
+    width:124%; height:auto; max-width:none; pointer-events:none; z-index:0;
+    filter:drop-shadow(0 4px 9px rgba(120,20,80,.4));}
+
+  /* 🎬 CUTSCENE toàn màn khi lần đầu sở hữu Long Nữ */
+  .dr-cutscene{position:fixed; inset:0; z-index:120; display:flex; align-items:center; justify-content:center;
+    padding:24px; opacity:0; transition:opacity .32s ease; pointer-events:none;
+    background:radial-gradient(120% 90% at 50% 20%, rgba(80,20,60,.72), rgba(20,8,26,.92));
+    backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);}
+  .dr-cutscene.show{opacity:1; pointer-events:auto;}
+  .dr-cut-bg{position:absolute; inset:0; overflow:hidden; z-index:0;}
+  .dr-cut-bg img{width:100%; height:100%; object-fit:cover; opacity:.55;}
+  .dr-cut-inner{position:relative; z-index:1; text-align:center; max-width:440px; width:100%;
+    display:flex; flex-direction:column; align-items:center; gap:10px;
+    transform:translateY(14px) scale(.96); transition:transform .4s cubic-bezier(.2,.9,.3,1.2);}
+  .dr-cutscene.show .dr-cut-inner{transform:none;}
+  .dr-cut-art{width:min(58vw,220px); height:min(58vw,220px); display:flex; align-items:flex-end; justify-content:center;
+    filter:drop-shadow(0 6px 26px rgba(255,90,170,.5));}
+  .dr-cut-art .dr-evo{--evo-size:min(56vw,210px);}
+  .dr-cut-badge{margin-top:-6px;}
+  .dr-cut-name{margin:2px 0 0; font-size:clamp(22px,6vw,34px); font-weight:900; letter-spacing:.5px;
+    background:linear-gradient(90deg,#ff7ac0,#ffd24a,#7fe0ff,#ff7ac0); background-size:250% 100%;
+    -webkit-background-clip:text; background-clip:text; color:transparent; animation:drSssChip 4s linear infinite;
+    text-shadow:0 2px 18px rgba(255,120,200,.35);}
+  .dr-cut-lore{margin:2px 0; font-size:13.5px; line-height:1.6; font-style:italic; color:#ffd7ea; max-width:380px;}
+  .dr-cut-sub{margin:0 0 6px; font-size:13px; color:#fff3fa; opacity:.92;}
+  .dr-cutscene .dr-btn{min-width:200px;}
+  @media(prefers-reduced-motion:reduce){ .dr-cut-inner{transition:none; transform:none;} }
+
+  /* Cụm nút mua trứng SSS (💎 / 🪙) */
+  .dr-sss-buys{display:flex; gap:6px; width:100%; margin-top:2px;}
+  .dr-sss-buys .dr-btn{flex:1; min-width:0;}
 
   /* 📱 Điện thoại NẰM NGANG: giữ 4 cụm góc y như laptop, nhưng 2 cột bên hông + icon nhỏ cho vừa màn thấp */
   @media (orientation:landscape) and (min-width:761px) and (max-height:600px){

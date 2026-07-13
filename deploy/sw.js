@@ -1,4 +1,4 @@
-const CACHE = 'tienlen-v153-mb-online';
+const CACHE = 'tienlen-v155-sss-extras';
 const ASSETS = [
   './', './index.html', './styles.css', './manifest.webmanifest', './icon-192.png', './icon-512.png',
   './js/config.js', './js/version.js', './js/engine.js', './js/state.js', './js/game.js', './js/ui.js', './js/daorong.js', './js/maubinh.js', './js/social.js',
@@ -9,6 +9,18 @@ const ASSETS = [
   './assets/dragons/earth.webp', './assets/dragons/electric.webp', './assets/dragons/ice.webp',
   './assets/dragons/lava.webp', './assets/dragons/steam.webp', './assets/dragons/swamp.webp',
   './assets/dragons/storm.webp', './assets/dragons/dark.webp', './assets/dragons/light.webp',
+  // ★★★ RỒNG SSS — Long Nữ Vĩnh Hằng (sprite tiến hoá + hào quang riêng 7 sao + chữ ký + lên-sao)
+  './assets/dragons/evolution/tamnhu-sss.webp',
+  './assets/dragons/tamnhu-sss/atlas/baby.webp', './assets/dragons/tamnhu-sss/atlas/teen.webp',
+  './assets/dragons/tamnhu-sss/atlas/adult.webp', './assets/dragons/tamnhu-sss/atlas/legend.webp',
+  './assets/dragons/tamnhu-sss/effects/animated/sss-signature.webp', './assets/dragons/tamnhu-sss/effects/animated/level-up-sss.webp',
+  './assets/dragons/tamnhu-sss/effects/stars/animated/star-1.webp', './assets/dragons/tamnhu-sss/effects/stars/animated/star-2.webp',
+  './assets/dragons/tamnhu-sss/effects/stars/animated/star-3.webp', './assets/dragons/tamnhu-sss/effects/stars/animated/star-4.webp',
+  './assets/dragons/tamnhu-sss/effects/stars/animated/star-5.webp', './assets/dragons/tamnhu-sss/effects/stars/animated/star-6.webp',
+  './assets/dragons/tamnhu-sss/effects/stars/animated/star-7.webp',
+  './assets/dragons/tamnhu-sss/extras/throne.webp', './assets/dragons/tamnhu-sss/extras/egg-sss.webp',
+  './assets/dragons/tamnhu-sss/extras/heart-rain.webp', './assets/dragons/tamnhu-sss/extras/unlock-cutscene.webp',
+  './assets/dragons/tamnhu-sss/extras/anniversary-gift.webp',
   './assets/dragons/peach.webp', './assets/dragons/candy.webp', './assets/dragons/sakura.webp',
   './assets/dragons/rose.webp', './assets/dragons/lotus.webp', './assets/dragons/peony.webp',
   './assets/dragons/bubblegum.webp', './assets/dragons/starlight.webp', './assets/dragons/aurora.webp',
