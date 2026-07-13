@@ -60,6 +60,14 @@ function drFx(name, target, size){
     setTimeout(()=>{ img.style.transition='opacity .28s'; img.style.opacity='0'; setTimeout(()=>img.remove(),300); }, 820);
   }catch(_){}
 }
+// Nền ĐẢO riêng theo hình bạn cấp (island-01..20) + vòng HÀO QUANG động theo bậc (tier-01..05, 4 đảo/bậc).
+function drRenderIsleScene(isle){
+  const app=$('drApp');
+  if(app){ const n=String(Math.min(DR_ISLAND_MAX, (isle|0)+1)).padStart(2,'0');
+    app.classList.add('dr-real-isles');
+    app.style.backgroundImage=`url('assets/dragon-island/islands/island-${n}.webp')`; }
+  // (Vòng hào quang tier bỏ đi — hình đảo đã đủ lộng lẫy, thêm vòng xoay giữa màn gây rối tâm điểm.)
+}
 // Loài rồng lần đầu sở hữu -> báo "mở khoá" (icon unlocked). Cập nhật drState.seen để không lặp.
 function drNewSp(sp){
   if(!DR_SPECIES[sp]) return false;
@@ -188,6 +196,17 @@ const DR_SPECIES={
   coral: {name:'Rồng San Hô',   el:'water',   els:['water'],   rar:'rare', gold:20, atk:49, hp:124, range:4, spd:7, evo:'assets/dragons/evolution/coral.webp', sheet:{url:'assets/dragons/coral.webp',frames:8,fps:7,act:1.3},  pal:{body:'#ff9e7a',bd:'#ffe6dc',wg:'#ffc2ab',st:'#e8663f',horn:'#c94f2a'}},
   cloud: {name:'Rồng Mây',      el:'ice',     els:['ice'],     rar:'rare', gold:19, atk:47, hp:130, range:4, spd:6, evo:'assets/dragons/evolution/cloud.webp', sheet:{url:'assets/dragons/cloud.webp',frames:8,fps:7,act:1.4},  pal:{body:'#cfe3ff',bd:'#f2f8ff',wg:'#dfecff',st:'#7f9fd6',horn:'#5f7fb6'}},
   sakura:  {name:'Rồng Anh Đào',    el:'plant',   els:['plant'],          rar:'rare',   gold:19, atk:50, hp:124, range:4, spd:6, fx:'petal', evo:'assets/dragons/evolution/sakura.webp', sheet:{url:'assets/dragons/sakura.webp',frames:8,fps:7,act:1.3}, pal:{body:'#ff8fc7',bd:'#ffe3f1',wg:'#ffb3d9',st:'#e84f95',horn:'#c93a7a'}},
+  // ---- 10 rồng dễ thương MỚI (đã có sprite + tiến hoá) — đa số 'rare' cho dễ ra ----
+  'cotton-candy':     {name:'Rồng Kẹo Bông Gòn', el:'water', els:['water'], rar:'rare', gold:20, atk:47, hp:130, range:4, spd:7, evo:'assets/dragons/evolution/cotton-candy.webp',     sheet:{url:'assets/dragons/cotton-candy.webp',    frames:8,fps:7,act:1.3},  pal:{body:'#ffb3e6',bd:'#fff0fb',wg:'#cfe4ff',st:'#e86bb0',horn:'#c94f95'}},
+  'strawberry-cream': {name:'Rồng Kem Dâu',       el:'plant', els:['plant'], rar:'rare', gold:20, atk:49, hp:128, range:4, spd:6, evo:'assets/dragons/evolution/strawberry-cream.webp', sheet:{url:'assets/dragons/strawberry-cream.webp',frames:8,fps:7,act:1.3},  pal:{body:'#ff9db0',bd:'#fff0f2',wg:'#ffd9de',st:'#e8506a',horn:'#c93a52'}},
+  'blossom-bubble':   {name:'Rồng Bong Bóng Hoa', el:'water', els:['water'], rar:'rare', gold:19, atk:46, hp:132, range:4, spd:7, evo:'assets/dragons/evolution/blossom-bubble.webp',   sheet:{url:'assets/dragons/blossom-bubble.webp',  frames:8,fps:8,act:1.25}, pal:{body:'#c9b3ff',bd:'#f4eeff',wg:'#ffcfe8',st:'#8a6fe0',horn:'#6f52c9'}},
+  'cherry-soda':      {name:'Rồng Soda Anh Đào',  el:'water', els:['water'], rar:'rare', gold:20, atk:51, hp:122, range:4, spd:7, evo:'assets/dragons/evolution/cherry-soda.webp',      sheet:{url:'assets/dragons/cherry-soda.webp',     frames:8,fps:8,act:1.2},  pal:{body:'#ff8fa3',bd:'#ffe6ec',wg:'#bfe8ff',st:'#e8506a',horn:'#c93a52'}},
+  'pearl-lotus':      {name:'Rồng Sen Ngọc',      el:'water', els:['water'], rar:'rare', gold:21, atk:48, hp:134, range:4, spd:6, evo:'assets/dragons/evolution/pearl-lotus.webp',      sheet:{url:'assets/dragons/pearl-lotus.webp',     frames:8,fps:7,act:1.35}, pal:{body:'#ffd9ec',bd:'#fffafd',wg:'#e6f0ff',st:'#e88bb8',horn:'#c96f9c'}},
+  'rose-quartz':      {name:'Rồng Thạch Anh Hồng',el:'earth', els:['earth'], rar:'rare', gold:21, atk:52, hp:132, range:3, spd:5, evo:'assets/dragons/evolution/rose-quartz.webp',      sheet:{url:'assets/dragons/rose-quartz.webp',     frames:8,fps:6,act:1.45}, pal:{body:'#ffb0cf',bd:'#fff0f6',wg:'#f0d9ff',st:'#e86ba0',horn:'#c94f85'}},
+  'moon-ribbon':      {name:'Rồng Nơ Trăng',      el:'light', els:['light'], rar:'rare', gold:20, atk:50, hp:126, range:5, spd:7, evo:'assets/dragons/evolution/moon-ribbon.webp',      sheet:{url:'assets/dragons/moon-ribbon.webp',     frames:8,fps:7,act:1.35}, pal:{body:'#d8c9ff',bd:'#f6f2ff',wg:'#fff0d9',st:'#9a7fe0',horn:'#7a5fc9'}},
+  'rainbow-mochi':    {name:'Rồng Mochi Cầu Vồng',el:'light', els:['light'], rar:'rare', gold:21, atk:52, hp:130, range:5, spd:7, evo:'assets/dragons/evolution/rainbow-mochi.webp',    sheet:{url:'assets/dragons/rainbow-mochi.webp',   frames:8,fps:7,act:1.3},  pal:{body:'#ffd1e8',bd:'#fff5fb',wg:'#d9f5e6',st:'#e88bc0',horn:'#c96f9c'}},
+  'starlight-bow':    {name:'Rồng Nơ Sao',        el:'light', els:['light'], rar:'epic', gold:40, atk:78, hp:144, range:5, spd:8, evo:'assets/dragons/evolution/starlight-bow.webp',    sheet:{url:'assets/dragons/starlight-bow.webp',   frames:8,fps:7,act:1.4},  pal:{body:'#ffcfe6',bd:'#fff2f9',wg:'#ffe9a8',st:'#e86bb0',horn:'#c94f95'}},
+  'cupid-heart':      {name:'Rồng Thần Tình Yêu', el:'light', els:['light'], rar:'epic', gold:40, atk:80, hp:148, range:5, spd:8, evo:'assets/dragons/evolution/cupid-heart.webp',      sheet:{url:'assets/dragons/cupid-heart.webp',     frames:8,fps:7,act:1.4},  pal:{body:'#ff9db8',bd:'#ffeef2',wg:'#ffd9e2',st:'#e8506e',horn:'#c93a56'}},
   fire:    {name:'Rồng Lửa',       el:'fire',    els:['fire'],           rar:'common', gold:10, atk:42, hp:100, range:3, spd:6, evo:'assets/dragons/evolution/fire.webp',       sheet:{url:'assets/dragons/fire.webp', frames:8, fps:7, act:1.25}},
   water:   {name:'Rồng Nước',      el:'water',   els:['water'],          rar:'common', gold:10, atk:38, hp:112, range:4, spd:5, evo:'assets/dragons/evolution/water.webp',      sheet:{url:'assets/dragons/water.webp', frames:8, fps:9, act:1.3}},
   plant:   {name:'Rồng Cây',       el:'plant',   els:['plant'],          rar:'common', gold:10, atk:36, hp:118, range:3, spd:5, evo:'assets/dragons/evolution/plant.webp',      sheet:{url:'assets/dragons/plant.webp', frames:8, fps:6, act:1.45}},
@@ -201,7 +220,9 @@ const DR_SPECIES={
   dark:    {name:'Hắc Long',       el:'dark',    els:['dark'],           rar:'epic',   gold:40, atk:86, hp:150, range:4, spd:7, evo:'assets/dragons/evolution/dark.webp',       sheet:{url:'assets/dragons/dark.webp', frames:8, fps:7, act:1.45}},
   light:   {name:'Thần Long',      el:'light',   els:['light'],          rar:'legendary',gold:70,atk:110,hp:180, range:5, spd:8, evo:'assets/dragons/evolution/light.webp',      sheet:{url:'assets/dragons/light.webp', frames:8, fps:7, act:1.6}},
 };
-const DR_SP_PRIORITY=['peach','sakura','candy','rose','lotus','peony','bubblegum','mint','lemon','berry','coral','cloud','starlight','aurora','carnival','prism','kaleidoscope','rainbow','fire','water','plant','earth','electric','ice','lava','steam','swamp','storm','dark','light'];
+const DR_SP_PRIORITY=['peach','sakura','candy','rose','lotus','peony','bubblegum','mint','lemon','berry','coral','cloud',
+  'cotton-candy','strawberry-cream','blossom-bubble','cherry-soda','pearl-lotus','rose-quartz','moon-ribbon','rainbow-mochi','cupid-heart','starlight-bow',
+  'starlight','aurora','carnival','prism','kaleidoscope','rainbow','fire','water','plant','earth','electric','ice','lava','steam','swamp','storm','dark','light'];
 // DR_SP_ORDER LUÔN gồm mọi loài trong DR_SPECIES: chỉ cần thêm rồng mới vào DR_SPECIES
 // là nó TỰ có trong Sách rồng + Vòng quay + đối thủ Đấu, không cần đụng danh sách này.
 const DR_SP_ORDER=(function(){ const o=DR_SP_PRIORITY.filter(sp=>DR_SPECIES[sp]);
@@ -499,7 +520,7 @@ function drStarBadge(d){ const s=drStar(d); return `<span class="dr-starnum" sty
 function drStarPips(d){ const s=drStar(d); return `${drStarBadge(d)} <small class="dr-star-tier">${DR_STAR_TIERNAME[drStarTier(s)]}</small>`; }
 const DR_BLESS_COST=5;                                   // 💎 để "chúc phúc" khi lai
 function drRarRank(sp){ return ['common','rare','epic','legendary'].indexOf((DR_SPECIES[sp]||DR_SPECIES.fire).rar); }
-const DR_PITY_MAX=4;                                      // lai 4 lần liền ra rồng thường -> lần sau CHẮC CHẮN ra hiếm
+const DR_PITY_MAX=2;                                      // lai 2 lần liền ra rồng thường -> lần sau CHẮC CHẮN ra hiếm (dễ ra hơn)
 // Gom loài có thể ra từ 1 cặp hệ. Cùng hệ -> TỰ thêm mọi loài hiếm cùng hệ (kể cả
 // rồng mới thêm sau), nên rồng mới chỉ cần gắn 'el' là auto lai được từ cặp cùng hệ.
 function drBreedPool(elA,elB){
@@ -754,7 +775,7 @@ function drRenderDragons(){
   const isle=drCurIsland(), base=drIslandStart(isle), size=drIslandSize(isle);
   if((drState.island||0)!==isle) drState.island=isle;
   const egg=$('drEgg'); if(egg) egg.style.display=(isle===0)?'':'none';   // ổ ấp chỉ ở ĐẢO 1
-  const isl=$('drIsland'); if(isl) isl.style.setProperty('--isleHue',(isle*40%360)+'deg');   // lệch màu nhẹ theo đảo (tạm tới khi có hình riêng)
+  drRenderIsleScene(isle);                                                  // nền đảo riêng + hào quang theo bậc
   drRenderIsleNav();
   drState.dragons.slice(base, base+size).forEach((d,i)=>{
     const gi=base+i;
@@ -1622,7 +1643,8 @@ function drClaimMail(i){
 }
 
 /* ---------- Shop ---------- */
-const DR_SHOP_RARE_POOL=['electric','ice','lava','steam','swamp','storm','dark','rose','lotus','peony','bubblegum','aurora','carnival','prism','starlight','rainbow','mint','lemon','berry','coral','cloud'];  // trứng hiếm: loài hiếm/epic đã có sprite
+const DR_SHOP_RARE_POOL=['electric','ice','lava','steam','swamp','storm','dark','rose','lotus','peony','bubblegum','aurora','carnival','prism','starlight','rainbow','mint','lemon','berry','coral','cloud',
+  'cotton-candy','strawberry-cream','blossom-bubble','cherry-soda','pearl-lotus','rose-quartz','moon-ribbon','rainbow-mochi','starlight-bow','cupid-heart'];  // trứng hiếm: loài hiếm/epic đã có sprite (gồm 10 rồng dễ thương mới)
 const DR_SHOP_LEGEND_POOL=['kaleidoscope','light'];   // trứng huyền thoại
 function drShowShop(){
   const body=`<div class="dr-shop-grid">

@@ -18,8 +18,23 @@
 const GAME_CHANGELOGS = {
   daorong: {
     name: 'Đảo Rồng',
-    version: '2.6.0',
+    version: '2.7.0',
     log: [
+      {
+        version: '2.7.0',
+        date: '13/07/2026',
+        tag: 'Tính năng',
+        title: 'Thế giới đảo sống động',
+        items: [
+          { ic: '🏝️', t: '20 hòn đảo, mỗi đảo một khung cảnh riêng cực kỳ lộng lẫy — đổi đảo là đổi cả thế giới.' },
+          { ic: '🐣', t: 'Thêm 10 rồng dễ thương mới (Kẹo Bông Gòn, Kem Dâu, Sen Ngọc, Thạch Anh Hồng, Nơ Trăng, Nơ Sao, Thần Tình Yêu…) — dễ nở & lai ra hơn.' },
+          { ic: '👹', t: 'Boss động vẫy cánh, thở phì phò — sống động hơn hẳn ảnh tĩnh.' },
+          { ic: '✨', t: 'Rộn ràng hiệu ứng khắp nơi: lên cấp, tiến hoá, nở trứng, chí mạng, hồi máu, lên khiên, thu vàng/ngọc, thắng trận.' },
+          { ic: '🎴', t: 'Nở rồng hiện thẻ khoe theo độ hiếm — rồng Hiếm & Huyền Thoại có khung riêng lộng lẫy.' },
+          { ic: '🐉', t: 'Nuôi rồng tới cấp 60 — trần cấp mở dần theo số sao; muốn lên cao hơn thì nâng sao trước.' },
+          { ic: '⚡', t: 'Chơi mượt hơn trên điện thoại + băng thông báo mới cho thành tựu, thưởng hạng, loài rồng mới.' },
+        ],
+      },
       {
         version: '2.6.0',
         date: '12/07/2026',

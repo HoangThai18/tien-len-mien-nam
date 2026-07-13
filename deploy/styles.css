@@ -793,8 +793,11 @@
   .dr-grass{position:absolute; inset:9% 11% 16%; border-radius:50%;
     background:radial-gradient(ellipse at 50% 40%,#78d05f,#4faa46 68%,#3c8f3c 100%);
     box-shadow:inset 0 -10px 24px rgba(20,80,30,.35), inset 0 8px 18px rgba(255,255,255,.25);}
-  /* Mỗi đảo lệch màu nhẹ (tạm thời, tới khi có hình đảo riêng) để đổi đảo thấy rõ khác biệt */
+  /* Mỗi đảo lệch màu nhẹ (fallback nếu chưa có hình đảo riêng) */
   .dr-beach,.dr-grass{filter:hue-rotate(var(--isleHue,0deg)); transition:filter .4s ease;}
+  /* Có hình đảo THẬT (island-XX) -> nền chính là hình đảo; ẩn bệ + trang trí CSS cho gọn */
+  .dr-real-isles .dr-beach,.dr-real-isles .dr-grass,.dr-real-isles .dr-foam,.dr-real-isles .dr-deco,
+  .dr-real-isles .dr-shimmer,.dr-real-isles .dr-sparkle,.dr-real-isles .dr-sun,.dr-real-isles .dr-cloud{display:none;}
   .dr-deco{position:absolute; filter:drop-shadow(0 3px 3px rgba(0,0,0,.2)); pointer-events:none;
     transform-origin:50% 100%; animation:drDecoSway 4s ease-in-out infinite;}
   @keyframes drDecoSway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
