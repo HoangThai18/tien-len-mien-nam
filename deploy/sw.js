@@ -1,4 +1,4 @@
-const CACHE = 'tienlen-v155-sss-extras';
+const CACHE = 'tienlen-v167-worldboss-art';
 const ASSETS = [
   './', './index.html', './styles.css', './manifest.webmanifest', './icon-192.png', './icon-512.png',
   './js/config.js', './js/version.js', './js/engine.js', './js/state.js', './js/game.js', './js/ui.js', './js/daorong.js', './js/maubinh.js', './js/social.js',
@@ -11,8 +11,8 @@ const ASSETS = [
   './assets/dragons/storm.webp', './assets/dragons/dark.webp', './assets/dragons/light.webp',
   // ★★★ RỒNG SSS — Long Nữ Vĩnh Hằng (sprite tiến hoá + hào quang riêng 7 sao + chữ ký + lên-sao)
   './assets/dragons/evolution/tamnhu-sss.webp',
-  './assets/dragons/tamnhu-sss/atlas/baby.webp', './assets/dragons/tamnhu-sss/atlas/teen.webp',
-  './assets/dragons/tamnhu-sss/atlas/adult.webp', './assets/dragons/tamnhu-sss/atlas/legend.webp',
+  './assets/dragons/tamnhu-sss/icons/baby.webp', './assets/dragons/tamnhu-sss/icons/teen.webp',
+  './assets/dragons/tamnhu-sss/icons/adult.webp', './assets/dragons/tamnhu-sss/icons/legend.webp',
   './assets/dragons/tamnhu-sss/effects/animated/sss-signature.webp', './assets/dragons/tamnhu-sss/effects/animated/level-up-sss.webp',
   './assets/dragons/tamnhu-sss/effects/stars/animated/star-1.webp', './assets/dragons/tamnhu-sss/effects/stars/animated/star-2.webp',
   './assets/dragons/tamnhu-sss/effects/stars/animated/star-3.webp', './assets/dragons/tamnhu-sss/effects/stars/animated/star-4.webp',
@@ -42,6 +42,10 @@ const ASSETS = [
   './assets/dragons/evolution/carnival.webp', './assets/dragons/evolution/prism.webp', './assets/dragons/evolution/kaleidoscope.webp',
   './assets/dragons/cotton-candy.webp', './assets/dragons/strawberry-cream.webp', './assets/dragons/blossom-bubble.webp', './assets/dragons/cherry-soda.webp', './assets/dragons/pearl-lotus.webp', './assets/dragons/rose-quartz.webp', './assets/dragons/moon-ribbon.webp', './assets/dragons/rainbow-mochi.webp', './assets/dragons/starlight-bow.webp', './assets/dragons/cupid-heart.webp',
   './assets/dragons/evolution/cotton-candy.webp', './assets/dragons/evolution/strawberry-cream.webp', './assets/dragons/evolution/blossom-bubble.webp', './assets/dragons/evolution/cherry-soda.webp', './assets/dragons/evolution/pearl-lotus.webp', './assets/dragons/evolution/rose-quartz.webp', './assets/dragons/evolution/moon-ribbon.webp', './assets/dragons/evolution/rainbow-mochi.webp', './assets/dragons/evolution/starlight-bow.webp', './assets/dragons/evolution/cupid-heart.webp',
+  './assets/dragons/banh-tinh-van.webp', './assets/dragons/thoi-diep.webp', './assets/dragons/dang-ho-ly.webp', './assets/dragons/sua-san-ho.webp', './assets/dragons/nguyet-tra.webp', './assets/dragons/nam-dom-dom.webp',
+  './assets/dragons/mieu-cuc-quang.webp', './assets/dragons/thu-linh.webp', './assets/dragons/koi-van.webp', './assets/dragons/mat-nhat.webp',
+  './assets/dragons/evolution/banh-tinh-van.webp', './assets/dragons/evolution/thoi-diep.webp', './assets/dragons/evolution/dang-ho-ly.webp', './assets/dragons/evolution/sua-san-ho.webp', './assets/dragons/evolution/nguyet-tra.webp', './assets/dragons/evolution/nam-dom-dom.webp',
+  './assets/dragons/evolution/mieu-cuc-quang.webp', './assets/dragons/evolution/thu-linh.webp', './assets/dragons/evolution/koi-van.webp', './assets/dragons/evolution/mat-nhat.webp',
   './assets/dragon-island/effects/projectiles/fire.webp', './assets/dragon-island/effects/projectiles/water.webp',
   './assets/dragon-island/effects/projectiles/electric.webp', './assets/dragon-island/effects/projectiles/ice.webp',
   './assets/dragon-island/effects/projectiles/dark.webp', './assets/dragon-island/effects/projectiles/light.webp',
@@ -50,6 +54,9 @@ const ASSETS = [
   './assets/dragon-island/combat/roles/tank.webp', './assets/dragon-island/combat/roles/heal.webp', './assets/dragon-island/combat/roles/dps.webp',
   './assets/dragon-island/combat/status/burn.webp', './assets/dragon-island/combat/status/poison.webp', './assets/dragon-island/combat/status/freeze.webp',
   './assets/dragon-island/combat/status/shield.webp', './assets/dragon-island/combat/status/atkup.webp', './assets/dragon-island/combat/status/taunt.webp',
+  // Boss Thế Giới — 4 nền chiến trường + 4 boss (tĩnh; nếu sau có sprites/<img>.webp thì thêm vào đây)
+  './assets/dragon-island/worldboss/arena/water.webp', './assets/dragon-island/worldboss/arena/lava.webp', './assets/dragon-island/worldboss/arena/aurora.webp', './assets/dragon-island/worldboss/arena/dark.webp',
+  './assets/dragon-island/worldboss/bosses/sea-serpent.webp', './assets/dragon-island/worldboss/bosses/lava-dragon.webp', './assets/dragon-island/worldboss/bosses/ice-titan.webp', './assets/dragon-island/worldboss/bosses/dark-dragon.webp',
   './assets/dragon-island/events/moon.webp', './assets/dragon-island/events/flame.webp', './assets/dragon-island/events/ocean.webp', './assets/dragon-island/events/blossom.webp',
   './assets/dragon-island/ranks/bronze.webp', './assets/dragon-island/ranks/silver.webp', './assets/dragon-island/ranks/gold.webp', './assets/dragon-island/ranks/platinum.webp', './assets/dragon-island/ranks/diamond.webp', './assets/dragon-island/ranks/master.webp',
   './assets/dragon-island/runes/atk-t2.webp', './assets/dragon-island/runes/atk-t3.webp', './assets/dragon-island/runes/hp-t2.webp', './assets/dragon-island/runes/hp-t3.webp', './assets/dragon-island/runes/spd-t2.webp', './assets/dragon-island/runes/spd-t3.webp',

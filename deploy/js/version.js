@@ -20,8 +20,32 @@
 const GAME_CHANGELOGS = {
   daorong: {
     name: 'Đảo Rồng',
-    version: '2.9.0',
+    version: '2.11.0',
     log: [
+      {
+        version: '2.11.0',
+        date: '14/07/2026',
+        tag: 'Tính năng',
+        title: 'Thêm 10 rồng huyền ảo & kéo–thả khắp nơi',
+        items: [
+          { ic: '🐉', t: 'Thêm 10 rồng huyền ảo mới — ngắm thử bên dưới!', dragons: ['banh-tinh-van','thoi-diep','mieu-cuc-quang','thu-linh','sua-san-ho','koi-van','nguyet-tra','mat-nhat','dang-ho-ly','nam-dom-dom'] },
+          { ic: '🥚', t: 'Bánh Tinh Vân, Thời Điệp, Miêu Cực Quang & Thủ Lĩnh trong Trứng Huyền Thoại; Hồ Ly, Sứa San Hô, Koi Vân, Nguyệt Trà, Mật Nhật, Nấm Đom Đóm ở Trứng Hiếm — hoặc lai/quay đều ra được.' },
+          { ic: '🖐️', t: 'KÉO–THẢ khắp nơi: kéo hạt gieo & cây chín vào giỏ ở Nông trại, kéo rồng vào ô Lai, kéo túi 🍖 cho ăn, kéo rồng vào Khu đảo, kéo rồng xuống 🗑️ để bán.' },
+        ],
+      },
+      {
+        version: '2.10.0',
+        date: '13/07/2026',
+        tag: 'Bản lớn',
+        title: 'Boss Thế Giới — cả server chung tay hạ đại boss',
+        items: [
+          { ic: '🌍', t: 'Ra mắt BOSS THẾ GIỚI: một con boss KHỔNG LỒ dùng CHUNG máu cho cả máy chủ — mọi người cùng góp sát thương vào một thanh máu duy nhất, đồng bộ realtime.' },
+          { ic: '⚔️', t: 'COMBAT SÂU trên MAP TRẬN riêng: 10 rồng mạnh nhất tự giao chiến theo lượt với boss khổng lồ — vai trò Đỡ đòn/Hồi máu/Sát thương, tung chiêu, trạng thái cháy/băng/độc, khắc hệ; boss đánh trả khiến rồng có thể ngã. Đội càng mạnh, trụ càng lâu, càng gây nhiều sát thương.' },
+          { ic: '🐉', t: 'Boss là SPRITE ĐỘNG (thở/vẫy cánh mượt), rồng lao lên khi ra đòn — nhìn rõ cả hai bên đang giao chiến. (Boss chưa có ảnh thì tự dùng hình dự phòng.)' },
+          { ic: '🏆', t: 'Bảng xếp hạng đóng góp: đua sát thương với cả cộng đồng, tên bạn nổi bật trên bảng vàng.' },
+          { ic: '🎁', t: 'Mốc thưởng cộng đồng 20/40/60/80/100% — ai đã góp đòn đều nhận vàng, 💎 và thức ăn. Mỗi ngày 6 lượt xuất trận, boss đổi loại mỗi tuần.' },
+        ],
+      },
       {
         version: '2.9.0',
         date: '13/07/2026',
